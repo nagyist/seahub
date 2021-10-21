@@ -4,7 +4,7 @@ import logging
 import os
 import requests
 
-from django.core.cache import cache
+from django.core.cache import caches
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from seaserv import seafile_api
@@ -17,6 +17,8 @@ from seahub.utils.file_op import if_locked_by_online_office
 
 # Get an instance of a logger
 logger = logging.getLogger('onlyoffice')
+
+cache = caches['onlyoffice']
 
 
 @csrf_exempt

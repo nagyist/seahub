@@ -459,6 +459,15 @@ CACHES = {
         }
     },
 
+    'onlyoffice': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'onlyoffice_doc_key',
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000000,
+            'CULL_FREQUENCY': 5
+        }
+    },
+
     # Compatible with existing `COMPRESS_CACHE_BACKEND` setting after
     # upgrading to django-compressor v2.2.
     # ref: https://manual.seafile.com/deploy_pro/deploy_in_a_cluster.html

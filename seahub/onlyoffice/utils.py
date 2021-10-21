@@ -5,7 +5,7 @@ import logging
 import urllib.parse
 import posixpath
 
-from django.core.cache import cache
+from django.core.cache import caches
 from django.core.urlresolvers import reverse
 from django.utils.encoding import force_bytes
 
@@ -22,6 +22,8 @@ from seahub.onlyoffice.settings import ONLYOFFICE_APIJS_URL, \
 
 # Get an instance of a logger
 logger = logging.getLogger('onlyoffice')
+
+cache = caches['onlyoffice']
 
 
 def generate_onlyoffice_cache_key(repo_id, file_path):

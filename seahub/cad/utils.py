@@ -5,7 +5,7 @@ from seahub.cad.settings import CAD_MOBILE_SIZE_LIMIT, CAD_PC_SIZE_LIMIT, \
         CAD_HOST
 
 # Get an instance of a logger
-logger = logging.getLogger('onlyoffice')
+logger = logging.getLogger(__name__)
 
 
 def get_cad_dict(request, username, repo_id, file_path):

@@ -1154,7 +1154,15 @@ class AdminSearchUser(APIView):
 
         data = []
         has_appended = []
-
+        email_list = [user.email for user in users]
+        social_auth_user_queryset = SocialAuthUser.objects.filter(username__in=email_list)
+        social_auth_user_dict = {}
+        for item in social_auth_user_queryset:
+            if item.username in social_auth_user_dict:
+                social_auth_user_dict[item.username].append(item)
+            else:
+                social_auth_user_dict[item.username] = [item]
+        
         for user in users:
 
             if user.email in has_appended:
@@ -1201,6 +1209,9 @@ class AdminSearchUser(APIView):
             if getattr(settings, 'MULTI_INSTITUTION', False):
                 info['institution'] = user.institution
 
+            social_auth_user = social_auth_user_dict.get(user.email, [])
+            info['social_auth'] = [{'provider': item.provider, 'uid': item.uid} for item in social_auth_user]
+
             data.append(info)
 
         result = {
@@ -1242,6 +1253,9 @@ class AdminUser(APIView):
         else:
             user_info['last_login'] = ''
             user_info['last_access_time'] = get_user_last_access_time(email, '')
+
+        social_auth_user = SocialAuthUser.objects.filter(username=email)
+        user_info['social_auth'] = [{'provider': item.provider, 'uid': item.uid} for item in social_auth_user]
 
         return Response(user_info)
 

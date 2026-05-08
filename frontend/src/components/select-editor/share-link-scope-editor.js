@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import SelectEditor from './select-editor';
-import { gettext, isEmailConfigured } from '../../utils/constants';
+import { gettext, isEmailConfigured, canUseGlobalAddressBook } from '../../utils/constants';
 
 const propTypes = {
   isTextMode: PropTypes.bool.isRequired,
@@ -28,7 +28,10 @@ class ShareLinkScopeEditor extends React.Component {
 
 
   render() {
-    let scopeOptions = ['all_users', 'specific_users'];
+    let scopeOptions = ['all_users'];
+    if (canUseGlobalAddressBook) {
+      scopeOptions.push('specific_users');
+    }
     if (isEmailConfigured) {
       scopeOptions.push('specific_emails');
     }

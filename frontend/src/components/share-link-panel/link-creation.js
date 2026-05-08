@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import { Button, Form, FormGroup, Label, Input, InputGroup, Alert } from 'reactstrap';
-import { gettext, shareLinkExpireDaysMin, shareLinkExpireDaysMax, shareLinkExpireDaysDefault, shareLinkForceUsePassword, shareLinkPasswordMinLength, shareLinkPasswordStrengthLevel, isEmailConfigured } from '../../utils/constants';
+import { gettext, shareLinkExpireDaysMin, shareLinkExpireDaysMax, shareLinkExpireDaysDefault, shareLinkForceUsePassword, shareLinkPasswordMinLength, shareLinkPasswordStrengthLevel, isEmailConfigured, canUseGlobalAddressBook } from '../../utils/constants';
 import { seafileAPI } from '../../utils/seafile-api';
 import { shareLinkAPI } from '../../utils/share-link-api';
 import { Utils } from '../../utils/utils';
@@ -393,20 +393,22 @@ class LinkCreation extends React.Component {
                   {gettext('Anyone with the link')}
                 </Label>
               </FormGroup>
-              <FormGroup check className="ml-4">
-                <Label check>
-                  <Input type="radio" name='scope' value={'specific_users'} checked={this.state.currentScope === 'specific_users'} onChange={this.setScope} className="mr-1" />
-                  {gettext('Specific users in the team')}
-                </Label>
-                {this.state.currentScope === 'specific_users' &&
-                <UserSelect
-                  isMulti={true}
-                  placeholder={gettext('Search users')}
-                  onSelectChange={this.handleSelectChange}
-                  selectedUsers={this.state.selectedUsers}
-                />
-                }
-              </FormGroup>
+              {canUseGlobalAddressBook && (
+                <FormGroup check className="ml-4">
+                  <Label check>
+                    <Input type="radio" name='scope' value={'specific_users'} checked={this.state.currentScope === 'specific_users'} onChange={this.setScope} className="mr-1" />
+                    {gettext('Specific users in the team')}
+                  </Label>
+                  {this.state.currentScope === 'specific_users' &&
+                  <UserSelect
+                    isMulti={true}
+                    placeholder={gettext('Search users')}
+                    onSelectChange={this.handleSelectChange}
+                    selectedUsers={this.state.selectedUsers}
+                  />
+                  }
+                </FormGroup>
+              )}
               {isEmailConfigured && (
                 <FormGroup check className="ml-4">
                   <Label check>

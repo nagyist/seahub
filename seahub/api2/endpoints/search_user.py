@@ -264,7 +264,6 @@ def search_user_when_global_address_book_disabled(request, q):
         if is_valid_email(q):
 
             # if `q` is a valid email
-            email_list.append(q)
 
             # get user whose `contact_email` is `q`
             users = Profile.objects.filter(contact_email=q).values('user')

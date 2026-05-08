@@ -178,7 +178,8 @@
             showWechatSupportGroup: {% if show_wechat_support_group %} true {% else %} false {% endif %},
             baiduMapKey: '{{ baidu_map_key }}',
             googleMapKey: '{{ google_map_key }}',
-            googleMapId: '{{ google_map_id }}'
+            googleMapId: '{{ google_map_id }}',
+            canUseGlobalAddressBook: {% if user.permissions.can_use_global_address_book %} true {% else %} false {% endif %}
         }
      };
 </script>

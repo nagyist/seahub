@@ -30,8 +30,9 @@ def get_default_storage_id():
     cp.read(seafile_conf)
     
     json_file = cp.get('storage', 'storage_classes_file')
-    f = open(json_file)
-    json_cfg = json.load(f)
+    with open(json_file) as f:
+        json_cfg = json.load(f)
+
     for bend in json_cfg:
         if bend.get('is_default', False):
             return bend['storage_id']
@@ -46,7 +47,9 @@ def get_archive_storage_id():
     
     json_file = cp.get('storage', 'storage_classes_file')
     f = open(json_file)
-    json_cfg = json.load(f)       
+    with open(json_file) as f:
+        json_cfg = json.load(f)    
+    
     for bend in json_cfg:
         if bend.get('is_archive', False):
             return bend['storage_id']

@@ -4,6 +4,7 @@ import stat
 import logging
 from collections import namedtuple
 
+from seahub.api2.endpoints.repo_archive import get_archive_storage_id
 import seaserv
 from seaserv import seafile_api, ccnet_api
 
@@ -181,8 +182,12 @@ def get_library_storages(request):
         logger.error(e)
         return []
 
+    
     all_storages = []
+    archive_storage_id = get_archive_storage_id()
     for storage in storage_classes:
+        if storage.storage_id == archive_storage_id:
+            continue
         storage_info = {
             'storage_id': storage.storage_id,
             'storage_name': storage.storage_name,

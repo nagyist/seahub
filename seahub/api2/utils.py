@@ -8,6 +8,7 @@ import json
 import re
 import logging
 import jwt
+from urllib.parse import quote
 import requests
 from collections import defaultdict
 from functools import wraps
@@ -337,7 +338,7 @@ def get_search_repos(username, org_id):
 def send_share_link_emails(emails, fs, shared_from):
     subject = _("A share link for you")
     for email in emails:
-        c = {'url': "%s?email=%s" % (fs.get_full_url(), email), 'shared_from': shared_from}
+        c = {'url': "%s?email=%s" % (fs.get_full_url(), quote(email)), 'shared_from': shared_from} 
         send_success = send_html_email_with_dj_template(
             email,
             subject=subject,

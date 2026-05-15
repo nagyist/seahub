@@ -169,3 +169,14 @@ def get_exdraw_asset_download_link(repo_id, parent_path, filename, username):
         return None
     download_link = gen_file_get_url(token, filename)
     return download_link
+
+def can_access_exdraw_asset(request, repo_id, path, file_uuid):
+    # login user
+    if request.user.username and check_folder_permission(request, repo_id, path):
+        return True
+    # share link
+    exdraw_share_session = request.session.get('exdraw_share_session')
+    if exdraw_share_session and exdraw_share_session.get('file_uuid') == file_uuid:
+        return True
+
+    return False

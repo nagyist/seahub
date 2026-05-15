@@ -19,7 +19,7 @@ from seahub.views import check_folder_permission
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.utils import api_error
 from seahub.api2.throttling import UserRateThrottle
-from seahub.exdraw.utils import is_valid_exdraw_access_token, get_exdraw_upload_link, get_exdraw_download_link, \
+from seahub.exdraw.utils import can_access_exdraw_asset, is_valid_exdraw_access_token, get_exdraw_upload_link, get_exdraw_download_link, \
     get_exdraw_file_uuid, gen_exdraw_access_token, gen_exdraw_image_parent_path, get_exdraw_asset_upload_link, \
     get_exdraw_asset_download_link
 
@@ -90,10 +90,15 @@ class ExdrawUploadFile(APIView):
     def post(self, request, file_uuid):
         # jwt permission check
         auth = request.headers.get('authorization', '').split()
-        if not is_valid_exdraw_access_token(auth, file_uuid):
+        is_valid, payload = is_valid_exdraw_access_token(auth, file_uuid, return_payload=True)
+        if not is_valid:
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
+        
+        if payload.get('permission') != 'rw':
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        
         file = request.FILES.get('file', None)
         if not file:
             error_msg = 'file not found.'
@@ -169,7 +174,12 @@ class ExdrawEditorCallBack(APIView):
     def post(self, request, file_uuid):
         # jwt permission check
         auth = request.headers.get('authorization', '').split()
-        if not is_valid_exdraw_access_token(auth, file_uuid):
+        is_valid, payload = is_valid_exdraw_access_token(auth, file_uuid, return_payload=True)
+        if not is_valid:
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        
+        if payload.get('permission') != 'rw':
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -216,6 +226,10 @@ class ExdrawUploadImage(APIView):
         auth = request.headers.get('authorization', '').split()
         is_valid, payload = is_valid_exdraw_access_token(auth, file_uuid, return_payload=True)
         if not is_valid:
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        
+        if payload.get('permission') != 'rw':
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -308,6 +322,13 @@ class ExdrawDownloadImage(APIView):
 
         repo_id = uuid_map.repo_id
         username = request.user.username
+
+        file_path = posixpath.join(uuid_map.parent_path, uuid_map.filename)
+        file_path = os.path.normpath(file_path)
+        if not can_access_exdraw_asset(request, repo_id, file_path, file_uuid):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
 
         parent_path = gen_exdraw_image_parent_path(file_uuid, repo_id, username)
         download_link = get_exdraw_asset_download_link(repo_id, parent_path, filename, username)

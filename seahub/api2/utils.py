@@ -40,7 +40,6 @@ from seahub.tags.models import FileUUIDMap
 
 JWT_PRIVATE_KEY = getattr(settings, 'JWT_PRIVATE_KEY', '')
 SEADOC_PRIVATE_KEY = getattr(settings, 'SEADOC_PRIVATE_KEY', '')
-SEAFILE_AI_SECRET_KEY = getattr(settings, 'SEAFILE_AI_SECRET_KEY', '')
 
 
 logger = logging.getLogger(__name__)
@@ -352,8 +351,6 @@ def is_valid_internal_jwt(auth, provided_key=None):
     key = JWT_PRIVATE_KEY
     if provided_key == 'seadoc':
         key = SEADOC_PRIVATE_KEY
-    if provided_key == 'seafile-ai':
-        key = SEAFILE_AI_SECRET_KEY
     
     if not auth or auth[0].lower()!= 'token' or len(auth) != 2:
         return False

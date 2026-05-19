@@ -258,7 +258,7 @@ class SeafileSaveFaceView(APIView):
 
     def post(self, request, repo_id):
         auth = request.headers.get('authorization', '').split()
-        if not is_valid_internal_jwt(auth):
+        if not is_valid_internal_jwt(auth, provided_key='seafile-ai'):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 

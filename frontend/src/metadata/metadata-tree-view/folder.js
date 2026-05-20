@@ -2,20 +2,19 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import ViewItem from './view';
-import ItemDropdownMenu from '../../components/dropdown-menu/metadata-item-dropdown-menu';
 import toaster from '../../components/toast';
 import NewView from './new-view';
 import InlineNameEditor from './inline-name-editor';
 import { useMetadata } from '../hooks';
 import { PRIVATE_FILE_TYPE } from '../../constants';
-import { Utils, isMobile } from '../../utils/utils';
+import { Utils } from '../../utils/utils';
 import TextTranslation from '../../utils/text-translation';
+import { baiduMapKey, gettext, googleMapKey } from '../../utils/constants';
 import { validateName } from '../utils/validate';
-import { METADATA_VIEWS_DRAG_DATA_KEY, METADATA_VIEWS_KEY, TREE_NODE_LEFT_INDENT, VIEW_TYPE, VIEWS_TYPE_FOLDER, VIEWS_TYPE_VIEW } from '../constants';
-import { getNewViewMenuItem, KEY_ADD_VIEW_MAP } from '../../components/dir-view-mode/dir-views/new-view-menu';
+import { METADATA_VIEWS_DRAG_DATA_KEY, METADATA_VIEWS_KEY, TREE_NODE_LEFT_INDENT, VIEW_TYPE, VIEW_TYPE_ICON, VIEW_TYPE_LABEL, VIEWS_TYPE_FOLDER, VIEWS_TYPE_VIEW } from '../constants';
 import Icon from '../../components/icon';
-import Tooltip from '@/components/tooltip';
-import { gettext } from '@/utils/constants';
+import CustomDropdown from '../../components/dropdown';
+import { ADD_VIEW_KEY, ADD_VIEW_OPTIONS } from '../../components/dir-view-mode/dir-views/views-more-operations';
 
 const ViewsFolder = ({
   idx, leftIndent, folder, currentPath, userPerm, canDeleteView, getFoldersNames, getMoveableFolders, generateNewViewDefaultName,
@@ -44,6 +43,72 @@ const ViewsFolder = ({
     return true;
   }, [canUpdate]);
 
+  const prepareAddView = useCallback((viewType) => {
+    setNewView({ key: viewType, type: viewType, default_name: generateNewViewDefaultName() });
+  }, [generateNewViewDefaultName]);
+
+  const clickMenu = useCallback((operationKey) => {
+    switch (operationKey) {
+      case ADD_VIEW_KEY.ADD_TABLE: {
+        prepareAddView(VIEW_TYPE.TABLE);
+        return;
+      }
+      case ADD_VIEW_KEY.ADD_GALLERY: {
+        prepareAddView(VIEW_TYPE.GALLERY);
+        return;
+      }
+      case ADD_VIEW_KEY.ADD_KANBAN: {
+        prepareAddView(VIEW_TYPE.KANBAN);
+        return;
+      }
+      case ADD_VIEW_KEY.ADD_MAP: {
+        prepareAddView(VIEW_TYPE.MAP);
+        return;
+      }
+      case ADD_VIEW_KEY.ADD_CARD: {
+        prepareAddView(VIEW_TYPE.CARD);
+        return;
+      }
+      case ADD_VIEW_KEY.ADD_STATISTICS: {
+        prepareAddView(VIEW_TYPE.STATISTICS);
+        return;
+      }
+      case TextTranslation.RENAME.key: {
+        setRenaming(true);
+        return;
+      }
+      case TextTranslation.DELETE.key: {
+        deleteFolder(folderId);
+        return;
+      }
+      default: {
+        return;
+      }
+    }
+  }, [prepareAddView, folderId, deleteFolder]);
+
+  const getNewViewSubMenu = useCallback(() => {
+    const options = [...ADD_VIEW_OPTIONS];
+    const hasMapOption = options.some((option) => option.type === VIEW_TYPE.MAP);
+
+    if (!hasMapOption && (baiduMapKey || googleMapKey)) {
+      options.push({ key: ADD_VIEW_KEY.ADD_MAP, type: VIEW_TYPE.MAP });
+    }
+
+    return options.map(({ key, type }) => ({
+      key,
+      label: VIEW_TYPE_LABEL[type],
+      icon_dom: <Icon symbol={VIEW_TYPE_ICON[type] || VIEW_TYPE.TABLE} className="metadata-view-icon" />,
+      onClick: () => clickMenu(key),
+    }));
+  }, [clickMenu]);
+
+  const getNewViewMenuItem = useCallback(() => ({
+    ...TextTranslation.ADD_VIEW,
+    subOpListHeader: gettext('New view'),
+    children: getNewViewSubMenu(),
+  }), [getNewViewSubMenu]);
+
   const isValid = useCallback((event) => {
     return event.dataTransfer.types.includes(METADATA_VIEWS_DRAG_DATA_KEY);
   }, []);
@@ -57,8 +122,14 @@ const ViewsFolder = ({
         TextTranslation.DELETE,
       );
     }
-    return menus;
-  }, [canUpdate]);
+    return menus.map(item => {
+      if (item === 'Divider') return item;
+      return {
+        ...item,
+        onClick: () => clickMenu(item.key)
+      };
+    });
+  }, [canUpdate, clickMenu, getNewViewMenuItem]);
 
   const onMouseEnter = useCallback(() => {
     if (freeze) return;
@@ -93,50 +164,6 @@ const ViewsFolder = ({
     }
     setExpanded(!expanded);
   }, [expanded, folderId, collapseFolder, expandFolder]);
-
-  const prepareAddView = useCallback((viewType) => {
-    setNewView({ key: viewType, type: viewType, default_name: generateNewViewDefaultName() });
-  }, [generateNewViewDefaultName]);
-
-  const clickMenu = useCallback((operationKey) => {
-    switch (operationKey) {
-      case KEY_ADD_VIEW_MAP.ADD_TABLE: {
-        prepareAddView(VIEW_TYPE.TABLE);
-        return;
-      }
-      case KEY_ADD_VIEW_MAP.ADD_GALLERY: {
-        prepareAddView(VIEW_TYPE.GALLERY);
-        return;
-      }
-      case KEY_ADD_VIEW_MAP.ADD_KANBAN: {
-        prepareAddView(VIEW_TYPE.KANBAN);
-        return;
-      }
-      case KEY_ADD_VIEW_MAP.ADD_MAP: {
-        prepareAddView(VIEW_TYPE.MAP);
-        return;
-      }
-      case KEY_ADD_VIEW_MAP.ADD_CARD: {
-        prepareAddView(VIEW_TYPE.CARD);
-        return;
-      }
-      case KEY_ADD_VIEW_MAP.ADD_STATISTICS: {
-        prepareAddView(VIEW_TYPE.STATISTICS);
-        return;
-      }
-      case TextTranslation.RENAME.key: {
-        setRenaming(true);
-        return;
-      }
-      case TextTranslation.DELETE.key: {
-        deleteFolder(folderId);
-        return;
-      }
-      default: {
-        return;
-      }
-    }
-  }, [prepareAddView, folderId, deleteFolder]);
 
   const onDragStart = useCallback((event) => {
     event.stopPropagation();
@@ -315,21 +342,12 @@ const ViewsFolder = ({
         </div>
         <div className="right-icon">
           {(highlight && folderMoreOperationMenus.length > 0) && (
-            <ItemDropdownMenu
+            <CustomDropdown
               target={`view-folder-dropdown-btn${idx}`}
-              item={{ name: 'metadata-folder' }}
-              menuClassname="metadata-views-dropdown-menu"
-              toggleChildren={
-                <>
-                  <Icon symbol="more-level" />
-                  <Tooltip target={`view-folder-dropdown-btn${idx}`}>{gettext('More operations')}</Tooltip>
-                </>
-              }
+              items={folderMoreOperationMenus}
+              menuClassName="metadata-views-dropdown-menu"
               freezeItem={freezeItem}
               unfreezeItem={unfreezeItem}
-              getMenuList={() => folderMoreOperationMenus}
-              onMenuItemClick={clickMenu}
-              menuStyle={isMobile ? { zIndex: 1050 } : {}}
             />
           )}
         </div>

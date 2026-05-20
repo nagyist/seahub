@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
-import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
+import React from 'react';
 import { gettext } from '../../../utils/constants';
+import CustomDropdown from '../../dropdown';
 
 import './comment-body-header.css';
+import Icon from '@/components/icon';
 
-const t = gettext;
+const getText = (type) => {
+  switch (type) {
+    case 'All comments':
+      return gettext('All comments');
+    case 'Resolved comments':
+      return gettext('Resolved comments');
+    case 'Unresolved comments':
+      return gettext('Unresolved comments');
+    default:
+      return gettext('All comments');
+  }
+};
 
 const CommentBodyHeader = ({ commentList = [], commentType, setCommentType }) => {
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
-
   let commentTip = null;
   if (commentList.length === 1) {
     commentTip = gettext('Total {comments_count} comment');
@@ -19,41 +29,33 @@ const CommentBodyHeader = ({ commentList = [], commentType, setCommentType }) =>
     commentTip = commentTip.replace('{comments_count}', commentList.length);
   }
 
-  const getText = (type) => {
-    switch (type) {
-      case 'All comments':
-        return gettext('All comments');
-      case 'Resolved comments':
-        return gettext('Resolved comments');
-      case 'Unresolved comments':
-        return gettext('Unresolved comments');
-      default:
-        return gettext('All comments');
-    }
-  };
+  const items = [
+    { key: 'All comments', label: gettext('All comments'), onClick: () => setCommentType(null, 'All comments') },
+    { key: 'Resolved comments', label: gettext('Resolved comments'), onClick: () => setCommentType(null, 'Resolved comments') },
+    { key: 'Unresolved comments', label: gettext('Unresolved comments'), onClick: () => setCommentType(null, 'Unresolved comments') },
+  ];
 
   return (
-    <div className='comments-panel-body__header'>
+    <div className="comments-panel-body__header">
       <div className="comments-types-count">
-        <div id="comment-types" className='comment-type'>
-          <Dropdown isOpen={isDropdownOpen} toggle={() => setDropdownOpen(!isDropdownOpen)}>
-            <DropdownToggle tag={'div'} caret className='d-flex align-items-center justify-content-center'>
-              <div id={'comment-type-controller'}>{getText(commentType)}</div>
-            </DropdownToggle>
-            <DropdownMenu className='sdoc-dropdown-menu sdoc-comment-filter-dropdown' container="comment-types">
-              <DropdownItem className='sdoc-dropdown-menu-item' tag={'div'} onClick={(e) => setCommentType(e, 'All comments')}>
-                {t('All comments')}
-              </DropdownItem>
-              <DropdownItem className='sdoc-dropdown-menu-item' tag={'div'} onClick={(e) => setCommentType(e, 'Resolved comments')}>{t('Resolved comments')}</DropdownItem>
-              <DropdownItem className='sdoc-dropdown-menu-item' tag={'div'} onClick={(e) => setCommentType(e, 'Unresolved comments')}>{t('Unresolved comments')}</DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
+        <div id="comment-types" className="comment-type">
+          <CustomDropdown
+            items={items}
+            trigger={(
+              <div id='comment-type-controller'>
+                {getText(commentType)}
+                <Icon symbol="down" className="ml-1" />
+              </div>
+            )}
+            triggerClassName="w-auto d-flex align-items-center justify-content-center"
+            menuClassName="sdoc-dropdown-menu sdoc-comment-filter-dropdown"
+            menuPortal={false}
+          />
         </div>
-        <div className='comment-count-tip'>{commentTip}</div>
+        <div className="comment-count-tip">{commentTip}</div>
       </div>
     </div>
   );
 };
 
 export default CommentBodyHeader;
-

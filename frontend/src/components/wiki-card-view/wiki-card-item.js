@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -16,7 +15,7 @@ import toaster from '../toast';
 import ConvertWikiDialog from '../dialog/convert-wiki-dialog';
 import PublishedWikiExtrance from '../published-wiki-entrance';
 import Icon from '../icon';
-import Tooltip from '../tooltip';
+import CustomDropdown from '../dropdown';
 
 dayjs.extend(relativeTime);
 
@@ -158,7 +157,7 @@ class WikiCardItem extends Component {
     const { owner_nickname, owner_avatar_url } = this.props.wiki;
     return (
       <div className="wiki-card-item-avatar-container">
-        <img className="wiki-card-item-avatar" src={owner_avatar_url} alt={owner_nickname}/>
+        <img className="wiki-card-item-avatar" src={owner_avatar_url} alt={owner_nickname} />
         <span className="wiki-card-item-owner text-truncate" title={owner_nickname}>{owner_nickname}</span>
       </div>
     );
@@ -233,6 +232,32 @@ class WikiCardItem extends Component {
       showDropdownMenu = true;
     }
 
+    const dropdownItems = [];
+    if (showRename) {
+      dropdownItems.push({ key: 'rename', label: gettext('Rename'), onClick: this.onRenameToggle });
+    }
+    if (showPublish && canPublishWiki) {
+      dropdownItems.push({ key: 'publish', label: gettext('Publish'), onClick: this.onPublishToggle });
+    }
+    if (showShare) {
+      dropdownItems.push({ key: 'share', label: gettext('Share'), onClick: this.onShareToggle });
+    }
+    if (showTransfer) {
+      dropdownItems.push({ key: 'transfer', label: gettext('Transfer'), onClick: this.onTransferToggle });
+    }
+    if (isOldVersion) {
+      dropdownItems.push({ key: 'unpublish', label: gettext('Unpublish'), onClick: this.onDeleteToggle });
+    }
+    if (showDelete) {
+      dropdownItems.push({ key: 'delete', label: gettext('Delete'), onClick: this.onDeleteToggle });
+    }
+    if (showWikiConvert) {
+      dropdownItems.push({ key: 'convert', label: gettext('Convert to new Wiki'), onClick: this.onConvertToggle });
+    }
+    if (showLeaveShare) {
+      dropdownItems.push({ key: 'leave', label: gettext('Leave'), onClick: this.onDeleteToggle });
+    }
+
     return (
       <>
         <div
@@ -246,47 +271,17 @@ class WikiCardItem extends Component {
           <div className="wiki-card-item-top d-flex align-items-center">
             <span className="wiki-icon"><Icon symbol="wiki" className="w-5 h-5" /></span>
             {this.state.customUrlString && <PublishedWikiExtrance wikiID={wiki.id} customURLPart={this.state.customUrlString} />}
-            {showDropdownMenu &&
-              <Dropdown id={`wiki-card-more-op-${idx}`} isOpen={this.state.isItemMenuShow} toggle={this.toggleDropDownMenu} onClick={this.onClickDropdown} className="ml-auto">
-                <DropdownToggle
-                  tag="i"
-                  role="button"
-                  className="op-icon op-icon-bg-light"
-                  aria-label={gettext('More operations')}
-                  data-toggle="dropdown"
-                  aria-expanded={this.state.isItemMenuShow}
-                  aria-haspopup={true}
-                  style={{ 'minWidth': '0' }}
-                >
-                  <Icon symbol="more-level" className="w-4 h-4" />
-                  <Tooltip target={`wiki-card-more-op-${idx}`}>{gettext('More operations')}</Tooltip>
-                </DropdownToggle>
-                <DropdownMenu className="dtable-dropdown-menu" container="body">
-                  {showRename &&
-                    <DropdownItem onClick={this.onRenameToggle}>{gettext('Rename')}</DropdownItem>}
-                  {showPublish && canPublishWiki &&
-                    <DropdownItem onClick={this.onPublishToggle}>{gettext('Publish')}</DropdownItem>}
-                  {showShare &&
-                    <DropdownItem onClick={this.onShareToggle}>{gettext('Share')}</DropdownItem>
-                  }
-                  {showTransfer &&
-                    <DropdownItem onClick={this.onTransferToggle}>{gettext('Transfer')}</DropdownItem>
-                  }
-                  {isOldVersion &&
-                    <DropdownItem onClick={this.onDeleteToggle}>{gettext('Unpublish')}</DropdownItem>
-                  }
-                  {showDelete &&
-                    <DropdownItem onClick={this.onDeleteToggle}>{gettext('Delete')}</DropdownItem>
-                  }
-                  {showWikiConvert &&
-                    <DropdownItem onClick={this.onConvertToggle}>{gettext('Convert to new Wiki')}</DropdownItem>
-                  }
-                  {showLeaveShare &&
-                    <DropdownItem onClick={this.onDeleteToggle}>{gettext('Leave')}</DropdownItem>
-                  }
-                </DropdownMenu>
-              </Dropdown>
-            }
+            {showDropdownMenu && (
+              <CustomDropdown
+                target={`wiki-card-more-op-${idx}`}
+                items={dropdownItems}
+                className="ml-auto"
+                triggerClassName="op-icon op-icon-bg-light"
+                menuClassName="dtable-dropdown-menu"
+                onToggle={this.toggleDropDownMenu}
+                onMenuHide={() => this.setState({ isItemMenuShow: false })}
+              />
+            )}
           </div>
           <div className="wiki-item-name text-truncate" title={wikiName} aria-label={wikiName}>{wikiName}</div>
           <div className="wiki-item-owner">
@@ -352,7 +347,7 @@ class WikiCardItem extends Component {
               itemName={wiki.name}
               itemPath={'/'}
               repoID={wiki.repo_id}
-              repoEncrypted={ false }
+              repoEncrypted={false}
               enableDirPrivateShare={true}
               toggleDialog={this.onShareToggle}
             />

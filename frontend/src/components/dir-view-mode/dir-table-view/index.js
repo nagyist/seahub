@@ -138,7 +138,7 @@ const DirTableView = ({
 
   const tableData = useMemo(() => {
     return transformDirentsToTableData(direntList, repoID);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [direntList, repoID, sortBy, sortOrder]);
 
   const enrichedColumns = useMemo(() => {
@@ -153,7 +153,7 @@ const DirTableView = ({
     };
 
     return createDirentTableColumns(repoID, repoInfo, visibleColumns, handleItemClickByRecord);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [repoID, repoInfo, columns, globalHiddenColumns, hiddenColumnKeys, columnWidthVersion, direntList, onItemClick]);
 
   const updateDirentDetail = useCallback((parentDir, fileName, update) => {
@@ -434,17 +434,24 @@ const DirTableView = ({
             className="w-100"
             isOpen={isSubMenuShown && option.key === hoveredOptionKey}
             toggle={toggleSubMenu}
-            onMouseMove={(e) => {e.stopPropagation();}}
+            onMouseMove={(e) => { e.stopPropagation(); }}
           >
             <DropdownToggle
               tag="span"
-              className="dropdown-item font-weight-normal rounded-0 d-flex align-items-center"
+              className="dropdown-item"
               onMouseEnter={(e) => toggleSubMenu(e, option.key)}
             >
               <span className="mr-auto">{option.value}</span>
               <Icon symbol="down" className="rotate-270" />
             </DropdownToggle>
-            <DropdownMenu>
+            <DropdownMenu
+              modifiers={[{
+                name: 'offset',
+                options: {
+                  offset: [-8, 12],
+                },
+              }]}
+            >
               {option.subOpList.map((subOp, subIndex) => {
                 if (subOp == 'Divider') {
                   return <DropdownItem key={subIndex} divider />;
@@ -472,7 +479,7 @@ const DirTableView = ({
             data-op={option.key}
             onClick={(e) => onOptionClick(e, option, dirent, selectedDirents)}
             onContextMenu={(e) => e.stopPropagation()}
-            onMouseMove={() => {setSubMenuShown(false);}}
+            onMouseMove={() => { setSubMenuShown(false); }}
           >
             {option.value}
           </button>

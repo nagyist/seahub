@@ -16,12 +16,12 @@ import ShareLinkPermissionSelect from '../../components/dialog/share-link-permis
 import ShareAdminLink from '../../components/dialog/share-admin-link';
 import CommonOperationConfirmationDialog from '../../components/dialog/common-operation-confirmation-dialog';
 import Selector from '../../components/single-selector';
-import SingleDropdownToolbar from '../../components/toolbar/single-dropdown-toolbar';
 import FixedWidthTable from '../../components/common/fixed-width-table';
 import MobileItemMenu from '../../components/mobile-item-menu';
 import OpElement from '../../components/op-element';
 import OpIcon from '../../components/op-icon';
 import Icon from '../../components/icon';
+import CustomDropdown from '../../components/dropdown';
 
 import '../../css/share-admin-links.css';
 
@@ -325,12 +325,12 @@ class Item extends Component {
             <td>
               <div className="d-flex align-items-center">
                 {!item.is_expired &&
-                <OpIcon
-                  className={`op-icon ${isOpIconShown ? '' : 'invisible'}`}
-                  symbol="link"
-                  title={gettext('View')}
-                  op={this.viewLink}
-                />
+                  <OpIcon
+                    className={`op-icon ${isOpIconShown ? '' : 'invisible'}`}
+                    symbol="link"
+                    title={gettext('View')}
+                    op={this.viewLink}
+                  />
                 }
                 <OpIcon
                   className={`op-icon ${isOpIconShown ? '' : 'invisible'}`}
@@ -359,30 +359,30 @@ class Item extends Component {
               <td>
                 <MobileItemMenu>
                   {(isPro && !item.is_expired) &&
-                  <DropdownItem className="mobile-menu-item" onClick={this.togglePermSelectDialog}>{gettext('Permission')}</DropdownItem>
+                    <DropdownItem className="mobile-menu-item" onClick={this.togglePermSelectDialog}>{gettext('Permission')}</DropdownItem>
                   }
                   {!item.is_expired &&
-                  <DropdownItem className="mobile-menu-item" onClick={this.viewLink}>{gettext('View')}</DropdownItem>
+                    <DropdownItem className="mobile-menu-item" onClick={this.viewLink}>{gettext('View')}</DropdownItem>
                   }
                   <DropdownItem className="mobile-menu-item" onClick={this.removeLink}>{gettext('Remove')}</DropdownItem>
                 </MobileItemMenu>
               </td>
             </tr>
             {isPermSelectDialogOpen &&
-            <ShareLinkPermissionSelect
-              currentPerm={currentPermission}
-              permissions={permissionOptions}
-              changePerm={this.changePerm}
-              toggleDialog={this.togglePermSelectDialog}
-            />
+              <ShareLinkPermissionSelect
+                currentPerm={currentPermission}
+                permissions={permissionOptions}
+                changePerm={this.changePerm}
+                toggleDialog={this.togglePermSelectDialog}
+              />
             }
           </Fragment>
         }
         {isLinkDialogOpen &&
-        <ShareAdminLink
-          link={item.link}
-          toggleDialog={this.toggleLinkDialog}
-        />
+          <ShareAdminLink
+            link={item.link}
+            toggleDialog={this.toggleLinkDialog}
+          />
         }
       </Fragment>
     );
@@ -590,8 +590,11 @@ class ShareAdminShareLinks extends Component {
                     <li className="nav-item">
                       <Link to={`${siteRoot}share-admin-share-links/`} className="nav-link active">
                         {gettext('Share Links')}
-                        <SingleDropdownToolbar
-                          opList={[{ 'text': gettext('Clean invalid share links'), 'onClick': this.toggleCleanInvalidShareLinksDialog }]}
+                        <CustomDropdown
+                          items={[{ key: 'clean-invalid-share-links', label: gettext('Clean invalid share links'), onClick: this.toggleCleanInvalidShareLinksDialog }]}
+                          trigger={<Icon symbol="down" className="down-icon" />}
+                          triggerClassName="ml-1 sf-dropdown-toggle"
+                          menuPortal={false}
                         />
                       </Link>
                     </li>

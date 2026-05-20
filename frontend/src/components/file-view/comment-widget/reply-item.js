@@ -1,10 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { SeafileCommentEditor, commentProcessor } from '@seafile/comment-editor';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { gettext } from '../../../utils/constants';
 import CommentDeletePopover from './comment-delete-popover';
-import Icon from '../../icon';
+import CustomDropdown from '../../dropdown';
 
 const { username } = window.app.pageOptions;
 
@@ -21,7 +20,6 @@ class ReplyItem extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      dropdownOpen: false,
       html: '',
       newReply: this.props.item.reply,
       editable: false,
@@ -36,12 +34,6 @@ class ReplyItem extends React.Component {
   componentWillReceiveProps(nextProps) {
     this.convertComment(nextProps.item.reply);
   }
-
-  toggleDropDownMenu = () => {
-    this.setState({
-      dropdownOpen: !this.state.dropdownOpen,
-    });
-  };
 
   convertComment = (mdFile) => {
     commentProcessor.process(mdFile).then((result) => {
@@ -80,6 +72,13 @@ class ReplyItem extends React.Component {
     }
   };
 
+  getMenuItems = () => {
+    return [
+      { key: 'delete', label: gettext('Delete'), onClick: this.toggleShowDeletePopover },
+      { key: 'edit', label: gettext('Edit'), onClick: this.toggleEditComment },
+    ];
+  };
+
   toggleShowDeletePopover = () => {
     this.setState({
       isShowDeletePopover: !this.state.isShowDeletePopover
@@ -93,7 +92,7 @@ class ReplyItem extends React.Component {
       return (
         <li className="seafile-comment-item" id={item.id}>
           <div className="seafile-comment-info mt-1">
-            <img className="avatar" src={item.avatar_url} alt=""/>
+            <img className="avatar" src={item.avatar_url} alt="" />
             <div className="comment-author-info">
               <div className="comment-author-name ellipsis">{item.user_name}</div>
               <div className="comment-author-time">{this.props.time}</div>
@@ -117,49 +116,18 @@ class ReplyItem extends React.Component {
     return (
       <li className={'seafile-comment-item'} id={item.id}>
         <div className="seafile-comment-info mt-1">
-          <img className="avatar" src={item.avatar_url} alt=""/>
+          <img className="avatar" src={item.avatar_url} alt="" />
           <div className="comment-author-info">
             <div className="comment-author-name ellipsis">{item.user_name}</div>
             <div className="comment-author-time">{this.props.time}</div>
           </div>
           {(item.user_email === username) &&
-          <Dropdown
-            isOpen={this.state.dropdownOpen}
-            size="sm"
-            className="seafile-comment-dropdown"
-            toggle={this.toggleDropDownMenu}
-            id={replyOpToolsId}
-          >
-            <DropdownToggle
-              tag="span"
-              role="button"
-              tabIndex="0"
-              className="seafile-comment-dropdown-btn sf-dropdown-toggle"
-              title={gettext('More operations')}
-              aria-label={gettext('More operations')}
-              data-toggle="dropdown"
-              aria-expanded={this.state.dropdownOpen}
-              aria-haspopup={true}
-            >
-              <Icon symbol="more-level" />
-            </DropdownToggle>
-            <DropdownMenu>
-              <DropdownItem
-                onClick={this.toggleShowDeletePopover}
-                className="delete-comment"
-                id={item.id}
-              >
-                {gettext('Delete')}
-              </DropdownItem>
-              <DropdownItem
-                onClick={this.toggleEditComment}
-                className="edit-comment"
-                id={item.id}
-              >
-                {gettext('Edit')}
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
+            <CustomDropdown
+              target={replyOpToolsId}
+              className="seafile-comment-dropdown"
+              items={this.getMenuItems()}
+              triggerClassName="seafile-comment-dropdown-btn sf-dropdown-toggle"
+            />
           }
         </div>
         <div

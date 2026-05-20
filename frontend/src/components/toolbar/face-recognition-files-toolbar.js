@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import ItemDropdownMenu from '../dropdown-menu/item-dropdown-menu';
 import { gettext } from '../../utils/constants';
 import { EVENT_BUS_TYPE, PRIVATE_COLUMN_KEY } from '../../metadata/constants';
 import { useFileOperations } from '../../hooks/file-operations';
@@ -14,6 +13,7 @@ import { getFileNameFromRecord } from '../../metadata/utils/cell';
 import { Utils } from '../../utils/utils';
 import Icon from '../icon';
 import OpIcon from '../op-icon';
+import CustomDropdown from '../dropdown';
 
 const FaceRecognitionFilesToolbar = ({ repoID }) => {
   const [selectedRecordIds, setSelectedRecordIds] = useState([]);
@@ -46,7 +46,7 @@ const FaceRecognitionFilesToolbar = ({ repoID }) => {
     return () => {
       unsubscribeSelectedFileIds && unsubscribeSelectedFileIds();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const unSelect = useCallback(() => {
@@ -80,22 +80,6 @@ const FaceRecognitionFilesToolbar = ({ repoID }) => {
       }
     });
   }, [eventBus, selectedRecords]);
-
-  const toolbarMenuOptions = useMemo(() => {
-    if (!selectedRecords.length) return [];
-    const metadataStatus = {
-      enableFaceRecognition: true,
-      enableGenerateDescription: getColumnByKey(metadataRef.current.columns, PRIVATE_COLUMN_KEY.FILE_DESCRIPTION) !== null,
-      enableTags
-    };
-    return buildGalleryToolbarMenuOptions(
-      selectedRecords,
-      readOnly,
-      metadataStatus,
-      isSomeone,
-      faceRecognitionPermission
-    );
-  }, [selectedRecords, enableTags, readOnly, faceRecognitionPermission, isSomeone]);
 
   const onMenuItemClick = useCallback((option) => {
     switch (option) {
@@ -156,6 +140,32 @@ const FaceRecognitionFilesToolbar = ({ repoID }) => {
     }
   }, [repoID, eventBus, readOnly, selectedRecords, selectedRecordIds]);
 
+  const toolbarMenuOptions = useMemo(() => {
+    if (!selectedRecords.length) return [];
+
+    const metadataStatus = {
+      enableFaceRecognition: true,
+      enableGenerateDescription: getColumnByKey(metadataRef.current.columns, PRIVATE_COLUMN_KEY.FILE_DESCRIPTION) !== null,
+      enableTags
+    };
+
+    let options = buildGalleryToolbarMenuOptions(
+      selectedRecords,
+      readOnly,
+      metadataStatus,
+      isSomeone,
+      faceRecognitionPermission
+    );
+
+    return options.map(item => {
+      if (item === 'Divider') return item;
+      return {
+        ...item,
+        onClick: () => onMenuItemClick(item.key)
+      };
+    });
+  }, [selectedRecords, enableTags, readOnly, isSomeone, faceRecognitionPermission, onMenuItemClick]);
+
   const length = selectedRecordIds.length;
   return (
     <div className="selected-dirents-toolbar">
@@ -173,14 +183,11 @@ const FaceRecognitionFilesToolbar = ({ repoID }) => {
       )}
       <OpIcon id="download-btn" symbol="download" className="cur-view-path-btn" tooltip={gettext('Download')} aria-label={gettext('Download')} op={handleDownload} />
       {!readOnly && <OpIcon id="delete-btn" symbol="delete1" className="cur-view-path-btn" tooltip={gettext('Delete')} aria-label={gettext('Delete')} op={deleteRecords} />}
-      <ItemDropdownMenu
-        ref={menuRef}
+      <CustomDropdown
         target="face-recognition-files-toolbar-menu-toggle"
-        item={{}}
-        toggleClass="cur-view-path-btn"
-        tooltip={gettext('More operations')}
-        onMenuItemClick={onMenuItemClick}
-        getMenuList={() => toolbarMenuOptions}
+        forwardedRef={menuRef}
+        items={toolbarMenuOptions}
+        triggerClassName="cur-view-path-btn"
       />
     </div>
   );

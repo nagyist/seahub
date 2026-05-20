@@ -5,7 +5,6 @@ import { Utils } from '../../utils/utils';
 import { seafileAPI } from '../../utils/seafile-api';
 import OpIcon from '../../components/op-icon';
 import OpElement from '../../components/op-element';
-import ItemDropdownMenu from '../dropdown-menu/item-dropdown-menu';
 import toaster from '../toast';
 import { Dirent } from '../../models';
 import { EVENT_BUS_TYPE } from '../common/event-bus-type';
@@ -14,6 +13,7 @@ import { lockFile, unlockFile, freezeDocument, exportDocx, exportSdoc, toggleSta
 import EventBus from '../common/event-bus';
 import { EVENT_BUS_TYPE as TABLE_EVENT_BUS_TYPE } from '@/metadata/constants';
 import Tooltip from '../tooltip';
+import CustomDropdown from '../dropdown';
 
 import '../../css/selected-dirents-toolbar.css';
 
@@ -127,16 +127,20 @@ class SelectedDirentsToolbar extends React.Component {
     const isContextmenu = true;
     let opList = Utils.getDirentOperationList(isRepoOwner, currentRepoInfo, dirent, isContextmenu);
     const list = ['Move', 'Copy', 'Delete', 'Download', 'Share'];
-    if (dirent.type == 'dir') {
-      opList = opList.filter((item, index) => {
-        return list.indexOf(item.key) == -1 && item != 'Divider';
-      });
-    } else {
-      opList = opList.filter((item, index) => {
-        return list.indexOf(item.key) == -1;
-      });
+    opList = opList.filter((item) => {
+      return list.indexOf(item.key) == -1;
+    });
+    // Remove leading orphaned dividers
+    while (opList.length > 0 && opList[0] === 'Divider') {
+      opList.shift();
     }
-    return opList;
+    return opList.map(item => {
+      if (item === 'Divider') return item;
+      return {
+        ...item,
+        onClick: () => this.onMenuItemClick(item.key)
+      };
+    });
   };
 
   onMenuItemClick = (operation) => {
@@ -384,13 +388,10 @@ class SelectedDirentsToolbar extends React.Component {
           />
         }
         {selectedLen === 1 &&
-          <ItemDropdownMenu
+          <CustomDropdown
             target="selected-item-dropdown-menu"
-            tooltip={gettext('More operations')}
-            item={this.props.selectedDirentList[0]}
-            toggleClass={'cur-view-path-btn'}
-            onMenuItemClick={this.onMenuItemClick}
-            getMenuList={this.getDirentMenuList}
+            items={this.getDirentMenuList(this.props.selectedDirentList[0])}
+            triggerClassName="cur-view-path-btn"
           />
         }
       </div>

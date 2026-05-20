@@ -14,12 +14,12 @@ import EmptyTip from '../../components/empty-tip';
 import UploadLink from '../../models/upload-link';
 import ShareAdminLink from '../../components/dialog/share-admin-link';
 import CommonOperationConfirmationDialog from '../../components/dialog/common-operation-confirmation-dialog';
-import SingleDropdownToolbar from '../../components/toolbar/single-dropdown-toolbar';
 import FixedWidthTable from '../../components/common/fixed-width-table';
 import MobileItemMenu from '../../components/mobile-item-menu';
 import OpElement from '../../components/op-element';
 import OpIcon from '../../components/op-icon';
 import Icon from '../../components/icon';
+import CustomDropdown from '../../components/dropdown';
 
 import '../../css/share-admin-links.css';
 
@@ -211,12 +211,12 @@ class Item extends Component {
             <td>
               <div className="d-flex align-items-center">
                 {!item.is_expired &&
-                <OpIcon
-                  className={`op-icon ${isOpIconShown ? '' : 'invisible'}`}
-                  symbol="link"
-                  title={gettext('View')}
-                  op={this.viewLink}
-                />
+                  <OpIcon
+                    className={`op-icon ${isOpIconShown ? '' : 'invisible'}`}
+                    symbol="link"
+                    title={gettext('View')}
+                    op={this.viewLink}
+                  />
                 }
                 <OpIcon
                   className={`op-icon ${isOpIconShown ? '' : 'invisible'}`}
@@ -248,10 +248,10 @@ class Item extends Component {
           </tr>
         }
         {isLinkDialogOpen &&
-        <ShareAdminLink
-          link={item.link}
-          toggleDialog={this.toggleLinkDialog}
-        />
+          <ShareAdminLink
+            link={item.link}
+            toggleDialog={this.toggleLinkDialog}
+          />
         }
       </Fragment>
     );
@@ -387,6 +387,7 @@ class ShareAdminUploadLinks extends Component {
   render() {
     const { items } = this.state;
     const selectedLinksLen = items.filter(item => item.isSelected).length;
+    const uploadLinkActions = [{ key: 'clean-invalid-upload-links', label: gettext('Clean invalid upload links'), onClick: this.toggleCleanInvalidUploadLinksDialog }];
     return (
       <Fragment>
         <div className="main-panel-center">
@@ -421,8 +422,11 @@ class ShareAdminUploadLinks extends Component {
                     <li className="nav-item">
                       <Link to={`${siteRoot}share-admin-upload-links/`} className="nav-link active">
                         {gettext('Upload Links')}
-                        <SingleDropdownToolbar
-                          opList={[{ 'text': gettext('Clean invalid upload links'), 'onClick': this.toggleCleanInvalidUploadLinksDialog }]}
+                        <CustomDropdown
+                          items={uploadLinkActions}
+                          trigger={<Icon symbol="down" className="down-icon" />}
+                          triggerClassName="ml-1 sf-dropdown-toggle"
+                          menuPortal={false}
                         />
                       </Link>
                     </li>
@@ -443,13 +447,13 @@ class ShareAdminUploadLinks extends Component {
           </div>
         </div>
         {this.state.isCleanInvalidUploadLinksDialogOpen &&
-        <CommonOperationConfirmationDialog
-          title={gettext('Clean invalid upload links')}
-          message={gettext('Are you sure you want to clean invalid upload links?')}
-          executeOperation={this.cleanInvalidUploadLinks}
-          confirmBtnText={gettext('Clean')}
-          toggleDialog={this.toggleCleanInvalidUploadLinksDialog}
-        />
+          <CommonOperationConfirmationDialog
+            title={gettext('Clean invalid upload links')}
+            message={gettext('Are you sure you want to clean invalid upload links?')}
+            executeOperation={this.cleanInvalidUploadLinks}
+            confirmBtnText={gettext('Clean')}
+            toggleDialog={this.toggleCleanInvalidUploadLinksDialog}
+          />
         }
         {this.state.isDeleteLinksDialogOpen && (
           <CommonOperationConfirmationDialog

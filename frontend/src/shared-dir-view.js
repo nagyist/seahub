@@ -1,13 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { createRoot } from 'react-dom/client';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { DropdownItem } from 'reactstrap';
 import dayjs from 'dayjs';
 import classnames from 'classnames';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import Account from './components/common/account';
-import { useGoFileserver, fileServerRoot, gettext, siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle,
-  thumbnailSizeForOriginal, thumbnailDefaultSize, thumbnailSizeForGrid } from './utils/constants';
+import {
+  useGoFileserver, fileServerRoot, gettext, siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle,
+  thumbnailSizeForOriginal, thumbnailDefaultSize, thumbnailSizeForGrid
+} from './utils/constants';
 import { Utils } from './utils/utils';
 import { seafileAPI } from './utils/seafile-api';
 import Loading from './components/loading';
@@ -34,6 +36,7 @@ import { formatWithTimezone } from './utils/time';
 import OpIcon from './components/op-icon';
 import OpElement from './components/op-element';
 import Icon from './components/icon';
+import CustomDropdown from './components/dropdown';
 
 import './css/layout.css';
 import './css/header.css';
@@ -72,7 +75,6 @@ class SharedDirView extends React.Component {
       path: relativePath,
       dirPath: '',
 
-      isDropdownMenuOpen: false,
       currentMode: mode,
 
       isAllItemsSelected: false,
@@ -196,12 +198,12 @@ class SharedDirView extends React.Component {
     let items = this.state.items.filter((item) => {
       return !item.is_dir &&
         (Utils.imageCheck(item.file_name) ||
-        (enableVideoThumbnail && Utils.videoCheck(item.file_name)) ||
-        (enablePDFThumbnail && Utils.pdfCheck(item.file_name))) &&
+          (enableVideoThumbnail && Utils.videoCheck(item.file_name)) ||
+          (enablePDFThumbnail && Utils.pdfCheck(item.file_name))) &&
         !item.encoded_thumbnail_src;
     });
     if (items.length == 0) {
-      return ;
+      return;
     }
 
     const len = items.length;
@@ -224,12 +226,6 @@ class SharedDirView extends React.Component {
       });
     };
     getThumbnail(0);
-  };
-
-  toggleDropdownMenu = () => {
-    this.setState({
-      isDropdownMenuOpen: !this.state.isDropdownMenuOpen
-    });
   };
 
   visitFolder = (folderPath) => {
@@ -322,47 +318,29 @@ class SharedDirView extends React.Component {
         {(!showDownloadIcon && !canUpload)
           ? <span className="path-item" title={zipped[zipped.length - 1].name}>{zipped[zipped.length - 1].name}</span>
           : (
-            <Dropdown isOpen={this.state.isDropdownMenuOpen} toggle={this.toggleDropdownMenu}>
-              <DropdownToggle
-                tag="div"
-                role="button"
-                tabIndex={0}
-                className="path-item path-item-dropdown-toggle"
-                onClick={this.toggleDropdownMenu}
-                onKeyDown={Utils.onKeyDown}
-                data-toggle="dropdown"
-              >
-                <span title={zipped[zipped.length - 1].name}>{zipped[zipped.length - 1].name}</span>
-                {canUpload ? (
-                  <span className="d-flex align-items-center">
-                    <Icon symbol="new" className="main-icon ml-2" />
-                    <Icon symbol="down" />
-                  </span>
-                ) : (
-                  <Icon symbol="down" className="ml-1" />
-                )}
-              </DropdownToggle>
-              <DropdownMenu className='position-fixed'>
-                {opList.map((item, index) => {
-                  if (item == 'Divider') {
-                    return <DropdownItem key={index} divider />;
-                  } else {
-                    return (
-                      <DropdownItem
-                        className="d-flex align-items-center"
-                        key={index}
-                        onClick={item.onClick}
-                        disabled={item.disabled || false}
-                        title={item.title || ''}
-                      >
-                        <Icon symbol={item.icon} className="dropdown-item-icon mr-2" />
-                        {item.text}
-                      </DropdownItem>
-                    );
-                  }
-                })}
-              </DropdownMenu>
-            </Dropdown>
+            <CustomDropdown
+              items={opList.map((item, index) => ({
+                key: item.text || index,
+                label: item.text,
+                icon_dom: item.icon ? <Icon symbol={item.icon} className="dropdown-item-icon mr-2" /> : undefined,
+                onClick: item.onClick,
+                disabled: item.disabled || false,
+              }))}
+              trigger={(
+                <>
+                  <span title={zipped[zipped.length - 1].name}>{zipped[zipped.length - 1].name}</span>
+                  {canUpload ? (
+                    <span className="d-flex align-items-center">
+                      <Icon symbol="new" className="main-icon ml-2" />
+                      <Icon symbol="down" />
+                    </span>
+                  ) : (
+                    <Icon symbol="down" className="ml-1" />
+                  )}
+                </>
+              )}
+              triggerClassName="path-item path-item-dropdown-toggle"
+            />
           )
         }
       </React.Fragment>
@@ -864,14 +842,14 @@ class SharedDirView extends React.Component {
               </div>
             </div>
             {isDesktop &&
-            <ResizeBar
-              resizeBarRef={this.resizeBarRef}
-              dragHandlerRef={this.dragHandlerRef}
-              resizeBarStyle={{ left: `calc(${sidePanelRate ? sidePanelRate * 100 + '%' : `${INIT_SIDE_PANEL_RATE * 100}%`} - 1px)` }}
-              dragHandlerStyle={{ height: DRAG_HANDLER_HEIGHT }}
-              onResizeMouseDown={this.onResizeMouseDown}
-              onResizeMouseOver={this.onResizeMouseOver}
-            />
+              <ResizeBar
+                resizeBarRef={this.resizeBarRef}
+                dragHandlerRef={this.dragHandlerRef}
+                resizeBarStyle={{ left: `calc(${sidePanelRate ? sidePanelRate * 100 + '%' : `${INIT_SIDE_PANEL_RATE * 100}%`} - 1px)` }}
+                dragHandlerStyle={{ height: DRAG_HANDLER_HEIGHT }}
+                onResizeMouseDown={this.onResizeMouseDown}
+                onResizeMouseOver={this.onResizeMouseOver}
+              />
             }
             <div className="main-panel cur-view-container" style={mainPanelStyle}>
               <div className="cur-view-path d-flex justify-content-between align-items-center">
@@ -894,12 +872,12 @@ class SharedDirView extends React.Component {
                           op={this.zipDownloadSelectedItems}
                         />
                         {(canDownload && loginUser && (loginUser !== sharedBy)) &&
-                        <OpIcon
-                          className="cur-view-path-btn ml-4"
-                          symbol="save"
-                          op={this.saveSelectedItems}
-                          title={gettext('Save')}
-                        />
+                          <OpIcon
+                            className="cur-view-path-btn ml-4"
+                            symbol="save"
+                            op={this.saveSelectedItems}
+                            title={gettext('Save')}
+                          />
                         }
                       </div>
                     )
@@ -962,14 +940,14 @@ class SharedDirView extends React.Component {
           </div>
         </div>
         {this.state.isZipDialogOpen &&
-        <ModalPortal>
-          <ZipDownloadDialog
-            token={token}
-            path={this.state.zipFolderPath}
-            target={this.state.selectedItems}
-            toggleDialog={this.closeZipDialog}
-          />
-        </ModalPortal>
+          <ModalPortal>
+            <ZipDownloadDialog
+              token={token}
+              path={this.state.zipFolderPath}
+              target={this.state.selectedItems}
+              toggleDialog={this.closeZipDialog}
+            />
+          </ModalPortal>
         }
         {this.state.isSaveSharedDirDialogShow &&
           <SaveSharedDirDialog
@@ -989,19 +967,19 @@ class SharedDirView extends React.Component {
           />
         )}
         {this.state.isImagePopupOpen &&
-        <ModalPortal>
-          <ImageDialog
-            repoID={repoID}
-            repoInfo={{ 'permission': 'r' }}
-            imageItems={this.state.imageItems}
-            imageIndex={this.state.imageIndex}
-            closeImagePopup={this.closeImagePopup}
-            moveToPrevImage={this.moveToPrevImage}
-            moveToNextImage={this.moveToNextImage}
-            enableRotate={false}
-            isCustomPermission={true}
-          />
-        </ModalPortal>
+          <ModalPortal>
+            <ImageDialog
+              repoID={repoID}
+              repoInfo={{ 'permission': 'r' }}
+              imageItems={this.state.imageItems}
+              imageIndex={this.state.imageIndex}
+              closeImagePopup={this.closeImagePopup}
+              moveToPrevImage={this.moveToPrevImage}
+              moveToNextImage={this.moveToNextImage}
+              enableRotate={false}
+              isCustomPermission={true}
+            />
+          </ModalPortal>
         }
       </MetadataAIOperationsProvider>
     );
@@ -1090,15 +1068,15 @@ class Content extends React.Component {
           <thead>
             <tr>
               {showDownloadIcon &&
-              <th width="3%" className="text-center">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  checked={isAllItemsSelected}
-                  onChange={this.props.toggleAllSelected}
-                  onKeyDown={Utils.onKeyDown}
-                />
-              </th>
+                <th width="3%" className="text-center">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    checked={isAllItemsSelected}
+                    onChange={this.props.toggleAllSelected}
+                    onKeyDown={Utils.onKeyDown}
+                  />
+                </th>
               }
               <th width="5%"></th>
               <th width={showDownloadIcon ? '50%' : '53%'}><a className="d-flex align-items-center table-sort-op" href="#" onClick={this.sortByName}>{gettext('Name')} {sortBy == 'name' && sortIcon}</a></th>
@@ -1234,12 +1212,12 @@ class Item extends React.Component {
           <td title={formatWithTimezone(item.last_modified)}>{dayjs(item.last_modified).fromNow()}</td>
           <td>
             {showDownloadIcon &&
-            <OpIcon
-              className={`op-icon ${isIconShown ? '' : ' invisible'}`}
-              symbol="download"
-              title={gettext('Download')}
-              op={this.zipDownloadFolder}
-            />
+              <OpIcon
+                className={`op-icon ${isIconShown ? '' : ' invisible'}`}
+                symbol="download"
+                title={gettext('Download')}
+                op={this.zipDownloadFolder}
+              />
             }
           </td>
         </tr>
@@ -1293,9 +1271,9 @@ class Item extends React.Component {
           <td title={formatWithTimezone(item.last_modified)}>{dayjs(item.last_modified).fromNow()}</td>
           <td>
             {showDownloadIcon &&
-            <a className={`op-icon ${isIconShown ? '' : ' invisible'}`} href={`${fileURL}&dl=1`} title={gettext('Download')} aria-label={gettext('Download')}>
-              <Icon symbol="download" />
-            </a>
+              <a className={`op-icon ${isIconShown ? '' : ' invisible'}`} href={`${fileURL}&dl=1`} title={gettext('Download')} aria-label={gettext('Download')}>
+                <Icon symbol="download" />
+              </a>
             }
           </td>
         </tr>

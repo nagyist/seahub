@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import ItemDropdownMenu from '../dropdown-menu/item-dropdown-menu';
 import { gettext } from '../../utils/constants';
 import { EVENT_BUS_TYPE, PRIVATE_COLUMN_KEY } from '../../metadata/constants';
 import TextTranslation from '../../utils/text-translation';
@@ -14,6 +13,7 @@ import { buildCardToolbarMenuOptions } from '../../metadata/utils/menu-builder';
 import { useMetadataStatus } from '../../hooks';
 import { getColumnByKey } from '../sf-table/utils/column';
 import Icon from '../icon';
+import CustomDropdown from '../dropdown';
 
 const CardFilesToolbar = ({ repoID, updateCurrentDirent }) => {
   const [selectedRecordIds, setSelectedRecordIds] = useState([]);
@@ -78,10 +78,6 @@ const CardFilesToolbar = ({ repoID, updateCurrentDirent }) => {
   const downloadRecords = useCallback(() => {
     eventBus && eventBus.dispatch(EVENT_BUS_TYPE.DOWNLOAD_RECORDS, selectedRecordIds);
   }, [eventBus, selectedRecordIds]);
-
-  const getMenuList = useCallback(() => {
-    return toolbarMenuOptions;
-  }, [toolbarMenuOptions]);
 
   const onMenuItemClick = useCallback((operation) => {
     switch (operation) {
@@ -152,6 +148,16 @@ const CardFilesToolbar = ({ repoID, updateCurrentDirent }) => {
     }
   }, [eventBus, records, selectedRecordIds, readOnly, repoID]);
 
+  const getMenuList = useCallback(() => {
+    return toolbarMenuOptions.map(item => {
+      if (item === 'Divider') return item;
+      return {
+        ...item,
+        onClick: () => onMenuItemClick(item.key)
+      };
+    });
+  }, [onMenuItemClick, toolbarMenuOptions]);
+
   useEffect(() => {
     const unsubscribeSelectedFileIds = eventBus && eventBus.subscribe(EVENT_BUS_TYPE.SELECT_RECORDS, (ids, metadataObj) => {
       metadataRef.current = metadataObj || [];
@@ -162,7 +168,7 @@ const CardFilesToolbar = ({ repoID, updateCurrentDirent }) => {
     return () => {
       unsubscribeSelectedFileIds && unsubscribeSelectedFileIds();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const length = selectedRecordIds.length;
@@ -204,14 +210,11 @@ const CardFilesToolbar = ({ repoID, updateCurrentDirent }) => {
       )}
 
       {length > 0 && (
-        <ItemDropdownMenu
+        <CustomDropdown
           target="card-files-toolbar-menu"
-          ref={menuRef}
-          item={{}}
-          toggleClass="cur-view-path-btn"
-          tooltip={gettext('More operations')}
-          onMenuItemClick={onMenuItemClick}
-          getMenuList={getMenuList}
+          forwardedRef={menuRef}
+          items={getMenuList()}
+          triggerClassName="cur-view-path-btn"
         />
       )}
     </div>

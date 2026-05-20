@@ -1,13 +1,12 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { gettext } from '../../utils/constants';
-import ItemDropdownMenu from '../dropdown-menu/metadata-item-dropdown-menu';
 import { EVENT_BUS_TYPE } from '../../metadata/constants';
 import TextTranslation from '../../utils/text-translation';
 import EventBus from '../common/event-bus';
 import OpElement from '../../components/op-element';
 import OpIcon from '../../components/op-icon';
 import Icon from '../icon';
-import Tooltip from '../tooltip';
+import CustomDropdown from '../dropdown';
 
 const AllTagsToolbar = () => {
   const [selectedTagIds, setSelectedTagIds] = useState([]);
@@ -24,18 +23,6 @@ const AllTagsToolbar = () => {
     eventBus && eventBus.dispatch(EVENT_BUS_TYPE.DELETE_TAGS, selectedTagIds);
   }, [selectedTagIds, eventBus]);
 
-  const getMenuList = useCallback(() => {
-    if (!canModify) return [];
-    const { MERGE_TAGS, NEW_CHILD_TAG } = TextTranslation;
-    const list = [];
-    if (selectedTagIds.length > 1) {
-      list.push(MERGE_TAGS);
-      return list;
-    }
-    list.push(NEW_CHILD_TAG);
-    return list;
-  }, [selectedTagIds, canModify]);
-
   const onMenuItemClick = useCallback((operation, e) => {
     switch (operation) {
       case TextTranslation.MERGE_TAGS.key: {
@@ -49,6 +36,26 @@ const AllTagsToolbar = () => {
     }
   }, [eventBus, selectedTagIds]);
 
+  const menuItems = useMemo(() => {
+    if (!canModify) {
+      return [];
+    }
+
+    if (selectedTagIds.length > 1) {
+      return [{
+        key: TextTranslation.MERGE_TAGS.key,
+        label: TextTranslation.MERGE_TAGS.value,
+        onClick: (e) => onMenuItemClick(TextTranslation.MERGE_TAGS.key, e),
+      }];
+    }
+
+    return [{
+      key: TextTranslation.NEW_CHILD_TAG.key,
+      label: TextTranslation.NEW_CHILD_TAG.value,
+      onClick: (e) => onMenuItemClick(TextTranslation.NEW_CHILD_TAG.key, e),
+    }];
+  }, [canModify, onMenuItemClick, selectedTagIds.length]);
+
   useEffect(() => {
     const unsubscribeSelectTags = eventBus && eventBus.subscribe(EVENT_BUS_TYPE.SELECT_TAGS, (ids) => {
       setSelectedTagIds(ids);
@@ -57,7 +64,7 @@ const AllTagsToolbar = () => {
     return () => {
       unsubscribeSelectTags && unsubscribeSelectTags();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const length = selectedTagIds.length;
@@ -83,18 +90,10 @@ const AllTagsToolbar = () => {
         />
       }
       {length > 0 && (
-        <ItemDropdownMenu
+        <CustomDropdown
           target="all-tags-more-operations-btn"
-          item={{}}
-          toggleClass={'cur-view-path-btn'}
-          toggleChildren={
-            <>
-              <Icon symbol="more-level" />
-              <Tooltip target="all-tags-more-operations-btn">{gettext('More operations')}</Tooltip>
-            </>
-          }
-          onMenuItemClick={onMenuItemClick}
-          getMenuList={getMenuList}
+          items={menuItems}
+          triggerClassName="cur-view-path-btn"
         />
       )}
     </div>

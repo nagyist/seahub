@@ -1,13 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classname from 'classnames';
-import { Modal, ModalHeader, ModalBody, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, TabPane, Nav, NavItem, NavLink, TabContent } from 'reactstrap';
+import { Modal, ModalHeader, ModalBody, TabPane, Nav, NavItem, NavLink, TabContent } from 'reactstrap';
 import { Utils } from './utils/utils';
 import { gettext } from './utils/constants';
 import { seafileAPI } from './utils/seafile-api';
 import Loading from './components/loading';
 import NoticeItem from './components/common/notice-item';
-import Icon from './components/icon';
+import OpIcon from './components/op-icon';
+import CustomDropdown from './components/dropdown';
 
 import './css/toolbar.css';
 import './css/search.css';
@@ -25,7 +26,6 @@ class UserNotificationsDialog extends React.Component {
       currentPage: 1,
       hasNextPage: false,
       items: [],
-      isItemMenuShow: false,
       activeTab: 'general',
     };
   }
@@ -170,8 +170,23 @@ class UserNotificationsDialog extends React.Component {
     });
   };
 
-  toggleDropDownMenu = () => {
-    this.setState({ isItemMenuShow: !this.state.isItemMenuShow });
+  getMenuItems = () => {
+    return [
+      { key: 'mark-all-read', label: gettext('Mark all read'), onClick: this.markAllRead },
+      { key: 'clear', label: gettext('Clear'), onClick: this.clearAll },
+    ];
+  };
+
+  renderHeaderRowBtn = () => {
+    return (
+      <div className="notification-header-operations">
+        <CustomDropdown
+          items={this.getMenuItems()}
+          menuPortal={false}
+        />
+        <OpIcon id="notification-dialog-close-btn" symbol="close" tooltip={gettext('Close')} className="notification-header-close op-icon" op={this.toggle} />
+      </div>
+    );
   };
 
   onHandleScroll = () => {
@@ -181,34 +196,6 @@ class UserNotificationsDialog extends React.Component {
     if (this.notificationTableRef.offsetHeight + this.notificationTableRef.scrollTop + 1 >= this.tableRef.offsetHeight) {
       this.getItems(this.state.currentPage + 1, true);
     }
-  };
-
-  renderHeaderRowBtn = () => {
-    return (
-      <div className="notification-header-close">
-        <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleDropDownMenu}>
-          <DropdownToggle
-            data-toggle="dropdown"
-            aria-expanded={this.state.isItemMenuShow}
-            className="notification-dropdown-toggle seahub-modal-btn border-0 p-0 bg-transparent"
-            aria-label={gettext('More operations')}
-          >
-            <span className="seahub-modal-btn-inner">
-              <Icon symbol="more-level" className="w-4 h-4" />
-            </span>
-          </DropdownToggle>
-          <DropdownMenu className="dtable-dropdown-menu large">
-            <DropdownItem onClick={this.markAllRead}>{gettext('Mark all read')}</DropdownItem>
-            <DropdownItem onClick={this.clearAll}>{gettext('Clear')}</DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
-        <button type="button" className="close seahub-modal-btn" aria-label={gettext('Close')} onClick={this.toggle}>
-          <span className="seahub-modal-btn-inner">
-            <Icon symbol="close" className="w-4 h-4" />
-          </span>
-        </button>
-      </div>
-    );
   };
 
   renderNoticeContent = (content) => {

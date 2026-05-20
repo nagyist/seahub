@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import ItemDropdownMenu from '../dropdown-menu/item-dropdown-menu';
 import { gettext } from '../../utils/constants';
 import { EVENT_BUS_TYPE } from '../../metadata/constants';
 import TextTranslation from '../../utils/text-translation';
@@ -7,6 +6,7 @@ import { getFileById, getFileName, getTagFileOperationList } from '../../tag/uti
 import OpIcon from '../../components/op-icon';
 import OpElement from '../../components/op-element';
 import Icon from '../icon';
+import CustomDropdown from '../dropdown';
 
 const TagFilesToolbar = ({ currentRepoInfo }) => {
   const [selectedFileIds, setSelectedFileIds] = useState([]);
@@ -39,19 +39,6 @@ const TagFilesToolbar = ({ currentRepoInfo }) => {
   const downloadTagFiles = useCallback(() => {
     eventBus && eventBus.dispatch(EVENT_BUS_TYPE.DOWNLOAD_TAG_FILES);
   }, [eventBus]);
-
-  const getMenuList = useCallback(() => {
-    if (selectedFilesLen > 1) return [];
-    const fileId = selectedFileIds[0];
-    const file = getFileById(tagFilesRef.current, fileId);
-    const fileName = getFileName(file);
-    const allOperations = getTagFileOperationList(fileName, currentRepoInfo, canModify);
-    const excludesOperations = ['Move', 'Copy', 'Delete', 'Download'];
-    const validOperations = allOperations.filter((item) => {
-      return excludesOperations.indexOf(item.key) == -1;
-    });
-    return validOperations;
-  }, [canModify, currentRepoInfo, selectedFileIds, selectedFilesLen]);
 
   const onMenuItemClick = useCallback((operation) => {
     switch (operation) {
@@ -93,6 +80,24 @@ const TagFilesToolbar = ({ currentRepoInfo }) => {
         break;
     }
   }, [eventBus]);
+
+  const getMenuList = useCallback(() => {
+    if (selectedFilesLen > 1) return [];
+    const fileId = selectedFileIds[0];
+    const file = getFileById(tagFilesRef.current, fileId);
+    const fileName = getFileName(file);
+    const allOperations = getTagFileOperationList(fileName, currentRepoInfo, canModify);
+    const excludesOperations = ['Move', 'Copy', 'Delete', 'Download'];
+    const validOperations = allOperations.filter((item) => excludesOperations.indexOf(item.key) == -1)
+      .map((item) => {
+        if (item === 'Divider') return item;
+        return {
+          ...item,
+          onClick: () => onMenuItemClick(item.key)
+        };
+      });
+    return validOperations;
+  }, [canModify, currentRepoInfo, onMenuItemClick, selectedFileIds, selectedFilesLen]);
 
   useEffect(() => {
     const unsubscribeSelectedFileIds = eventBus && eventBus.subscribe(EVENT_BUS_TYPE.SELECT_TAG_FILES, (ids, tagFiles) => {
@@ -142,13 +147,10 @@ const TagFilesToolbar = ({ currentRepoInfo }) => {
         </>
       }
       {selectedFilesLen === 1 &&
-        <ItemDropdownMenu
+        <CustomDropdown
           target="tag-files-toolbar-menu"
-          item={{}}
-          toggleClass={'cur-view-path-btn'}
-          tooltip={gettext('More operations')}
-          onMenuItemClick={onMenuItemClick}
-          getMenuList={getMenuList}
+          items={getMenuList()}
+          triggerClassName="cur-view-path-btn"
         />
       }
     </div>

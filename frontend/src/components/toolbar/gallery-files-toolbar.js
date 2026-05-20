@@ -4,7 +4,6 @@ import { EVENT_BUS_TYPE, PRIVATE_COLUMN_KEY } from '../../metadata/constants';
 import RowUtils from '../sf-table/utils/row';
 import { buildGalleryToolbarMenuOptions } from '../../metadata/utils/menu-builder';
 import TextTranslation from '../../utils/text-translation';
-import ItemDropdownMenu from '../dropdown-menu/item-dropdown-menu';
 import { getFileNameFromRecord } from '../../metadata/utils/cell/core';
 import { Utils } from '../../utils/utils';
 import { openInNewTab, openParentFolder } from '../../metadata/utils/file';
@@ -13,6 +12,7 @@ import { useMetadataStatus } from '../../hooks';
 import { getColumnByKey } from '../../metadata/utils/column';
 import Icon from '../icon';
 import OpIcon from '../op-icon';
+import CustomDropdown from '../dropdown';
 
 const GalleryFilesToolbar = () => {
   const [selectedRecordIds, setSelectedRecordIds] = useState([]);
@@ -46,26 +46,10 @@ const GalleryFilesToolbar = () => {
       unsubscribeSelectedFileIds && unsubscribeSelectedFileIds();
       unsubscribeMetadata && unsubscribeMetadata();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const records = useMemo(() => selectedRecordIds.map(id => RowUtils.getRecordById(id, metadataRef.current)).filter(Boolean) || [], [selectedRecordIds]);
-
-  const toolbarMenuOptions = useMemo(() => {
-    if (!records.length) return [];
-    const metadataStatus = {
-      enableFaceRecognition,
-      enableGenerateDescription: getColumnByKey(metadataRef.current.columns, PRIVATE_COLUMN_KEY.FILE_DESCRIPTION) !== null,
-      enableTags
-    };
-    return buildGalleryToolbarMenuOptions(
-      records,
-      readOnly,
-      metadataStatus,
-      null,
-      faceRecognitionPermission
-    );
-  }, [records, readOnly, enableFaceRecognition, enableTags, faceRecognitionPermission]);
 
   const onMenuItemClick = useCallback((operation) => {
     switch (operation) {
@@ -117,6 +101,30 @@ const GalleryFilesToolbar = () => {
     }
   }, [repoID, records, eventBus, readOnly]);
 
+  const toolbarMenuOptions = useMemo(() => {
+    if (!records.length) return [];
+    const metadataStatus = {
+      enableFaceRecognition,
+      enableGenerateDescription: getColumnByKey(metadataRef.current.columns, PRIVATE_COLUMN_KEY.FILE_DESCRIPTION) !== null,
+      enableTags
+    };
+    let options = buildGalleryToolbarMenuOptions(
+      records,
+      readOnly,
+      metadataStatus,
+      null,
+      faceRecognitionPermission
+    );
+
+    return options.map(item => {
+      if (item === 'Divider') return item;
+      return {
+        ...item,
+        onClick: () => onMenuItemClick(item.key)
+      };
+    });
+  }, [records, enableFaceRecognition, enableTags, readOnly, faceRecognitionPermission, onMenuItemClick]);
+
   // Individual button handlers
   const onMoveClick = useCallback(() => {
     eventBus.dispatch(EVENT_BUS_TYPE.TOGGLE_MOVE_DIALOG, records);
@@ -164,17 +172,11 @@ const GalleryFilesToolbar = () => {
       {!readOnly && <OpIcon id="delete-btn" symbol="delete1" className="cur-view-path-btn" tooltip={gettext('Delete')} aria-label={gettext('Delete')} op={onDeleteClick} />}
 
       {toolbarMenuOptions.length > 0 && (
-        <ItemDropdownMenu
-          ref={menuRef}
+        <CustomDropdown
           target="gallery-files-toolbar-menu-toggle"
-          toggleClass="cur-view-path-btn"
-          tooltip={gettext('More operations')}
-          item={{}}
-          freezeItem={() => {}}
-          unfreezeItem={() => {}}
-          toggleItemMenuShow={() => {}}
-          getMenuList={() => toolbarMenuOptions}
-          onMenuItemClick={onMenuItemClick}
+          forwardedRef={menuRef}
+          items={toolbarMenuOptions}
+          triggerClassName="cur-view-path-btn"
         />
       )}
     </div>

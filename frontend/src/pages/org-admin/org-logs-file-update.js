@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { orgAdminAPI } from '../../utils/org-admin-api';
 import { siteRoot, gettext, lang } from '../../utils/constants';
 import { Utils } from '../../utils/utils';
@@ -9,7 +8,7 @@ import toaster from '../../components/toast';
 import OrgLogsFileUpdateEvent from '../../models/org-logs-file-update';
 import ModalPortal from '../../components/modal-portal';
 import FileUpdateDetailDialog from '../../components/dialog/org-logs-file-update-detail';
-import Icon from '../../components/icon';
+import CustomDropdown from '../../components/dropdown';
 import '../../css/org-logs.css';
 
 dayjs.locale(lang);
@@ -174,8 +173,6 @@ class FileUpdateItem extends React.Component {
       highlight: false,
       showMenu: false,
       isItemMenuShow: false,
-      userDropdownOpen: false,
-      repoDropdownOpen: false,
     };
   }
 
@@ -197,10 +194,6 @@ class FileUpdateItem extends React.Component {
     }
   };
 
-  toggleUserDropdown = () => {
-    this.setState({ userDropdownOpen: !this.state.userDropdownOpen });
-  };
-
   renderUser = (fileEvent) => {
     if (!fileEvent.user_email) {
       return gettext('Anonymous User');
@@ -209,23 +202,17 @@ class FileUpdateItem extends React.Component {
     return (
       <span>
         <a href={siteRoot + 'org/useradmin/info/' + fileEvent.user_email + '/'}>{fileEvent.user_name}</a>{' '}
-        <Dropdown size='sm' isOpen={this.state.userDropdownOpen} toggle={this.toggleUserDropdown}
-          className={this.state.highlight ? '' : 'vh'} tag="span">
-          <DropdownToggle tag="span" className="op-icon sf-dropdown-toggle">
-            <Icon symbol="more-level" />
-          </DropdownToggle>
-          <DropdownMenu>
-            <DropdownItem onClick={this.props.filterUser.bind(this, fileEvent.user_email)}>
-              {gettext('Only Show')}{' '}<span className="font-weight-bold">{fileEvent.user_name}</span>
-            </DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
+        <CustomDropdown
+          className={this.state.highlight ? '' : 'vh'}
+          items={[{
+            key: 'only-show',
+            label: <>{gettext('Only Show')} <span className="font-weight-bold">{fileEvent.user_name}</span></>,
+            onClick: this.props.filterUser.bind(this, fileEvent.user_email),
+          }]}
+          triggerClassName="op-icon sf-dropdown-toggle"
+        />
       </span>
     );
-  };
-
-  toggleRepoDropdown = () => {
-    this.setState({ repoDropdownOpen: !this.state.repoDropdownOpen });
   };
 
   renderRepo = (fileEvent) => {
@@ -236,19 +223,16 @@ class FileUpdateItem extends React.Component {
     return (
       <span>
         <span>{repoName}</span>
-        { fileEvent.repo_name &&
-          <Dropdown size='sm' isOpen={this.state.repoDropdownOpen} toggle={this.toggleRepoDropdown}
-            className={this.state.highlight ? '' : 'vh'} >
-            <DropdownToggle tag="span" className="op-icon sf-dropdown-toggle">
-              <Icon symbol="more-level" />
-            </DropdownToggle>
-            <DropdownMenu>
-              <DropdownItem size='sm' onClick={this.props.filterRepo.bind(this, fileEvent.repo_name)}>
-                {gettext('Only Show')}{' '}
-                <span className="font-weight-bold">{fileEvent.repo_name}</span>
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
+        {fileEvent.repo_name &&
+          <CustomDropdown
+            className={this.state.highlight ? '' : 'vh'}
+            items={[{
+              key: 'only-show',
+              label: <>{gettext('Only Show')} <span className="font-weight-bold">{fileEvent.repo_name}</span></>,
+              onClick: this.props.filterRepo.bind(this, fileEvent.repo_name),
+            }]}
+            triggerClassName="op-icon sf-dropdown-toggle"
+          />
         }
       </span>
     );

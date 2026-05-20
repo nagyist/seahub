@@ -11,7 +11,6 @@ import Loading from '../../components/loading';
 import EmptyTip from '../../components/empty-tip';
 import SharedRepoListView from '../../components/shared-repo-list-view/shared-repo-list-view';
 import SortOptionsDialog from '../../components/dialog/sort-options';
-import SingleDropdownToolbar from '../../components/toolbar/single-dropdown-toolbar';
 import ModalPortal from '../../components/modal-portal';
 import CreateRepoDialog from '../../components/dialog/create-repo-dialog';
 import ShareRepoDialog from '../../components/dialog/share-repo-dialog';
@@ -19,6 +18,7 @@ import { LIST_MODE } from '../../components/dir-view-mode/constants';
 import ViewModes from '../../components/view-modes';
 import ReposSortMenu from '../../components/sort-menu';
 import Icon from '../../components/icon';
+import CustomDropdown from '../../components/dropdown';
 
 const propTypes = {
   currentViewMode: PropTypes.string,
@@ -93,7 +93,7 @@ class SharedWithAll extends React.Component {
     let isExist = false;
     let repoIndex = 0;
     let repoList = this.state.repoList;
-    for (let i = 0; i < repoList.length; i ++) {
+    for (let i = 0; i < repoList.length; i++) {
       if (repo.repo_id === repoList[i].repo_id) {
         isExist = true;
         repoIndex = i;
@@ -104,7 +104,7 @@ class SharedWithAll extends React.Component {
       this.state.repoList.splice(repoIndex, 1);
     }
 
-    let newRepoList = this.state.repoList.map(item => {return item;});
+    let newRepoList = this.state.repoList.map(item => { return item; });
     newRepoList.unshift(repo);
     this.setState({ repoList: newRepoList });
   };
@@ -230,6 +230,10 @@ class SharedWithAll extends React.Component {
     const { inAllLibs = false, currentViewMode: propCurrentViewMode } = this.props;
     const { sortBy, sortOrder, currentViewMode: stateCurrentViewMode } = this.state;
     const currentViewMode = inAllLibs ? propCurrentViewMode : stateCurrentViewMode;
+    const addLibraryItems = [
+      { key: 'share-existing-libraries', label: gettext('Share existing libraries'), onClick: this.onSelectRepoToggle },
+      { key: 'new-library', label: gettext('New Library'), onClick: this.onCreateRepoToggle }
+    ];
 
     if (inAllLibs) {
       return (
@@ -255,19 +259,23 @@ class SharedWithAll extends React.Component {
                 <span className="d-flex align-items-center"><Icon symbol="share-with-all" className="role-icon" /></span>
                 <span className="library-list-title">{gettext('Shared with all')}</span>
                 {canAddPublicRepo &&
-                <SingleDropdownToolbar
-                  withPlusIcon={true}
-                  opList={[
-                    { 'text': gettext('Share existing libraries'), 'onClick': this.onSelectRepoToggle },
-                    { 'text': gettext('New Library'), 'onClick': this.onCreateRepoToggle }
-                  ]}
-                />
+                  <CustomDropdown
+                    items={addLibraryItems}
+                    trigger={(
+                      <>
+                        <Icon symbol="new" className="new-icon" />
+                        <Icon symbol="down" className="down-icon" />
+                      </>
+                    )}
+                    triggerClassName="ml-2 sf-dropdown-combined-toggle"
+                    menuPortal={false}
+                  />
                 }
               </div>
               {Utils.isDesktop() && (
                 <div className="d-flex align-items-center">
                   <ViewModes currentViewMode={currentViewMode} switchViewMode={this.switchViewMode} />
-                  <ReposSortMenu className="ml-2" sortBy={sortBy} sortOrder={sortOrder} onSelectSortOption={this.onSelectSortOption}/>
+                  <ReposSortMenu className="ml-2" sortBy={sortBy} sortOrder={sortOrder} onSelectSortOption={this.onSelectSortOption} />
                 </div>
               )}
               {this.renderSortIconInMobile()}
@@ -278,12 +286,12 @@ class SharedWithAll extends React.Component {
           </div>
         </div>
         {this.state.isSortOptionsDialogOpen &&
-        <SortOptionsDialog
-          toggleDialog={this.toggleSortOptionsDialog}
-          sortBy={this.state.sortBy}
-          sortOrder={this.state.sortOrder}
-          sortItems={this.sortItems}
-        />
+          <SortOptionsDialog
+            toggleDialog={this.toggleSortOptionsDialog}
+            sortBy={this.state.sortBy}
+            sortOrder={this.state.sortOrder}
+            sortItems={this.sortItems}
+          />
         }
         {this.state.isCreateRepoDialogOpen && (
           <ModalPortal>

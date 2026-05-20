@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { gettext, permission } from '../../utils/constants';
+import { permission } from '../../utils/constants';
 import TextTranslation from '../../utils/text-translation';
-import ItemDropdownMenu from '../dropdown-menu/item-dropdown-menu';
-import { Utils, isMobile } from '../../utils/utils';
+import { Utils } from '../../utils/utils';
 import OpIcon from '../../components/op-icon';
 import Icon from '../icon';
+import CustomDropdown from '../dropdown';
 
 const LEFT_INDENT = 20;
 
@@ -157,10 +157,6 @@ class TreeNodeView extends React.Component {
     this.props.unfreezeItem();
   };
 
-  onMenuItemClick = (operation, event, node) => {
-    this.props.onMenuItemClick(operation, node);
-  };
-
   onItemMouseDown = (event) => {
     event.stopPropagation();
     if (event.button === 2) {
@@ -238,6 +234,16 @@ class TreeNodeView extends React.Component {
     }
 
     return menuList;
+  };
+
+  getMenuList = () => {
+    return this.calculateMenuList(this.props.node).map(item => {
+      if (item === 'Divider') return item;
+      return {
+        ...item,
+        onClick: () => this.props.onMenuItemClick(item.key, this.props.node)
+      };
+    });
   };
 
   renderChildren = () => {
@@ -333,15 +339,11 @@ class TreeNodeView extends React.Component {
           </div>
           {isNodeMenuShow && ((userPerm === 'rw' || permission || isCustomPermission) && this.state.isShowOperationMenu) && (
             <div className="right-icon">
-              <ItemDropdownMenu
+              <CustomDropdown
                 target={`tree-node-dropdown-btn-${idx}`}
-                tooltip={gettext('More operations')}
-                item={this.props.node}
-                getMenuList={this.calculateMenuList}
-                onMenuItemClick={this.onMenuItemClick}
+                items={this.getMenuList()}
                 freezeItem={this.props.freezeItem}
                 unfreezeItem={this.unfreezeItem}
-                menuStyle={isMobile ? { zIndex: 1050 } : {}}
               />
             </div>
           )}

@@ -210,7 +210,8 @@ class SearchUserTest(BaseTestCase):
         resp = self.client.get(self.endpoint + '?q=%s' % contact_email)
         json_resp = json.loads(resp.content)
         self.assertEqual(200, resp.status_code)
-        assert json_resp['users'][0]['email'] == contact_email
+        assert json_resp['users'][0]['email'] == self.admin.username
+        assert json_resp['users'][0]['contact_email'] == contact_email
 
         # search with invalid email & has no contacts
         resp = self.client.get(self.endpoint + '?q=%s' % contact_email[:6])

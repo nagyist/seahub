@@ -15,6 +15,8 @@ from seahub.api2.utils import api_error
 
 from seahub.views import check_folder_permission
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
+from seahub.search.utils import get_invisible_repos_info_by_username, is_invisible_path
+from seahub.utils import is_org_context
 
 try:
     from seahub.settings import CLOUD_MODE
@@ -57,6 +59,9 @@ class SearchFile(APIView):
         folder_list = []
 
         searched_files = seafile_api.search_files(repo_id, q)
+        username = request.user.username
+        org_id = request.user.org.org_id if is_org_context(request) else None
+        repo_id_to_invisible_paths = get_invisible_repos_info_by_username(username, org_id)
 
         for searched_file in searched_files:
             # {'path': '/123.docx', 'size': 19446, 'mtime': 1604130882, 'is_dir': False}
@@ -64,6 +69,9 @@ class SearchFile(APIView):
             dirent_info['path'] = searched_file.path
             dirent_info['size'] = searched_file.size
             dirent_info['mtime'] = timestamp_to_isoformat_timestr(searched_file.mtime)
+
+            if is_invisible_path(repo_id_to_invisible_paths, repo_id, searched_file.path):
+                    continue
 
             if searched_file.is_dir:
                 dirent_info['type'] = 'folder'

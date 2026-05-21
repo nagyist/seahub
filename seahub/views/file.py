@@ -1474,6 +1474,11 @@ def view_shared_file(request, fileshare):
         ret_dict['name'] = name
         ret_dict['share_link_username'] = username
         send_file_access_msg(request, repo, path, 'web')
+        request.session['exdraw_share_session'] = {
+            'file_uuid': file_uuid,
+            'permission': exdraw_perm,
+            'excalidraw_access_token': ret_dict['excalidraw_access_token'],
+        }
 
     if ENABLE_OFFICE_WEB_APP and fileext in OFFICE_WEB_APP_FILE_EXTENSION or \
             ENABLE_ONLYOFFICE and fileext in ONLYOFFICE_FILE_EXTENSION:

@@ -99,7 +99,7 @@ from seahub.views.file import get_file_view_path_and_perm, send_file_access_msg,
 if HAS_FILE_SEARCH or HAS_FILE_SEASEARCH:
     from seahub.search.utils import search_files, get_search_repos_map, SEARCH_FILEEXT, ai_search_files, \
         RELATED_REPOS_PREFIX, SEARCH_REPOS_LIMIT, RELATED_REPOS_CACHE_TIMEOUT, format_repos, is_invisible_path, \
-        get_invisible_repos_info_by_username, USER_REPO_INVISIBLE_PATH_PREFIX, USER_REPO_INVISIBLE_PATH_CACHE_TIMEOUT
+        get_invisible_repos_info_by_username
 from seahub.utils import transfer_repo
 import seahub.settings as settings
 from seahub.settings import THUMBNAIL_EXTENSION, THUMBNAIL_ROOT, \
@@ -584,12 +584,7 @@ class Search(APIView):
 
         username = request.user.username
         org_id = request.user.org.org_id if is_org_context(request) else None
-        invisible_path_cache_key = normalize_cache_key(username, USER_REPO_INVISIBLE_PATH_PREFIX)
-        repo_id_to_invisible_paths = cache.get(invisible_path_cache_key)
-        if repo_id_to_invisible_paths is None:
-            repo_id_to_invisible_paths = get_invisible_repos_info_by_username(username, org_id)
-            cache.set(invisible_path_cache_key, repo_id_to_invisible_paths, USER_REPO_INVISIBLE_PATH_CACHE_TIMEOUT)
-
+        repo_id_to_invisible_paths = get_invisible_repos_info_by_username(username, org_id)
         if HAS_FILE_SEARCH:
             repo_id_map = {}
             # check recourse and permissin when search in a single repo

@@ -182,6 +182,7 @@
             googleMapId: '{{ google_map_id }}',
             enableThumbnailServer: {% if enable_thumbnal_server %} true {% else %} false {% endif %},
             enableStorageClasses: {% if enable_storage_classes %} true {% else %} false {% endif %},
+            canUseGlobalAddressBook: {% if user.permissions.can_use_global_address_book %} true {% else %} false {% endif %}
         }
      };
 </script>

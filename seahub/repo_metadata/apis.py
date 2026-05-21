@@ -15,6 +15,7 @@ from seahub.api2.utils import api_error, to_python_boolean
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.authentication import TokenAuthentication
 from seahub.repo_metadata.models import RepoMetadata, RepoMetadataViews
+from seahub.utils import is_org_context
 from seahub.views import check_folder_permission
 from seahub.repo_metadata.utils import add_init_metadata_task, recognize_faces, gen_unique_id, init_metadata, \
     get_unmodifiable_columns, can_read_metadata, init_faces, \
@@ -30,6 +31,7 @@ from seahub.file_tags.models import FileTags
 from seahub.repo_tags.models import RepoTags
 from seahub.settings import MD_FILE_COUNT_LIMIT
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
+from seahub.search.utils import get_invisible_repos_info_by_username, is_invisible_path
 
 logger = logging.getLogger(__name__)
 
@@ -407,6 +409,15 @@ class MetadataRecords(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        username = request.user.username
+        org_id = request.user.org.org_id if is_org_context(request) else None
+        repo_id_to_invisible_paths = get_invisible_repos_info_by_username(username, org_id)
+        results['results'] = [
+            r for r in results.get('results', [])
+            if not is_invisible_path(repo_id_to_invisible_paths, repo_id,
+                                    r.get('_parent_dir', '') + r.get('_name', ''))
+        ]
+
         return Response(results)
 
     def put(self, request, repo_id):
@@ -579,6 +590,18 @@ class MetadataRecord(APIView):
                 error_msg = 'Record not found'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+        username = request.user.username
+        org_id = request.user.org.org_id if is_org_context(request) else None
+        repo_id_to_invisible_paths = get_invisible_repos_info_by_username(username, org_id)
+        results = [
+            r for r in query_result.get('results', [])
+            if not is_invisible_path(repo_id_to_invisible_paths, repo_id,
+                                    r.get('_parent_dir', '') + r.get('_name', ''))
+        ]
+        if not results:
+            error_msg = 'Record not found'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
         return Response(query_result)
 
     def put(self, request, repo_id):

@@ -5,17 +5,19 @@ import os
 import requests
 import jwt
 import time
+from django.core.cache import cache
 from urllib.parse import urljoin
 
 from seahub.settings import EVENTS_CONFIG_FILE, CLOUD_MODE, SECRET_KEY, SEAFEVENTS_SERVER_URL
 from seahub.utils.file_types import IMAGE, DOCUMENT, SPREADSHEET, SVG, PDF, \
         MARKDOWN, VIDEO, AUDIO, TEXT, SEADOC
-from seahub.utils import get_user_repos
+from seahub.utils import get_user_repos, normalize_cache_key
 from seahub.base.templatetags.seahub_tags import email2nickname, \
     email2contact_email
 from seahub.constants import REPO_TYPE_WIKI
 from seahub.utils import HAS_FILE_SEARCH
 from seahub.utils.db_api import SeafileDB
+from seahub import settings
 
 import seaserv
 from seaserv import seafile_api, ccnet_api
@@ -25,8 +27,8 @@ SEARCH_REPOS_LIMIT = 200
 RELATED_REPOS_PREFIX = 'RELATED_REPOS_'
 RELATED_REPOS_CACHE_TIMEOUT = 2 * 60 * 60
 
-USER_REPO_INVISIBLE_PATH_PREFIX = 'REPO_INVISIBLE_PATH_'
-USER_REPO_INVISIBLE_PATH_CACHE_TIMEOUT = 24 * 60 * 60
+USER_REPO_INVISIBLE_PATH_PREFIX = getattr(settings, 'USER_REPO_INVISIBLE_PATH_PREFIX', 'REPO_INVISIBLE_PATH_')
+USER_REPO_INVISIBLE_PATH_CACHE_TIMEOUT = getattr(settings, 'USER_REPO_INVISIBLE_PATH_CACHE_TIMEOUT', 24 * 60 * 60)
 
 os.environ['EVENTS_CONFIG_FILE'] = EVENTS_CONFIG_FILE
 
@@ -305,6 +307,11 @@ def get_invisible_repos_info_by_username(username, org_id):
     """
     return: a dict of invisible repo paths, like {repo_id: {invisible_path1, invisible_path2, ...}, ...}
     """
+    invisible_path_cache_key = normalize_cache_key(username, USER_REPO_INVISIBLE_PATH_PREFIX)
+    repo_id_to_invisible_path_set = cache.get(invisible_path_cache_key)
+    if repo_id_to_invisible_path_set is not None:
+        return repo_id_to_invisible_path_set
+    
     seafile_db_api = SeafileDB()
     repo_id_to_invisible_path_set = {}
 
@@ -319,7 +326,7 @@ def get_invisible_repos_info_by_username(username, org_id):
         repo_id_to_invisible_path_set[repo_id] = path_set
 
     repo_id_to_invisible_path_set.update(group_repo_to_invisible_path_set)
-
+    cache.set(invisible_path_cache_key, repo_id_to_invisible_path_set, USER_REPO_INVISIBLE_PATH_CACHE_TIMEOUT)
     return repo_id_to_invisible_path_set
 
 

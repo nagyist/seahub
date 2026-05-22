@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { gettext, username, isPro, siteRoot } from '../../../utils/constants';
+import { gettext, username, isPro, siteRoot, enableSeafileAI } from '../../../utils/constants';
 import { Utils } from '../../../utils/utils';
 import TreeSection from '../../tree-section';
 import LibSettingsDialog from '../../dialog/lib-settings';
@@ -10,6 +10,7 @@ import { TAB } from '../../../constants/repo-setting-tabs';
 import LibraryMoreOperations from './library-more-operations';
 import WatchUnwatchFileChanges from './watch-unwatch-file-changes';
 import Item from './item';
+import { CHAT_MODE } from '../constants';
 
 import './index.css';
 
@@ -53,6 +54,10 @@ const DirOthers = ({ userPerm, repoID, currentRepoInfo, currentMode, updateRepoI
     eventBus.dispatch(EVENT_BUS_TYPE.SWITCH_TO_HISTORY_VIEW);
   };
 
+  const handleChatClick = () => {
+    eventBus.dispatch(EVENT_BUS_TYPE.SWITCH_TO_CHAT_VIEW);
+  };
+
   const isDesktop = Utils.isDesktop();
   const isRepoOwner = owner_email == username;
   const isDepartmentAdmin = owner_email.indexOf('@seafile_group') != -1 && is_admin;
@@ -61,6 +66,14 @@ const DirOthers = ({ userPerm, repoID, currentRepoInfo, currentMode, updateRepoI
 
   return (
     <TreeSection title={gettext('Others')} className="dir-others">
+      {enableSeafileAI && (
+        <Item
+          text={gettext('Chat')}
+          iconSymbol="new-chat"
+          op={handleChatClick}
+          isActive={currentMode === CHAT_MODE}
+        />
+      )}
       {enableMonitorRepo && (
         <WatchUnwatchFileChanges
           repo={currentRepoInfo}

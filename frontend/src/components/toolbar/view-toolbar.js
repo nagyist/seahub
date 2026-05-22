@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { TAGS_MODE, TRASH_MODE } from '../dir-view-mode/constants';
+import { TAGS_MODE, TRASH_MODE, CHAT_MODE } from '../dir-view-mode/constants';
 import { ALL_TAGS_ID } from '../../tag/constants';
 import { useMetadata } from '../../metadata/hooks';
 import { VIEW_TYPE } from '../../metadata/constants';
@@ -12,11 +12,16 @@ import FaceRecognitionFilesToolbar from './face-recognition-files-toolbar';
 import KanbanFilesToolbar from './kanban-files-toolbar';
 import CardFilesToolbar from './card-files-toolbar';
 import TrashToolbar from './trash-toolbar';
+import ChatToolbar from './chat-toolbar';
 
 const ViewToolbar = ({ repoID, repoInfo, mode, path, viewId, updateCurrentDirent }) => {
   const { idViewMap } = useMetadata();
   const view = useMemo(() => idViewMap[viewId], [viewId, idViewMap]);
   const type = view?.type;
+
+  if (mode === CHAT_MODE) {
+    return <ChatToolbar />;
+  }
 
   if (mode === TRASH_MODE) {
     return <TrashToolbar />;

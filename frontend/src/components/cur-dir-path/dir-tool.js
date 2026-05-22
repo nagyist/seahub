@@ -5,9 +5,10 @@ import ViewModes from '../../components/view-modes';
 import SortMenu from '../../components/sort-menu';
 import MetadataViewToolBar from '../../metadata/components/view-toolbar';
 import HistoryViewToolbar from '../dir-view-mode/dir-history-view/history-view-toolbar';
+import ChatToolbar from '../toolbar/chat-toolbar';
 import { PRIVATE_FILE_TYPE } from '../../constants';
 import { ALL_TAGS_ID } from '../../tag/constants';
-import { HISTORY_MODE, LIST_MODE, TRASH_MODE, TABLE_MODE } from '../dir-view-mode/constants';
+import { HISTORY_MODE, LIST_MODE, TRASH_MODE, TABLE_MODE, CHAT_MODE } from '../dir-view-mode/constants';
 import TagsTableSearcher from '../../tag/views/all-tags/tags-table/tags-table-searcher';
 import AllTagsSortSetter from '../../tag/views/all-tags/tags-table/all-tags-sort-setter';
 import TagFilesViewToolbar from '../../tag/components/tag-files-view-toolbar';
@@ -105,6 +106,15 @@ class DirTool extends React.Component {
       return (
         <div className="dir-tool">
           <HistoryViewToolbar />
+        </div>
+      );
+    }
+
+    const isChatView = currentMode === CHAT_MODE;
+    if (isChatView) {
+      return (
+        <div className="dir-tool">
+          <ChatToolbar />
         </div>
       );
     }

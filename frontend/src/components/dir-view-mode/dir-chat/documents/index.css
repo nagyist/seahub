@@ -1,0 +1,133 @@
+.sea-ticket-chat-documents-wrapper {
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sea-ticket-chat-documents-wrapper.full-content {
+  width: 100%;
+}
+
+.sea-ticket-chat-documents-wrapper .sea-ticket-chat-documents {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.sea-ticket-chat-documents-wrapper:not(.full-content) .sea-ticket-chat-documents {
+  border-left: 1px solid #eee;
+}
+
+/* header */
+.sea-ticket-chat-documents .sea-ticket-chat-documents-header {
+  height: 41px;
+  width: calc(100% - 16px);
+  margin-left: 16px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.sea-qa-customize-select.sea-qa-ai-chat-selector-display.sea-ticket-chat-documents-selector {
+  padding: 0 8px;
+  height: 30px;
+}
+
+.sea-qa-customize-select.sea-qa-ai-chat-selector-display.sea-ticket-chat-documents-selector .selected-option-show {
+  display: flex;
+  align-items: center;
+}
+
+.sea-ticket-chat-documents-selector-editor .popover {
+  width: fit-content;
+  min-width: 240px;
+  max-width: 400px;
+  min-height: auto;
+}
+
+.sea-ticket-chat-documents-selector-editor .option-editor-container {
+  min-height: auto;
+}
+
+.sea-ticket-chat-documents-selector-editor .option-editor-container .option-editor-content {
+  min-height: auto;
+}
+
+.sea-qa-customize-select.sea-qa-ai-chat-selector-display.sea-ticket-chat-documents-selector .sea-ticket-chat-documents-divider {
+  height: 12px;
+  width: 1px;
+  background-color: #eaeaea;
+}
+
+.sea-qa-customize-select.sea-qa-ai-chat-selector-display.sea-ticket-chat-documents-selector .sea-ticket-chat-document-name {
+  font-weight: 500;
+}
+
+.sea-ticket-chat-documents .sea-ticket-chat-documents-header .sea-ticket-chat-documents-header-btns {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* body */
+.sea-ticket-chat-documents .sea-ticket-chat-documents-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* document */
+.sea-ticket-chat-documents .sea-ticket-chat-document-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 57px;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid #d1d9e0;
+  background-color: #f6f8fa;
+  gap: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sea-ticket-chat-documents .sea-ticket-chat-document-info .sea-ticket-chat-document-info-content {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+
+.sea-ticket-chat-documents .sea-ticket-chat-document-info .sea-ticket-chat-document-info-size {
+  color: #59636e;
+  font-size: 12px;
+}
+
+.sea-ticket-chat-documents .sea-ticket-chat-document-info .sea-ticket-chat-document-btns {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.sea-ticket-chat-documents .sea-ticket-chat-document-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.sea-ticket-chat-documents .sea-ticket-chat-document-md .sf-slate-viewer-scroll-container .sf-slate-article-content {
+  padding-left: 16px;
+  overflow-x: hidden;
+}
+
+.sea-ticket-chat-documents .sea-ticket-chat-document-md .sf-slate-viewer-scroll-container .article {
+  padding: 24px 8px !important;
+  max-width: 100%;
+}

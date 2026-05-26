@@ -8,7 +8,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import Account from './components/common/account';
 import {
   useGoFileserver, fileServerRoot, gettext, siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle,
-  thumbnailSizeForOriginal, thumbnailDefaultSize, thumbnailSizeForGrid
+  thumbnailSizeForOriginal, thumbnailDefaultSize, thumbnailSizeForGrid, enableThumbnailServer
 } from './utils/constants';
 import { Utils } from './utils/utils';
 import { seafileAPI } from './utils/seafile-api';
@@ -196,7 +196,11 @@ class SharedDirView extends React.Component {
 
   getThumbnails = (thumbnailSize) => {
     let items = this.state.items.filter((item) => {
-      return !item.is_dir &&
+      if (item.is_dir) {
+        return false;
+      }
+      const fileExt = Utils.getFileExtension(item.file_name, true);
+      return !(fileExt === 'avif' && !enableThumbnailServer) &&
         (Utils.imageCheck(item.file_name) ||
           (enableVideoThumbnail && Utils.videoCheck(item.file_name)) ||
           (enablePDFThumbnail && Utils.pdfCheck(item.file_name))) &&

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import urlJoin from 'url-join';
-import { gettext, siteRoot, mediaUrl, enableVideoThumbnail, enablePDFThumbnail, fileServerRoot } from '../../utils/constants';
+import { gettext, siteRoot, mediaUrl, enableVideoThumbnail, enablePDFThumbnail, fileServerRoot, enableThumbnailServer } from '../../utils/constants';
 import { Utils } from '../../utils/utils';
 import { imageThumbnailCenter, videoThumbnailCenter } from '../../utils/thumbnail-center';
 import Icon from '../icon';
@@ -57,6 +57,10 @@ class DirentGridItem extends React.Component {
 
   checkGenerateThumbnail = (dirent) => {
     if (this.props.repoEncrypted || dirent.encoded_thumbnail_src || dirent.encoded_thumbnail_src === '') {
+      return false;
+    }
+    const fileExt = Utils.getFileExtension(dirent.name, true);
+    if (fileExt === 'avif' && !enableThumbnailServer) {
       return false;
     }
     if (enableVideoThumbnail && Utils.videoCheck(dirent.name)) {

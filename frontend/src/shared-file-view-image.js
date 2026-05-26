@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import SharedFileView from './components/shared-file-view/shared-file-view';
 import SharedFileViewTip from './components/shared-file-view/shared-file-view-tip';
 import { Utils } from './utils/utils';
-import { gettext, siteRoot } from './utils/constants';
+import { gettext, siteRoot, enableThumbnailServer } from './utils/constants';
 import Icon from './components/icon';
 
 import './css/image-file-view.css';
@@ -41,7 +41,8 @@ class FileContent extends React.Component {
     // some types of images, the browser can't preview them directly, so we need to get thumbnails for them
     let thumbnailURL = '';
     const fileExtList = ['tif', 'tiff', 'psd', 'heic'];
-    if (!repoEncrypted && fileExtList.includes(fileExt)) {
+    const shouldUseThumbnail = fileExtList.includes(fileExt) || (fileExt === 'avif' && enableThumbnailServer);
+    if (!repoEncrypted && shouldUseThumbnail) {
       thumbnailURL = siteRoot + 'thumbnail/' + sharedToken + '/' + thumbnailSizeForOriginal + Utils.encodePath(filePath) + '?mtime=' + lastModified;
     }
 

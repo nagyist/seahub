@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import FileNameFormatter from './file-name-formatter';
 import { Utils } from '../../../utils/utils';
-import { siteRoot, thumbnailDefaultSize } from '../../../utils/constants';
+import { siteRoot, thumbnailDefaultSize, enableThumbnailServer } from '../../../utils/constants';
 import { getParentDirFromRecord, getFileMTimeFromRecord } from '../../utils/cell';
 import { checkIsDir } from '../../utils/row';
 import EventBus from '@/components/common/event-bus';
@@ -28,6 +28,10 @@ const FileName = ({ repoID, record, className: propsClassName, value, hideIcon =
     }
     const defaultIconUrl = Utils.getFileIconUrl(value);
     if (Utils.imageCheck(value)) {
+      const fileExt = Utils.getFileExtension(value, true);
+      if (fileExt === 'avif' && !enableThumbnailServer) {
+        return { iconUrl: defaultIconUrl, defaultIconUrl };
+      }
       const path = Utils.encodePath(Utils.joinPath(parentDir, value));
       const thumbnail = `${siteRoot}thumbnail/${repoID}/${thumbnailDefaultSize}${path}?mtime=${getFileMTimeFromRecord(record)}`;
       return { iconUrl: thumbnail, defaultIconUrl };

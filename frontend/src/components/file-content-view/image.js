@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Utils } from '../../utils/utils';
-import { gettext, siteRoot } from '../../utils/constants';
+import { gettext, siteRoot, enableThumbnailServer } from '../../utils/constants';
 import Icon from '../icon';
 
 import '../../css/image-file-view.css';
@@ -58,7 +58,8 @@ class FileContent extends React.Component {
     // only for 'file view'. not for 'history/trash file view'
     let thumbnailURL = '';
     const fileExtList = ['tif', 'tiff', 'psd', 'psb', 'heic'];
-    if (!repoEncrypted && fileExtList.includes(fileExt)) {
+    const shouldUseThumbnail = fileExtList.includes(fileExt) || (fileExt === 'avif' && enableThumbnailServer);
+    if (!repoEncrypted && shouldUseThumbnail) {
       thumbnailURL = siteRoot + 'thumbnail/' + repoID + '/' + thumbnailSizeForOriginal + Utils.encodePath(filePath) + '?mtime=' + lastModificationTime;
     }
 

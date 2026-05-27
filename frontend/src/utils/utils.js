@@ -115,6 +115,7 @@ export const Utils = {
     'tiff': 'pic.png',
     'webp': 'pic.png',
     'jfif': 'pic.png',
+    'avif': 'pic.png',
     'draw': 'draw.png',
     'exdraw': 'draw.png',
 
@@ -145,7 +146,7 @@ export const Utils = {
       return false;
     }
     const file_ext = filename.substr(filename.lastIndexOf('.') + 1).toLowerCase();
-    const image_exts = ['gif', 'jpeg', 'jpg', 'png', 'ico', 'bmp', 'tif', 'tiff', 'jfif', 'heic', 'webp', 'svg'];
+    const image_exts = ['gif', 'jpeg', 'jpg', 'png', 'ico', 'bmp', 'tif', 'tiff', 'jfif', 'heic', 'webp', 'svg', 'avif'];
     return image_exts.includes(file_ext);
   },
 

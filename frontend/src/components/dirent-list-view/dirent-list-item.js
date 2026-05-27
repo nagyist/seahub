@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { DropdownItem } from 'reactstrap';
 import urlJoin from 'url-join';
-import { gettext, siteRoot, mediaUrl, enableVideoThumbnail, enablePDFThumbnail } from '../../utils/constants';
+import { gettext, siteRoot, mediaUrl, enableVideoThumbnail, enablePDFThumbnail, enableThumbnailServer } from '../../utils/constants';
 import { Utils } from '../../utils/utils';
 import URLDecorator from '../../utils/url-decorator';
 import { imageThumbnailCenter, videoThumbnailCenter } from '../../utils/thumbnail-center';
@@ -163,6 +163,10 @@ class DirentListItem extends React.Component {
 
   checkGenerateThumbnail = (dirent) => {
     if (this.props.repoEncrypted || dirent.encoded_thumbnail_src || dirent.encoded_thumbnail_src === '') {
+      return false;
+    }
+    const fileExt = Utils.getFileExtension(dirent.name, true);
+    if (fileExt === 'avif' && !enableThumbnailServer) {
       return false;
     }
     if (enableVideoThumbnail && Utils.videoCheck(dirent.name)) {

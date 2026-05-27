@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { getCellValueByColumn, getFileMTimeFromRecord, getFileNameFromRecord, getParentDirFromRecord } from '../../../utils/cell';
 import { checkIsDir } from '../../../utils/row';
 import { Utils } from '../../../../utils/utils';
-import { siteRoot, thumbnailDefaultSize } from '../../../../utils/constants';
+import { siteRoot, thumbnailDefaultSize, enableThumbnailServer } from '../../../../utils/constants';
 import { CellType } from '../../../constants';
 import { KeyCodes } from '../../../../constants';
 
@@ -71,9 +71,14 @@ const Text = ({ record, column, onCommit }) => {
   if (isDir) {
     iconUrl = Utils.getFolderIconUrl();
   } else if (Utils.imageCheck(filename)) {
-    const path = Utils.encodePath(Utils.joinPath(parentDir, filename));
-    const repoID = window.sfMetadataStore.repoId;
-    iconUrl = `${siteRoot}thumbnail/${repoID}/${thumbnailDefaultSize}${path}?mtime=${getFileMTimeFromRecord(record)}`;
+    const fileExt = Utils.getFileExtension(filename, true);
+    if (fileExt === 'avif' && !enableThumbnailServer) {
+      iconUrl = Utils.getFileIconUrl(filename);
+    } else {
+      const path = Utils.encodePath(Utils.joinPath(parentDir, filename));
+      const repoID = window.sfMetadataStore.repoId;
+      iconUrl = `${siteRoot}thumbnail/${repoID}/${thumbnailDefaultSize}${path}?mtime=${getFileMTimeFromRecord(record)}`;
+    }
   }
 
   if (type == CellType.FILE_NAME) {

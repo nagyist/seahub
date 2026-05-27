@@ -1,10 +1,8 @@
 import React, { useCallback, useRef, useEffect } from 'react';
-import classnames from 'classnames';
 import { gettext } from '../../../../utils/constants';
 import { seafileAPI } from '../../../../utils/seafile-api';
 import AttachmentObject from '../models/attachment_object';
 import SyncSelector from '../components/selector/sync-selector';
-import ErrorBoundary from './error-boundary';
 
 const TEXT_ATTACHMENT_SUFFIXES = new Set([
   '.txt', '.md', '.markdown', '.json', '.yaml', '.yml', '.csv', '.tsv',
@@ -130,16 +128,15 @@ const LibraryFilesSelector = ({ repoID, value: attachments = [], onChange: props
   }, [attachments, repoID, propsOnChange]);
 
   return (
-    <ErrorBoundary>
-      <SyncSelector
-        icon="plus"
-        className={classnames('sea-qa-ask-chat-records-selector', { 'disabled': disabled })}
-        value={Array.isArray(attachments) ? attachments.map((t) => t.key) : []}
-        onSearch={onSearch}
-        onChange={onChange}
-        title={gettext('Add files')}
-      />
-    </ErrorBoundary>
+    <SyncSelector
+      icon="plus"
+      className="attach-files-btn"
+      title={gettext('Search files in this library')}
+      value={attachments.map((att) => att.key)}
+      onChange={onChange}
+      onSearch={onSearch}
+      disabled={disabled}
+    />
   );
 };
 

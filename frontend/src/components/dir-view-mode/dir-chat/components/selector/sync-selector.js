@@ -1,18 +1,22 @@
 import React, { useCallback, useRef, useState } from 'react';
+import classnames from 'classnames';
 import SyncOptionsEditor from '../../../../sync-option-editor';
 import { gettext } from '../../../../../utils/constants';
 import SelectorDisplay from './selector-display';
 
 import './index.css';
 
-const SyncSelector = ({ icon, className, value, title, onChange, children, onSearch }) => {
+const SyncSelector = ({ icon, className, value, title, onChange, children, onSearch, disabled = false }) => {
   const [isShowSelector, setIsShowSelector] = useState(false);
 
   const ref = useRef();
 
   const openSelector = useCallback(() => {
+    if (disabled) {
+      return;
+    }
     setIsShowSelector(true);
-  }, []);
+  }, [disabled]);
 
   const handleChange = useCallback((newValue) => {
     onChange && onChange(newValue);
@@ -28,7 +32,7 @@ const SyncSelector = ({ icon, className, value, title, onChange, children, onSea
         innerRef={ref}
         onClick={openSelector}
         icon={icon}
-        className={className}
+        className={classnames(className, { disabled })}
         tip={title}
         tipPlacement="top-start"
       >

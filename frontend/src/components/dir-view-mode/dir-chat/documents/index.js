@@ -28,11 +28,11 @@ const Documents = () => {
             <Icon symbol="ai-file" className="mr-2" />
             <select
               className="form-control form-control-sm"
-              value={currentDocument.url}
-              onChange={(event) => setCurrentDocument(documents.find((item) => item.url === event.target.value) || currentDocument)}
+              value={currentDocument.document_key}
+              onChange={(event) => setCurrentDocument(documents.find((item) => item.document_key === event.target.value) || currentDocument)}
             >
               {documents.map((document) => (
-                <option key={document.url} value={document.url}>{document.name}</option>
+                <option key={document.document_key} value={document.document_key}>{document.name}</option>
               ))}
             </select>
           </div>

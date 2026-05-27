@@ -4,6 +4,13 @@ import { useSessions } from './sessions';
 
 const DocumentsContext = React.createContext(null);
 
+const getDocumentKey = (document) => {
+  if (!document) {
+    return '';
+  }
+  return document.document_key || document.url || `${document.repo_id || ''}:${document.path || document.name || ''}`;
+};
+
 export const DocumentsProvider = ({ children }) => {
   const [isShowDocuments, setIsShowDocuments] = useState(false);
   const [documents, setDocuments] = useState([]);
@@ -16,15 +23,19 @@ export const DocumentsProvider = ({ children }) => {
     if (!document) {
       return;
     }
+    const nextDocument = {
+      ...document,
+      document_key: getDocumentKey(document),
+    };
     setIsShowDocuments(true);
     setDocuments((currentDocuments) => {
-      const existedDocument = currentDocuments.find((item) => item.url === document.url);
+      const existedDocument = currentDocuments.find((item) => getDocumentKey(item) === nextDocument.document_key);
       if (existedDocument) {
         return currentDocuments;
       }
-      return [document, ...currentDocuments];
+      return [nextDocument, ...currentDocuments];
     });
-    setCurrentDocument(document);
+    setCurrentDocument(nextDocument);
     closeShowSessions();
   }, [closeShowSessions]);
 
@@ -33,7 +44,7 @@ export const DocumentsProvider = ({ children }) => {
       return;
     }
     setDocuments((currentDocuments) => {
-      const documentIndex = currentDocuments.findIndex((item) => item.url === document.url);
+      const documentIndex = currentDocuments.findIndex((item) => getDocumentKey(item) === getDocumentKey(document));
       if (documentIndex < 0) {
         return currentDocuments;
       }

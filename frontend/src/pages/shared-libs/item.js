@@ -187,7 +187,6 @@ class Item extends Component {
         />
         <CustomDropdown
           items={menuItems}
-          className=""
           target="more-operations-btn"
           placement="down"
           trigger={

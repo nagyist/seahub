@@ -78,7 +78,6 @@ class ShareLinkZipTaskView(APIView):
         if not dir_id:
             error_msg = 'Folder %s not found.' % real_path
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        print(request.user.username,'1111111111')
         if SHARE_LINK_LOGIN_REQUIRED and \
                 not request.user.is_authenticated:
             error_msg = 'Permission denied.'

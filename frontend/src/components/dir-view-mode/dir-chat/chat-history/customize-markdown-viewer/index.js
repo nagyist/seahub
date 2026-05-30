@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
@@ -16,6 +16,8 @@ dayjs.extend(relativeTime);
 
 const GROUPED_REFERENCE_RE = /\((?:\s*(?:Reference|Source|Document|Documents|Docs|Doc)\s*\d+\s*,?)+\s*\)/gi;
 const REFERENCE_RE = /\[Reference\s+(\d+)\]/g;
+const VIEWER_RETRY_DELAY = 300;
+const VIEWER_MAX_RETRIES = 4;
 
 const getSourceTitle = (source, index) => {
   return source?.title || source?.name || source?.path || `Reference ${index}`;
@@ -310,12 +312,42 @@ Definition.propTypes = {
 
 const CustomizeMarkdownViewer = ({ message, repoID }) => {
   const { openDocument } = useDocuments();
+  const containerRef = useRef(null);
+  const retryCountRef = useRef(0);
+  const [viewerKey, setViewerKey] = useState(0);
   const { value, sources } = useMemo(() => {
     return buildMarkdownWithReferences(
       message?.[CHAT_MESSAGE_TYPE.AI_REPLY] || '',
       message?.[CHAT_MESSAGE_TYPE.SOURCES] || [],
     );
   }, [message]);
+
+  useEffect(() => {
+    retryCountRef.current = 0;
+    setViewerKey(0);
+  }, [value]);
+
+  useEffect(() => {
+    if (!value) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      const loadingNode = containerRef.current?.querySelector('.empty-loading-page');
+      if (!loadingNode) {
+        return;
+      }
+      if (retryCountRef.current >= VIEWER_MAX_RETRIES) {
+        return;
+      }
+      retryCountRef.current += 1;
+      setViewerKey((currentValue) => currentValue + 1);
+    }, VIEWER_RETRY_DELAY);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [value, viewerKey]);
 
   const handleOpenDocument = useCallback((source) => {
     openDocument(getDocumentPayload(source, repoID));
@@ -337,8 +369,9 @@ const CustomizeMarkdownViewer = ({ message, repoID }) => {
   }
 
   return (
-    <div className="sea-qa-message-ai-reply">
+    <div className="sea-qa-message-ai-reply" ref={containerRef}>
       <MarkdownViewer
+        key={viewerKey}
         value={value}
         isFetching={false}
         isShowOutline={false}

@@ -8,7 +8,7 @@ import time
 from django.core.cache import cache
 from urllib.parse import urljoin
 
-from seahub.settings import EVENTS_CONFIG_FILE, CLOUD_MODE, SECRET_KEY, SEAFEVENTS_SERVER_URL
+from seahub.settings import CLOUD_MODE, SECRET_KEY, SEAFEVENTS_SERVER_URL
 from seahub.utils.file_types import IMAGE, DOCUMENT, SPREADSHEET, SVG, PDF, \
         MARKDOWN, VIDEO, AUDIO, TEXT, SEADOC
 from seahub.utils import get_user_repos, normalize_cache_key
@@ -22,6 +22,11 @@ from seahub import settings
 import seaserv
 from seaserv import seafile_api, ccnet_api
 
+try:
+    from seahub.settings import EVENTS_CONFIG_FILE
+except ImportError:
+    EVENTS_CONFIG_FILE = None
+
 
 SEARCH_REPOS_LIMIT = 200
 RELATED_REPOS_PREFIX = 'RELATED_REPOS_'
@@ -30,7 +35,8 @@ RELATED_REPOS_CACHE_TIMEOUT = 2 * 60 * 60
 USER_REPO_INVISIBLE_PATH_PREFIX = getattr(settings, 'USER_REPO_INVISIBLE_PATH_PREFIX', 'REPO_INVISIBLE_PATH_')
 USER_REPO_INVISIBLE_PATH_CACHE_TIMEOUT = getattr(settings, 'USER_REPO_INVISIBLE_PATH_CACHE_TIMEOUT', 24 * 60 * 60)
 
-os.environ['EVENTS_CONFIG_FILE'] = EVENTS_CONFIG_FILE
+if EVENTS_CONFIG_FILE:
+    os.environ['EVENTS_CONFIG_FILE'] = EVENTS_CONFIG_FILE
 
 if HAS_FILE_SEARCH:
     from seafes import es_search, es_wiki_search

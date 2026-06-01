@@ -54,11 +54,20 @@ def build_context_messages(session_uuid):
         content = data['content'] or ''
         if data['role'] == 'user':
             content = combine_attachments_to_message(data['attachments'], content)
+        elif data['role'] == 'assistant':
+            content = retrieve_origin_reference_format(content, data.get('sources', []))
         results.append({
             'role': data['role'],
             'content': content,
         })
     return results
+
+
+def retrieve_origin_reference_format(content, sources):
+    content = content or ''
+    for index, _source in enumerate(sources or []):
+        content = content.replace(f'[Reference {index + 1}]', f'<reference_{index}>')
+    return content
 
 
 def strip_content_details_from_attachments(attachments):

@@ -11,6 +11,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from django.http import HttpResponse
 from django.utils.translation import gettext as _
+from seahub.api2.status import HTTP_520_OPERATION_FAILED
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.authentication import TokenAuthentication
@@ -26,6 +27,7 @@ from seahub.repo_metadata.metadata_server_api import MetadataServerAPI, list_met
 from seahub.utils.repo import is_repo_admin, is_repo_owner
 from seahub.share.utils import check_invisible_folder
 from seaserv import seafile_api
+from pysearpc import SearpcError
 from seahub.repo_metadata.constants import FACE_RECOGNITION_VIEW_ID, METADATA_RECORD_UPDATE_LIMIT
 from seahub.file_tags.models import FileTags
 from seahub.repo_tags.models import RepoTags
@@ -2960,20 +2962,11 @@ class PeopleCoverPhoto(APIView):
 
         row = query_result[0]
         obj_id = row.get(METADATA_TABLE.columns.obj_id.name)
-        parent_dir = row.get(METADATA_TABLE.columns.parent_dir.name)
-        file_name = row.get(METADATA_TABLE.columns.file_name.name)
-        path = os.path.join(parent_dir, file_name)
-
-        token = seafile_api.get_fileserver_access_token(repo_id, obj_id, 'download', request.user.username, use_onetime=True)
-        if not token:
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
+        
         params = {
             'repo_id': repo_id,
-            'path': path,
-            'download_token': token,
             'people_id': people_id,
+            'obj_id': obj_id,
         }
 
         try:

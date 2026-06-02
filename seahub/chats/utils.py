@@ -51,14 +51,12 @@ def build_context_messages(session_uuid):
     results = []
     for message in ChatMessages.objects.get_context_messages_by_session(session_uuid):
         data = message.to_dict()
-        content = data['content'] or ''
-        if data['role'] == 'user':
-            content = combine_attachments_to_message(data['attachments'], content)
-        elif data['role'] == 'assistant':
-            content = retrieve_origin_reference_format(content, data.get('sources', []))
         results.append({
             'role': data['role'],
-            'content': content,
+            'content': data.get('content'),
+            'attachments': data.get('attachments') or [],
+            'sources': data.get('sources') or [],
+            'created_at': data['created_at'].isoformat() if data.get('created_at') else '',
         })
     return results
 

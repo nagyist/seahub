@@ -2470,7 +2470,6 @@ def get_repo_file(request, repo_id, file_id, file_name, op,
         redirect_url = gen_file_get_url(token, file_name)
         response = HttpResponse(json.dumps(redirect_url), status=200,
                                 content_type=json_content_type)
-        response["oid"] = file_id
         return response
 
     if op == 'downloadblks':
@@ -3538,6 +3537,16 @@ class FileRevision(APIView):
         path = request.GET.get('p', None)
         if path is None:
             return api_error(status.HTTP_400_BAD_REQUEST, 'Path is missing.')
+        
+
+        permission = check_folder_permission(request, repo_id, path)
+        if permission not in get_available_repo_perms():
+            permission = normalize_custom_permission_name(permission)
+            if not permission:
+                return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        if parse_repo_perm(permission).can_download is False:
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         file_name = os.path.basename(path)
         commit_id = request.GET.get('commit_id', None)

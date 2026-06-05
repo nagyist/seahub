@@ -23,7 +23,6 @@ const Chat = ({ repoID, settings }) => {
   const [isReply, setReply] = useState(false);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
-  const [clearContext, setClearContext] = useState(false);
 
   const timer = useRef(null);
   const chatHistoryContentRef = useRef(null);
@@ -69,15 +68,7 @@ const Chat = ({ repoID, settings }) => {
     jumpToBottom(reply ? 10 : 50);
   }, [jumpToBottom]);
 
-  const toggleClearContext = useCallback(() => {
-    setClearContext((currentValue) => !currentValue);
-  }, []);
-
-  const resetClearContext = useCallback(() => {
-    setClearContext(false);
-  }, []);
-
-  const sendMessage = useCallback(({ message, attachments, model, clearContext: shouldClearContext }) => {
+  const sendMessage = useCallback(({ message, attachments, model }) => {
     const validMessage = message.trim();
     if (!validMessage) {
       messageInputRef.current?.focusInput();
@@ -102,7 +93,6 @@ const Chat = ({ repoID, settings }) => {
         message: validMessage,
         attachments,
         model,
-        clearContext: shouldClearContext,
       });
       return;
     }
@@ -128,7 +118,6 @@ const Chat = ({ repoID, settings }) => {
       return;
     }
 
-    setClearContext(false);
     const problem = messageInputRef.current?.getProblem() || '';
     if (currentSessionId.current && currentSessionId.current !== ASK_PAGE_SLUG_ID.NEW) {
       modifyLocalSession(currentSessionId.current, { problem });
@@ -555,8 +544,6 @@ const Chat = ({ repoID, settings }) => {
           readOnly={Boolean(session?.running_task)}
           repoID={repoID}
           sendMessage={sendMessage}
-          clearContext={clearContext}
-          resetClearContext={resetClearContext}
         />
       </div>
     </div>

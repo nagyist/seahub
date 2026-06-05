@@ -102,7 +102,7 @@ export const SessionsProvider = ({ repoID, api, children }) => {
     modifyLocalSession(sessionId, { running_task: runningTask });
   }, [modifyLocalSession]);
 
-  const solveProblem = useCallback(({ sessionId, message: problem, attachments, model, clearContext }) => {
+  const solveProblem = useCallback(({ sessionId, message: problem, attachments, model }) => {
     modifyLocalSession(sessionId, { is_replying: true, running_task: true, problem: null });
 
     const params = {
@@ -111,7 +111,6 @@ export const SessionsProvider = ({ repoID, api, children }) => {
       session_uuid: sessionId,
       attachments,
       model,
-      clear_context: clearContext,
       stream: true,
     };
 

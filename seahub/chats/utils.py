@@ -49,7 +49,7 @@ def combine_attachments_to_message(attachments, message):
 
 def build_context_messages(session_uuid):
     results = []
-    for message in ChatMessages.objects.get_context_messages_by_session(session_uuid):
+    for message in ChatMessages.objects.get_messages_by_session(session_uuid):
         data = message.to_dict()
         results.append({
             'role': data['role'],

@@ -15,9 +15,7 @@ const ChatInput = forwardRef(({
   isReply,
   readOnly,
   repoID,
-  clearContext,
   sendMessage,
-  resetClearContext,
 }, ref) => {
   const [containerFocus, setContainerFocus] = useState(true);
   const [selectedModel, setSelectedModel] = useState(null);
@@ -41,12 +39,10 @@ const ChatInput = forwardRef(({
       message: value,
       attachments,
       model: selectedModel,
-      clearContext,
     });
     setValue('');
     clearAttachments();
-    resetClearContext();
-  }, [attachments, clearAttachments, clearContext, resetClearContext, selectedModel, sendMessage, value]);
+  }, [attachments, clearAttachments, selectedModel, sendMessage, value]);
 
   const handleKeyDown = useCallback((event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
@@ -142,9 +138,7 @@ ChatInput.propTypes = {
   isReply: PropTypes.bool,
   readOnly: PropTypes.bool,
   repoID: PropTypes.string,
-  clearContext: PropTypes.bool,
   sendMessage: PropTypes.func.isRequired,
-  resetClearContext: PropTypes.func.isRequired,
 };
 
 export default ChatInput;

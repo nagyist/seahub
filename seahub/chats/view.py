@@ -150,8 +150,6 @@ class ChatMessagesView(APIView):
 
         messages_data = []
         for message in messages:
-            if message.role == 'chat_manager':
-                continue
             data = message.to_dict()
             if developer_mode and message.role == 'assistant':
                 thought_process = thought_process_map.get(message.message_id, {})
@@ -232,12 +230,6 @@ class ChatView(APIView):
         if not check_folder_permission(request, repo_id, '/'):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
-        clear_context = request.data.get('clear_context', False)
-        if isinstance(clear_context, str):
-            clear_context = clear_context.lower() == 'true'
-        if not isinstance(clear_context, bool):
-            return api_error(status.HTTP_400_BAD_REQUEST, 'clear_context invalid.')
-
         stream = get_repo_streaming_response(repo_id)
         stream_from_request = request.data.get('stream')
         if stream_from_request is not None:
@@ -261,10 +253,6 @@ class ChatView(APIView):
                 return api_error(status.HTTP_404_NOT_FOUND, 'Session not found.')
             if not check_session_access(session, request.user.username):
                 return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-            if clear_context:
-                if session.username != request.user.username:
-                    return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied. You can only clear the context in your own sessions')
-                ChatMessages.objects.clear_context(session_uuid)
 
         chat_task_id = gen_chat_task_id(session_uuid)
         if cache.get(chat_task_id) is not None:

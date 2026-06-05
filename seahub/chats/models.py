@@ -111,7 +111,7 @@ class ChatMessageThoughtProcess(models.Model):
 
 
 class ChatMessagesManager(models.Manager):
-    def create_message(self, session_uuid, message_id, role, content, as_context=True, sources='', attachments=None):
+    def create_message(self, session_uuid, message_id, role, content, sources='', attachments=None):
         if attachments is None:
             attachments = []
         message = self.model(
@@ -121,7 +121,6 @@ class ChatMessagesManager(models.Manager):
             content=content,
             attachments=json.dumps(attachments),
             sources=sources,
-            as_context=as_context,
         )
         message.save()
         return message
@@ -129,22 +128,14 @@ class ChatMessagesManager(models.Manager):
     def get_messages_by_session(self, session_uuid):
         return self.filter(session_uuid=session_uuid).order_by('created_at')
 
-    def get_context_messages_by_session(self, session_uuid):
-        return self.filter(session_uuid=session_uuid, as_context=True, role__in=['user', 'assistant']).order_by('created_at')
-
     def get_last_message_by_session(self, session_uuid):
         return self.filter(session_uuid=session_uuid, role='assistant').order_by('-created_at').first()
-
-    def clear_context(self, session_uuid):
-        self.filter(session_uuid=session_uuid).update(as_context=False)
-        self.create_message(session_uuid, '', 'chat_manager', '<break_context>', False)
 
 
 class ChatMessages(models.Model):
     ROLE_CHOICES = [
         ('user', 'User'),
         ('assistant', 'Assistant'),
-        ('chat_manager', 'Chat manager'),
     ]
 
     id = models.BigAutoField(primary_key=True)
@@ -156,7 +147,6 @@ class ChatMessages(models.Model):
     sources = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    as_context = models.BooleanField(default=True)
 
     objects = ChatMessagesManager()
 
@@ -164,7 +154,7 @@ class ChatMessages(models.Model):
         db_table = 'chat_messages'
         indexes = [
             models.Index(fields=['session_uuid', 'created_at']),
-            models.Index(fields=['session_uuid', 'role', '-created_at', '-as_context']),
+            models.Index(fields=['session_uuid', 'role', '-created_at']),
         ]
 
     def to_dict(self):
@@ -192,5 +182,4 @@ class ChatMessages(models.Model):
             'sources': sources,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
-            'as_context': self.as_context,
         }

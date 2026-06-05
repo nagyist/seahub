@@ -11,7 +11,6 @@ from rest_framework import status
 from rest_framework.views import APIView
 from django.http import HttpResponse
 from django.utils.translation import gettext as _
-from seahub.api2.status import HTTP_520_OPERATION_FAILED
 from seahub.api2.utils import api_error, to_python_boolean
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.authentication import TokenAuthentication
@@ -27,7 +26,6 @@ from seahub.repo_metadata.metadata_server_api import MetadataServerAPI, list_met
 from seahub.utils.repo import is_repo_admin, is_repo_owner
 from seahub.share.utils import check_invisible_folder
 from seaserv import seafile_api
-from pysearpc import SearpcError
 from seahub.repo_metadata.constants import FACE_RECOGNITION_VIEW_ID, METADATA_RECORD_UPDATE_LIMIT
 from seahub.file_tags.models import FileTags
 from seahub.repo_tags.models import RepoTags

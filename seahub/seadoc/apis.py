@@ -29,6 +29,7 @@ from django.core.files.uploadhandler import TemporaryFileUploadHandler
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import condition
 
+from seahub.search.utils import is_path_in_virtual_root
 from seaserv import seafile_api, check_quota, get_org_id_by_repo_id
 from seahub.repo_metadata.metadata_server_api import list_metadata_view_records
 
@@ -3033,7 +3034,12 @@ class SeadocSearchFilenameView(APIView):
             error_msg = 'seadoc uuid %s not found.' % file_uuid
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         repo_id = uuid_map.repo_id
+        
         repo = seafile_api.get_repo(repo_id)
+        # permission check
+        if not check_folder_permission(request, repo_id, '/'):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         search_filename_only = True
         if HAS_FILE_SEARCH:
@@ -3097,7 +3103,7 @@ class SeadocSearchFilenameView(APIView):
                 f.pop('_id', None)
 
                 if origin_path:
-                    if not f['fullpath'].startswith(origin_path):
+                    if not is_path_in_virtual_root(f['fullpath'], origin_path):
                         # this operation will reduce the result items, but it will not happen now
                         continue
                     else:

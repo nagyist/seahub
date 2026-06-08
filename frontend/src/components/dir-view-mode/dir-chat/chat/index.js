@@ -138,10 +138,7 @@ const Chat = ({ repoID, settings }) => {
       const {
         messages: historyMessages,
         running_task,
-        running_task_is_stream,
         user_input,
-        streamed_data,
-        streamed_length,
       } = res.data;
 
       const messages = Array.isArray(historyMessages) ? historyMessages.map((item) => {
@@ -178,25 +175,13 @@ const Chat = ({ repoID, settings }) => {
           },
           isUserSpeak: true,
         }));
-        if (running_task_is_stream) {
-          messages.push(new ChatMessage({
-            id: 'typing',
-            message: {
-              [CHAT_MESSAGE_TYPE.AI_REPLY]: streamed_data?.answer || '',
-              [CHAT_MESSAGE_TYPE.SOURCES]: [],
-              [CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]: 'disabled',
-            },
-            type: CHAT_MESSAGE_TYPE.GROUP,
-          }));
-          setReply(false);
-        }
       }
 
       updateChatHistories(messages);
       setLoading(false);
 
       if (running_task) {
-        getChatMessage(pageSlugId, running_task_is_stream || false, streamed_length);
+        getChatMessage(pageSlugId);
       }
     }).catch((error) => {
       toaster.danger(Utils.getErrorMsg(error));

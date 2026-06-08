@@ -60,11 +60,6 @@ class ChatAPI {
     return this.req.get(this.server + '/api/v1/ai/chat/?session_uuid=' + sessionId);
   }
 
-  getChatMessageByStream(repoID, sessionId, streamedLength, options = {}) {
-    const url = this.server + '/api/v1/ai/chat/?session_uuid=' + sessionId + '&streamed_length=' + streamedLength;
-    return this._handleEventStreamRequest(url, undefined, options);
-  }
-
   listChatSessions(repoID) {
     return this.req.get(this.server + '/api/v1/chat/sessions/?repo_id=' + repoID);
   }

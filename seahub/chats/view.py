@@ -22,7 +22,7 @@ from seahub.api2.utils import api_error
 from seahub.chats.constants import AI_REPLY_TIMEOUT
 from seahub.chats.models import ChatMessageThoughtProcess, ChatMessages, ChatSessions
 from seahub.chats.utils import build_context_messages, gen_chat_task_id, gen_message_id, get_ai_reply, \
-    process_stream_ai_reply, record_message_to_db, strip_content_details_from_attachments, verify_chat_ai_config
+    process_stream_ai_reply, strip_content_details_from_attachments, verify_chat_ai_config
 from seahub.views import check_folder_permission
 
 logger = logging.getLogger(__name__)
@@ -34,10 +34,6 @@ def get_repo_developer_mode():
 
 def get_repo_prompt(repo_id):
     return ''
-
-
-def get_repo_streaming_response(repo_id):
-    return True
 
 
 def check_session_access(session, username):
@@ -230,15 +226,6 @@ class ChatView(APIView):
         if not check_folder_permission(request, repo_id, '/'):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
-        stream = get_repo_streaming_response(repo_id)
-        stream_from_request = request.data.get('stream')
-        if stream_from_request is not None:
-            if isinstance(stream_from_request, str):
-                stream_from_request = stream_from_request.lower() == 'true'
-            if not isinstance(stream_from_request, bool):
-                return api_error(status.HTTP_400_BAD_REQUEST, 'Invalid stream')
-            stream = stream_from_request
-
         org_id = request.user.org.org_id if getattr(request.user, 'org', None) else None
         if is_ai_usage_over_limit(request.user, org_id):
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Credit not enough')
@@ -274,7 +261,6 @@ class ChatView(APIView):
             'username': request.user.username,
             'org_id': org_id,
             'llm_model': request.data.get('model'),
-            'stream': stream,
             'repo_prompt': get_repo_prompt(repo_id),
         }
 
@@ -286,31 +272,16 @@ class ChatView(APIView):
         }
         cache.set(chat_task_id, task_info, AI_REPLY_TIMEOUT)
 
-        if stream:
-            try:
-                return StreamingHttpResponse(
-                    process_stream_ai_reply(chat_task_id, get_ai_reply(params), session_uuid, message_id, query, attachments),
-                    content_type='text/event-stream',
-                    headers={
-                        'Cache-Control': 'no-cache',
-                        'X-Accel-Buffering': 'no',
-                    },
-                )
-            except Exception as error:
-                logger.exception('Failure to make stream: %s', error)
-                cache.delete(chat_task_id)
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal server error')
-
         try:
-            ai_response = get_ai_reply(params)
+            return StreamingHttpResponse(
+                process_stream_ai_reply(chat_task_id, get_ai_reply(params), session_uuid, message_id, query, attachments),
+                content_type='text/event-stream',
+                headers={
+                    'Cache-Control': 'no-cache',
+                    'X-Accel-Buffering': 'no',
+                },
+            )
         except Exception as error:
-            logger.warning('AI service error: %s', error)
-            ai_response = {
-                'ai_reply': 'Sorry, the AI service is temporarily unavailable, please try again later.',
-                'sources': [],
-                'thought_process': {},
-            }
-
-        response = record_message_to_db(ai_response, session_uuid, message_id, query, attachments)
-        cache.delete(chat_task_id)
-        return Response(response)
+            logger.exception('Failure to make stream: %s', error)
+            cache.delete(chat_task_id)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal server error')

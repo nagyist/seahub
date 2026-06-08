@@ -111,7 +111,6 @@ export const SessionsProvider = ({ repoID, api, children }) => {
       session_uuid: sessionId,
       attachments,
       model,
-      stream: true,
     };
 
     const currentController = new AbortController();
@@ -142,7 +141,7 @@ export const SessionsProvider = ({ repoID, api, children }) => {
     });
   }, [api, modifyLocalSession, repoID]);
 
-  const getChatMessage = useCallback((sessionId, isStream, streamedLength) => {
+  const getChatMessage = useCallback((sessionId) => {
     markSessionRunningTask(sessionId, true);
 
     const currentController = new AbortController();
@@ -165,15 +164,6 @@ export const SessionsProvider = ({ repoID, api, children }) => {
       }
       delete sendMessageRequestController.current[targetSessionId];
     };
-
-    if (isStream) {
-      api.getChatMessageByStream(repoID, sessionId, streamedLength, options).then((res) => {
-        eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { res }, callback);
-      }).catch((error) => {
-        eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { error }, callback);
-      });
-      return;
-    }
 
     api.getChatMessage(repoID, sessionId, options).then((res) => {
       eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { data: res.data }, callback);

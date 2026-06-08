@@ -187,24 +187,13 @@ def get_ai_reply(params):
     headers = {'Authorization': 'Token %s' % token}
     url = urljoin(SEAFILE_AI_SERVER_URL, '/api/v1/get-ai-reply')
 
-    if params.get('stream', False):
-        response = requests.post(
-            url,
-            json=params,
-            headers=headers,
-            stream=True,
-            timeout=AI_REPLY_TIMEOUT,
-        )
-        if response.status_code == 500:
-            raise RuntimeError('ask ai error status: %s body: %s' % (response.status_code, response.text))
-        return response
-
-    response = requests.post(url, json=params, headers=headers, timeout=AI_REPLY_TIMEOUT)
+    response = requests.post(
+        url,
+        json=params,
+        headers=headers,
+        stream=True,
+        timeout=AI_REPLY_TIMEOUT,
+    )
     if response.status_code == 500:
         raise RuntimeError('ask ai error status: %s body: %s' % (response.status_code, response.text))
-    response_json = response.json()
-    return {
-        'ai_reply': response_json.get('answer', ''),
-        'sources': response_json.get('sources', []),
-        'thought_process': response_json.get('thought_process', {}),
-    }
+    return response

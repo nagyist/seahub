@@ -63,6 +63,8 @@ class ChatSessions(models.Model):
 
 class ChatMessageThoughtProcessManager(models.Manager):
     def create_thought_process(self, session_uuid, message_id, thought_process):
+        if not thought_process:
+            return None
         record = self.model(
             session_uuid=session_uuid,
             message_id=message_id,

@@ -38,36 +38,6 @@ def verify_chat_ai_config():
     return bool(SEAFILE_AI_SERVER_URL and SEAFILE_AI_SECRET_KEY)
 
 
-def combine_attachments_to_message(attachments, message):
-    if not attachments:
-        return message
-    return 'Attached files:\n```json\n%s\n```\n\n%s' % (
-        json.dumps(strip_content_details_from_attachments(attachments), ensure_ascii=False),
-        message,
-    )
-
-
-def build_context_messages(session_uuid):
-    results = []
-    for message in ChatMessages.objects.get_messages_by_session(session_uuid):
-        data = message.to_dict()
-        results.append({
-            'role': data['role'],
-            'content': data.get('content'),
-            'attachments': data.get('attachments') or [],
-            'sources': data.get('sources') or [],
-            'created_at': data['created_at'].isoformat() if data.get('created_at') else '',
-        })
-    return results
-
-
-def retrieve_origin_reference_format(content, sources):
-    content = content or ''
-    for index, _source in enumerate(sources or []):
-        content = content.replace(f'[Reference {index + 1}]', f'<reference_{index}>')
-    return content
-
-
 def strip_content_details_from_attachments(attachments):
     new_attachments = deepcopy(attachments or [])
     for attachment in new_attachments:
@@ -95,17 +65,19 @@ def record_message_to_db(ai_result, session_uuid, message_id, query, attachments
     })
 
     try:
-        ChatMessageThoughtProcess.objects.create_thought_process(
-            session_uuid,
-            message_id,
-            ai_result.get('thought_process', {}),
-        )
+        thought_process = ai_result.get('thought_process', {})
+        if thought_process:
+            ChatMessageThoughtProcess.objects.create_thought_process(
+                session_uuid,
+                message_id,
+                thought_process,
+            )
         user_message = ChatMessages.objects.create_message(
             session_uuid,
             message_id,
             'user',
             query,
-            attachments=attachments,
+            attachments=ai_result['attachments'],
         )
         ai_reply_message = ChatMessages.objects.create_message(
             session_uuid,

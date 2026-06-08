@@ -2,7 +2,6 @@
 import logging
 import time
 
-from django.conf import settings
 from django.core.cache import cache
 from django.http import StreamingHttpResponse
 from django.utils.translation import gettext as _
@@ -21,15 +20,11 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.chats.constants import AI_REPLY_TIMEOUT
 from seahub.chats.models import ChatMessageThoughtProcess, ChatMessages, ChatSessions
-from seahub.chats.utils import build_context_messages, gen_chat_task_id, gen_message_id, get_ai_reply, \
+from seahub.chats.utils import gen_chat_task_id, gen_message_id, get_ai_reply, \
     process_stream_ai_reply, strip_content_details_from_attachments, verify_chat_ai_config
 from seahub.views import check_folder_permission
 
 logger = logging.getLogger(__name__)
-
-
-def get_repo_developer_mode():
-    return getattr(settings, 'DEBUG', False)
 
 
 def get_repo_prompt(repo_id):
@@ -138,16 +133,15 @@ class ChatMessagesView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         messages = ChatMessages.objects.get_messages_by_session(session_uuid)
-        developer_mode = get_repo_developer_mode()
         message_ids = [message.message_id for message in messages if message.message_id]
         thought_process_map = {}
-        if developer_mode and message_ids:
+        if message_ids:
             thought_process_map = ChatMessageThoughtProcess.objects.get_thought_process_from_session_uuid_and_message_ids(session_uuid, message_ids)
 
         messages_data = []
         for message in messages:
             data = message.to_dict()
-            if developer_mode and message.role == 'assistant':
+            if message.role == 'assistant':
                 thought_process = thought_process_map.get(message.message_id, {})
                 if thought_process:
                     data['thought_process'] = thought_process
@@ -195,11 +189,10 @@ class ChatView(APIView):
             'sources': ai_reply.to_dict()['sources'],
             'session_uuid': session_uuid,
         }
-        if get_repo_developer_mode():
-            result['thought_process'] = ChatMessageThoughtProcess.objects.get_thought_process_from_session_uuid_and_message_id(
-                session_uuid,
-                ai_reply.message_id,
-            )
+        result['thought_process'] = ChatMessageThoughtProcess.objects.get_thought_process_from_session_uuid_and_message_id(
+            session_uuid,
+            ai_reply.message_id,
+        )
         return Response(result)
 
     def post(self, request):
@@ -257,7 +250,6 @@ class ChatView(APIView):
             'session_uuid': session_uuid,
             'query': query,
             'attachments': attachments,
-            'context_messages': build_context_messages(session_uuid),
             'username': request.user.username,
             'org_id': org_id,
             'llm_model': request.data.get('model'),

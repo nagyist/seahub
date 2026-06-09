@@ -415,7 +415,7 @@ class MetadataRecords(APIView):
         results['results'] = [
             r for r in results.get('results', [])
             if not is_invisible_path(repo_id_to_invisible_paths, repo_id,
-                                    r.get('_parent_dir', '') + r.get('_name', ''))
+                                    posixpath.join(r.get('_parent_dir', ''), r.get('_name', '')))
         ]
 
         return Response(results)
@@ -596,7 +596,7 @@ class MetadataRecord(APIView):
         results = [
             r for r in query_result.get('results', [])
             if not is_invisible_path(repo_id_to_invisible_paths, repo_id,
-                                    r.get('_parent_dir', '') + r.get('_name', ''))
+                                    posixpath.join(r.get('_parent_dir', ''), r.get('_name', '')))
         ]
         if not results:
             error_msg = 'Record not found'

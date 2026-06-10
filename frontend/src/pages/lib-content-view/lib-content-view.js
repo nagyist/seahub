@@ -2150,6 +2150,7 @@ class LibContentView extends React.Component {
         direntList: direntObject.type === 'dir' ? [dirent, ...prevState.direntList] : [...prevState.direntList, dirent]
       }));
     }
+
     // Ensure tree reflects new dirents even if repo-update refreshed list earlier.
     if (this.state.isTreePanelShown) {
       const parentPath = this.state.path;
@@ -3142,6 +3143,9 @@ class LibContentView extends React.Component {
                           hiddenColumnKeys={this.state.currentMode === TABLE_MODE ? this.state.hiddenTableViewColumnKeys : this.state.hiddenColumnKeys}
                           onColumnOrderChange={this.onTableViewColumnOrder}
                           rowHeight={rowHeight}
+                          onUploadFile={this.onUploadFile}
+                          onUploadFolder={this.onUploadFolder}
+                          loadDirentList={this.loadDirentList}
                         />
                         :
                         <div className="message err-tip">{gettext('Folder does not exist.')}</div>

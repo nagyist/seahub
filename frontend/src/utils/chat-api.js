@@ -53,39 +53,39 @@ class ChatAPI {
   }
 
   sendChatMessageByStream(params, options = {}) {
-    return this._handleEventStreamRequest(this.server + '/api/v1/ai/chat/', params, options);
+    return this._handleEventStreamRequest(this.server + '/api/v2.1/ai/chat/', params, options);
   }
 
   getChatMessage(repoID, sessionId) {
-    return this.req.get(this.server + '/api/v1/ai/chat/?session_uuid=' + sessionId);
+    return this.req.get(this.server + '/api/v2.1/ai/chat/?session_uuid=' + sessionId);
   }
 
   listChatSessions(repoID) {
-    return this.req.get(this.server + '/api/v1/chat/sessions/?repo_id=' + repoID);
+    return this.req.get(this.server + '/api/v2.1/ai/chat/sessions/?repo_id=' + repoID);
   }
 
   createChatSession(repoID, sessionName) {
-    return this.req.post(this.server + '/api/v1/chat/sessions/', {
+    return this.req.post(this.server + '/api/v2.1/ai/chat/sessions/', {
       repo_id: repoID,
       session_name: sessionName,
     });
   }
 
   modifyChatSession(repoID, sessionUUID, update) {
-    return this.req.put(this.server + '/api/v1/chat/sessions/' + sessionUUID + '/', {
+    return this.req.put(this.server + '/api/v2.1/ai/chat/sessions/' + sessionUUID + '/', {
       ...update,
       repo_id: repoID,
     });
   }
 
   deleteChatSession(repoID, sessionUUID) {
-    return this.req.delete(this.server + '/api/v1/chat/sessions/' + sessionUUID + '/', {
+    return this.req.delete(this.server + '/api/v2.1/ai/chat/sessions/' + sessionUUID + '/', {
       data: { repo_id: repoID },
     });
   }
 
   getChatMessages(repoID, sessionUUID) {
-    return this.req.get(this.server + '/api/v1/chat/sessions/' + sessionUUID + '/messages/?repo_id=' + repoID);
+    return this.req.get(this.server + '/api/v2.1/ai/chat/sessions/' + sessionUUID + '/messages/?repo_id=' + repoID);
   }
 }
 

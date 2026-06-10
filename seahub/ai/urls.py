@@ -1,5 +1,6 @@
 from django.urls import re_path
-from .apis import ImageCaption, GenerateSummary, GenerateFileTags, OCR, Translate, WritingAssistant
+from .apis import ImageCaption, GenerateSummary, GenerateFileTags, OCR, Translate, WritingAssistant, \
+    ChatMessagesView, ChatSessionView, ChatSessionsView, ChatView
 
 urlpatterns = [
     re_path(r'^image-caption/$', ImageCaption.as_view(), name='api-v2.1-image-caption'),
@@ -8,5 +9,10 @@ urlpatterns = [
     re_path(r'^ocr/$', OCR.as_view(), name='api-v2.1-ocr'),
     re_path(r'^translate/$', Translate.as_view(), name='api-v2.1-translate'),
     re_path(r'^writing-assistant/$', WritingAssistant.as_view(), name='api-v2.1-writing-assistant'),
+
+    re_path(r'^chat/$', ChatView.as_view(), name='api-v2.1-ai-chat-view'),
+    re_path(r'^chat/sessions/$', ChatSessionsView.as_view(), name='api-v2.1-ai-chat-sessions'),
+    re_path(r'^chat/sessions/(?P<session_uuid>[-0-9a-f]+)/$', ChatSessionView.as_view(), name='api-v2.1-ai-chat-session'),
+    re_path(r'^chat/sessions/(?P<session_uuid>[-0-9a-f]+)/messages/$', ChatMessagesView.as_view(), name='api-v2.1-ai-chat-messages'),
 ]
 

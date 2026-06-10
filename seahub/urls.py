@@ -1145,6 +1145,5 @@ if getattr(settings, 'ENABLE_METADATA_MANAGEMENT', False):
 
 if getattr(settings, 'ENABLE_SEAFILE_AI', False):
     urlpatterns += [
-        path('', include('seahub.chats.urls')),
         re_path(r'^api/v2.1/ai/', include('seahub.ai.urls')),
     ]

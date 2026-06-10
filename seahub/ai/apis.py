@@ -73,16 +73,12 @@ class ImageCaption(APIView):
         if not file_id:
             return api_error(status.HTTP_404_NOT_FOUND, f"File {path} not found")
 
-        token = seafile_api.get_fileserver_access_token(repo_id, file_id, 'download', request.user.username, use_onetime=True)
-        if not token:
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
         params = {
             'path': path,
-            'download_token': token,
             'lang': lang,
             'org_id': org_id,
+            'repo_id': repo_id,
+            'obj_id': file_id,
             'username': username,
             'capture_time': None,
             'address': None
@@ -165,16 +161,14 @@ class GenerateSummary(APIView):
         if not file_id:
             return api_error(status.HTTP_404_NOT_FOUND, f"File {path} not found")
 
-        token = seafile_api.get_fileserver_access_token(repo_id, file_id, 'download', request.user.username, use_onetime=True)
-        if not token:
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
 
         params = {
             'path': path,
-            'download_token': token,
             'org_id': org_id,
-            'username': username
+            'username': username,
+            'repo_id': repo_id,
+            'obj_id': file_id,
         }
 
         try:
@@ -228,16 +222,13 @@ class GenerateFileTags(APIView):
         if not file_id:
             return api_error(status.HTTP_404_NOT_FOUND, f"File {path} not found")
 
-        token = seafile_api.get_fileserver_access_token(repo_id, file_id, 'download', request.user.username, use_onetime=True)
-        if not token:
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
+    
         params = {
             'path': path,
-            'download_token': token,
             'org_id': org_id,
-            'username': username
+            'username': username,
+            'repo_id': repo_id,
+            'obj_id': file_id,
         }
 
         file_type, _ = get_file_type_and_ext(os.path.basename(path))
@@ -321,16 +312,13 @@ class OCR(APIView):
             error_msg = 'File size exceed the limit.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        token = seafile_api.get_fileserver_access_token(repo_id, file_id, 'download', request.user.username, use_onetime=True)
-        if not token:
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
+        
         params = {
             'file_name': os.path.basename(path),
-            'download_token': token,
             'org_id': org_id,
-            'username': username
+            'username': username,
+            'repo_id': repo_id,
+            'obj_id': file_id,
         }
 
         try:

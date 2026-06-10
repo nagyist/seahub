@@ -1143,7 +1143,7 @@ if getattr(settings, 'ENABLE_METADATA_MANAGEMENT', False):
         re_path(r'^api/v2.1/repos/(?P<repo_id>[-0-9a-f]{36})/metadata/', include('seahub.repo_metadata.urls')),
     ]
 
-if getattr(settings, 'ENABLE_SEAFILE_AI', False):
-    urlpatterns += [
-        re_path(r'^api/v2.1/ai/', include('seahub.ai.urls')),
-    ]
+    if getattr(settings, 'ENABLE_SEAFILE_AI', False):
+        urlpatterns += [
+            re_path(r'^api/v2.1/ai/', include('seahub.ai.urls')),
+        ]

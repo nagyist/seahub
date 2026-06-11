@@ -18,7 +18,7 @@ from seahub.constants import DEFAULT_USER
 from seahub.utils.user_permissions import get_user_role
 from seahub.utils.ccnet_db import CcnetDB
 from seahub.organizations.models import OrgMemberQuota
-from seahub.ai.models import ChatMessageThoughtProcess, ChatMessages, StatsAIByOwner, StatsAIByTeam
+from seahub.ai.models import ChatMessageThoughtProcess, ChatMessages, ChatSessions, StatsAIByOwner, StatsAIByTeam
 try:
     from seahub.settings import ORG_MEMBER_QUOTA_ENABLED
 except ImportError:
@@ -191,6 +191,7 @@ def record_message_to_db(ai_result, session_uuid, message_id, query, attachments
             ai_result['ai_reply'],
             sources=json.dumps(ai_result.get('sources', [])),
         )
+        ChatSessions.objects.filter(session_uuid=session_uuid).update(updated_at=timezone.now())
         ai_result.update({
             'user_message_id': user_message.id,
             'ai_reply_message_id': ai_reply_message.id,
@@ -274,4 +275,3 @@ def get_ai_reply(params):
     if response.status_code == 500:
         raise RuntimeError('ask ai error status: %s body: %s' % (response.status_code, response.text))
     return response
-

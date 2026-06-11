@@ -71,21 +71,21 @@ export const SessionsProvider = ({ repoID, api, children }) => {
     if (Object.prototype.hasOwnProperty.call(update, 'name')) {
       payload.session_name = update.name;
     }
-    return api.modifyChatSession(repoID, sessionId, payload).then((res) => {
+    return api.modifyChatSession(sessionId, payload).then((res) => {
       const updatedSession = new ChatSession(res.data.session);
       updateSessionCollection(setSessions, sessionId, () => updatedSession);
       return updatedSession;
     });
-  }, [api, repoID, updateSessionCollection]);
+  }, [api, updateSessionCollection]);
 
   const deleteSession = useCallback((sessionId) => {
-    return api.deleteChatSession(repoID, sessionId).then(() => {
+    return api.deleteChatSession(sessionId).then(() => {
       updateSessionCollection(setSessions, sessionId, () => null);
       if (pageSlugId === sessionId) {
         togglePageSlugId(ASK_PAGE_SLUG_ID.NEW);
       }
     });
-  }, [api, pageSlugId, repoID, togglePageSlugId, updateSessionCollection]);
+  }, [api, pageSlugId, togglePageSlugId, updateSessionCollection]);
 
   const modifyLocalSession = useCallback((sessionId, update) => {
     const updater = (session) => {

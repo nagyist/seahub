@@ -481,15 +481,11 @@ class ChatSessionView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def put(self, request, session_uuid):
-        repo_id = request.data.get('repo_id')
-        if not repo_id:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'repo_id parameter is required.')
-        if not check_folder_permission(request, repo_id, '/'):
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-
         session = ChatSessions.objects.get_session_by_uuid(session_uuid)
-        if not session or session.repo_id != repo_id:
+        if not session:
             return api_error(status.HTTP_404_NOT_FOUND, 'Session not found.')
+        if not check_folder_permission(request, session.repo_id, '/'):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
         if session.username != request.user.username:
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied. Only the session owner can modify this session.')
 
@@ -501,15 +497,11 @@ class ChatSessionView(APIView):
         return Response({'success': True, 'session': session.to_dict()})
 
     def delete(self, request, session_uuid):
-        repo_id = request.data.get('repo_id')
-        if not repo_id:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'repo_id parameter is required.')
-        if not check_folder_permission(request, repo_id, '/'):
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-
         session = ChatSessions.objects.get_session_by_uuid(session_uuid)
-        if not session or session.repo_id != repo_id:
+        if not session:
             return api_error(status.HTTP_404_NOT_FOUND, 'Session not found.')
+        if not check_folder_permission(request, session.repo_id, '/'):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
         if session.username != request.user.username:
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied. Only the session owner can delete this session.')
 
@@ -525,15 +517,11 @@ class ChatMessagesView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, session_uuid):
-        repo_id = request.GET.get('repo_id')
-        if not repo_id:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'repo_id parameter is required.')
-        if not check_folder_permission(request, repo_id, '/'):
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-
         session = ChatSessions.objects.get_session_by_uuid(session_uuid)
-        if not session or session.repo_id != repo_id:
+        if not session:
             return api_error(status.HTTP_404_NOT_FOUND, 'Session not found.')
+        if not check_folder_permission(request, session.repo_id, '/'):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
         if not check_session_access(session, request.user.username):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 

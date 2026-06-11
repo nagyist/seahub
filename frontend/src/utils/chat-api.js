@@ -71,21 +71,16 @@ class ChatAPI {
     });
   }
 
-  modifyChatSession(repoID, sessionUUID, update) {
-    return this.req.put(this.server + '/api/v2.1/ai/chat/sessions/' + sessionUUID + '/', {
-      ...update,
-      repo_id: repoID,
-    });
+  modifyChatSession(sessionUUID, update) {
+    return this.req.put(this.server + '/api/v2.1/ai/chat/sessions/' + sessionUUID + '/', update);
   }
 
-  deleteChatSession(repoID, sessionUUID) {
-    return this.req.delete(this.server + '/api/v2.1/ai/chat/sessions/' + sessionUUID + '/', {
-      data: { repo_id: repoID },
-    });
+  deleteChatSession(sessionUUID) {
+    return this.req.delete(this.server + '/api/v2.1/ai/chat/sessions/' + sessionUUID + '/');
   }
 
-  getChatMessages(repoID, sessionUUID) {
-    return this.req.get(this.server + '/api/v2.1/ai/chat/sessions/' + sessionUUID + '/messages/?repo_id=' + repoID);
+  getChatMessages(sessionUUID) {
+    return this.req.get(this.server + '/api/v2.1/ai/chat/sessions/' + sessionUUID + '/messages/');
   }
 }
 

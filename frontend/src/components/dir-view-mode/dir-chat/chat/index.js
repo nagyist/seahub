@@ -134,7 +134,7 @@ const Chat = ({ repoID, settings }) => {
       return;
     }
 
-    chatAPI.getChatMessages(repoID, pageSlugId).then((res) => {
+    chatAPI.getChatMessages(pageSlugId).then((res) => {
       const {
         messages: historyMessages,
         running_task,

@@ -4,14 +4,13 @@ import Tip from '../tip';
 import { isFunction, isNumber } from '../../../utils/type-detection';
 import { isEnter } from '../../../utils/hotkey';
 import CenteredLoading from '../../centered-loading';
+import Option from './option';
+import './index.css';
 
 const isUpArrow = (e) => e.key === 'ArrowUp';
 const isDownArrow = (e) => e.key === 'ArrowDown';
 const isTab = (e) => e.key === 'Tab';
 const isEsc = (e) => e.key === 'Escape';
-import Option from './option';
-
-import './index.css';
 
 const Options = ({
   isLoading = false,

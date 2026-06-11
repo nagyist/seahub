@@ -88,7 +88,6 @@ const LibraryFilesSelector = ({ repoID, value: attachments = [], onChange: props
     }).catch((error) => {
       // Suppress abort/cancel errors
       if (error && error.name === 'AbortError') return [];
-      console.error('Search failed:', error);
       return [];
     });
   }, [repoID]);

@@ -1386,12 +1386,6 @@ class LibContentView extends React.Component {
   };
 
   switchToChatView = () => {
-    if (location.href.indexOf('?chat=true') > -1) {
-      setTimeout(() => {
-        const eventBus = EventBus.getInstance();
-      });
-    }
-
     const repoInfo = this.state.currentRepoInfo;
     const url = siteRoot + 'library/' + repoInfo.repo_id + '/' + encodeURIComponent(repoInfo.repo_name) + '/?chat=true&path=/';
     window.history.pushState({}, '', url);

@@ -388,7 +388,6 @@ const Chat = ({ repoID, settings }) => {
                 messages.push(data);
                 onMessage(data, { done });
               } catch (streamError) {
-                console.warn('Failed to parse JSON from EventStream:', dataString, streamError);
                 const data = { raw: dataString };
                 messages.push(data);
                 onMessage(data, { done });
@@ -412,7 +411,6 @@ const Chat = ({ repoID, settings }) => {
 
       const createEventStreamReader = (readableStream) => {
         if (!readableStream || !readableStream.getReader) {
-          console.error('Invalid readable stream');
           return null;
         }
 

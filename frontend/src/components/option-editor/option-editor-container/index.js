@@ -4,21 +4,20 @@ import SearchInput from '../../search-input';
 import CustomizeAddTool from '../../customize-add-tool/index.js';
 import { KeyCodes } from '../../../constants';
 import { gettext } from '../../../utils/constants';
+import { isFunction, isNumber } from '../../../utils/type-detection';
 import { Utils } from '../../../utils/utils';
 import toaster from '../../toast';
 import Options from '../options';
+import './index.css';
 
 const searchOptions = (options, searchValue) => {
   if (!searchValue) return options;
   const val = searchValue.toLowerCase();
-  return options.filter(option => 
+  return options.filter(option =>
     (option.name && option.name.toLowerCase().includes(val)) ||
     (option.value && option.value.toLowerCase().includes(val))
   );
 };
-import { isFunction, isNumber } from '../../../utils/type-detection';
-
-import './index.css';
 
 // whole search input height is 32px, bottom border is 1px, so the inner height is 31px
 const SEARCH_HEIGHT = 31;
@@ -50,7 +49,7 @@ const OptionEditorContainer = forwardRef(({
   const onSearchValueChange = useCallback((newSearchValue) => {
     if (searchValue === newSearchValue) return;
     setSearchValue(newSearchValue);
-  }, [options, searchValue]);
+  }, [searchValue]);
 
   const toggleOption = useCallback((optionValue) => {
     if (isMultiple) {

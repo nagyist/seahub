@@ -711,12 +711,14 @@ class LibContentView extends React.Component {
 
   hideMetadataView = (isSetRoot = false) => {
     const { repoID } = this.props;
-    const { path, isHistory, isTrash } = this.getInfoFromLocation(repoID);
+    const { path, isHistory, isTrash, isChat } = this.getInfoFromLocation(repoID);
     let mode = Cookies.get('seafile_view_mode') || LIST_MODE;
     if (isHistory) {
       mode = HISTORY_MODE;
     } else if (isTrash) {
       mode = TRASH_MODE;
+    } else if (isChat && enableSeafileAI) {
+      mode = CHAT_MODE;
     }
     this.setState({
       currentMode: mode,

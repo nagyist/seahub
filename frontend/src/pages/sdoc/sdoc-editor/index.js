@@ -6,8 +6,9 @@ import Dirent from '../../../models/dirent';
 import { Utils } from '../../../utils/utils';
 import { useCollaborators } from '../../../metadata';
 import EmbeddedFileDetails from '../../../components/dirent-detail/embedded-file-details';
-import { mediaUrl } from '../../../utils/constants';
+import { gettext, mediaUrl } from '../../../utils/constants';
 import { useMetadataStatus } from '../../../hooks';
+import Tooltip from '../../../components/tooltip';
 
 import './index.css';
 
@@ -36,7 +37,12 @@ const SdocEditor = () => {
               width={width - 1}
               component={{
                 headerComponent: {
-                  closeIcon: (<i className="sdocfont sdoc-sm-close"></i>)
+                  closeIcon: (
+                    <>
+                      <i className="sdocfont sdoc-sm-close"></i>
+                      <Tooltip target="details-close-icon">{gettext('Close')}</Tooltip>
+                    </>
+                  )
                 }
               }}
               onClose={onClose}

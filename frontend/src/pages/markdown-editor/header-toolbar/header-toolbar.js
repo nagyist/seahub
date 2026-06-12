@@ -12,6 +12,7 @@ import CommentPanel from '../../../components/file-view/comment-panel';
 import { seafileAPI } from '../../../utils/seafile-api';
 import { Utils } from '../../../utils/utils';
 import Dirent from '../../../../src/models/dirent';
+import Tooltip from '../../../components/tooltip';
 
 import '../css/header-toolbar.css';
 
@@ -97,7 +98,12 @@ class HeaderToolbar extends React.Component {
         width: 300,
         component: {
           headerComponent: {
-            closeIcon: (<Icon symbol="md-close" className="detail-control-icon" />)
+            closeIcon: (
+              <>
+                <Icon symbol="md-close" className="detail-control-icon" />
+                <Tooltip target="details-close-icon">{gettext('Close')}</Tooltip>
+              </>
+            )
           }
         }
       }
@@ -281,8 +287,11 @@ class HeaderToolbar extends React.Component {
       return (
         <div className="sf-md-viewer-topbar">
           <div className="sf-md-viewer-topbar-first d-flex justify-content-between">
-            <FileInfo toggleStar={this.props.toggleStar} editorApi={this.props.editorApi}
-              fileInfo={this.props.fileInfo} />
+            <FileInfo
+              toggleStar={this.props.toggleStar}
+              editorApi={this.props.editorApi}
+              fileInfo={this.props.fileInfo}
+            />
             <div className="topbar-btn-container">
               <ButtonGroup>
                 {saving ?

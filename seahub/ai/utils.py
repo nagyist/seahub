@@ -15,6 +15,7 @@ from django.db.models import Sum, Value
 from seahub.settings import SEAFILE_AI_SECRET_KEY, SEAFILE_AI_SERVER_URL
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
 from seahub.constants import DEFAULT_USER
+from seahub.utils import HAS_FILE_SEASEARCH
 from seahub.utils.user_permissions import get_user_role
 from seahub.utils.ccnet_db import CcnetDB
 from seahub.organizations.models import OrgMemberQuota
@@ -140,7 +141,7 @@ def gen_message_id(session_uuid, max_try=5):
 
 
 def verify_chat_ai_config():
-    return bool(SEAFILE_AI_SERVER_URL and SEAFILE_AI_SECRET_KEY)
+    return bool(SEAFILE_AI_SERVER_URL and SEAFILE_AI_SECRET_KEY and HAS_FILE_SEASEARCH)
 
 
 def strip_content_details_from_attachments(attachments):

@@ -15,7 +15,7 @@ import { CHAT_MODE } from '../constants';
 import './index.css';
 
 const DirOthers = ({ userPerm, repoID, currentRepoInfo, currentMode, updateRepoInfo }) => {
-  const { owner_email, is_admin, repo_name: repoName, permission } = currentRepoInfo;
+  const { owner_email, is_admin, repo_name: repoName, permission, is_virtual: isVirtual } = currentRepoInfo;
 
   const showSettings = is_admin; // repo owner, department admin, shared with 'Admin' permission
   let [isSettingsDialogOpen, setSettingsDialogOpen] = useState(false);
@@ -66,7 +66,7 @@ const DirOthers = ({ userPerm, repoID, currentRepoInfo, currentMode, updateRepoI
 
   return (
     <TreeSection title={gettext('Others')} className="dir-others">
-      {enableSeafileAI && (
+      {enableSeafileAI && !isVirtual && (
         <Item
           text={gettext('Chat')}
           iconSymbol="new-chat"

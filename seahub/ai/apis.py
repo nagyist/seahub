@@ -468,6 +468,8 @@ class ChatSessionsView(APIView):
         repo = seafile_api.get_repo(repo_id)
         if not repo:
             return api_error(status.HTTP_404_NOT_FOUND, 'Library not found.')
+        if repo.is_virtual:
+            return api_error(status.HTTP_403_FORBIDDEN, 'Virtual library is not supported.')
         if not check_folder_permission(request, repo_id, '/'):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
@@ -609,6 +611,8 @@ class ChatView(APIView):
             repo = None
         if not repo:
             return api_error(status.HTTP_404_NOT_FOUND, 'Library not found.')
+        if repo.is_virtual:
+            return api_error(status.HTTP_403_FORBIDDEN, 'Virtual library is not supported.')
         if not check_folder_permission(request, repo_id, '/'):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 

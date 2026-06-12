@@ -206,6 +206,10 @@ class LibContentView extends React.Component {
     });
   };
 
+  canUseAIChat = (repoInfo = this.state.currentRepoInfo) => {
+    return Boolean(enableSeafileAI && repoInfo && !repoInfo.is_virtual);
+  };
+
   componentDidMount() {
     this.unsubscribeEvent = this.props.eventBus.subscribe(EVENT_BUS_TYPE.SEARCH_LIBRARY_CONTENT, this.onSearchedClick);
     this.unsubscribeSelectSearchedTag = this.props.eventBus.subscribe(EVENT_BUS_TYPE.SELECT_TAG, this.onTreeNodeClick);
@@ -328,10 +332,14 @@ class LibContentView extends React.Component {
     }
     // Initialize isDirentDetailShow from localStorage, but only for modes that use it
     const storedDirentDetailShowState = localStorage.getItem(DIRENT_DETAIL_SHOW_KEY);
-    const isDirentDetailShow = !isHistory && !isTrash && !isChat && storedDirentDetailShowState === 'true';
 
     try {
       const repoInfo = await this.fetchRepoInfo(repoID);
+      const canUseAIChat = this.canUseAIChat(repoInfo);
+      if (currentMode === CHAT_MODE && !canUseAIChat) {
+        currentMode = Cookies.get('seafile_view_mode') || LIST_MODE;
+      }
+      const isDirentDetailShow = !isHistory && !isTrash && currentMode !== CHAT_MODE && storedDirentDetailShowState === 'true';
       const isGroupOwnedRepo = repoInfo.owner_email.includes('@seafile_group');
       document.title = repoInfo.repo_name;
 
@@ -475,7 +483,7 @@ class LibContentView extends React.Component {
 
     if (isTrash) {
       currentMode = TRASH_MODE;
-    } else if (isChat && enableSeafileAI) {
+    } else if (isChat && this.canUseAIChat()) {
       currentMode = CHAT_MODE;
     } else if (tagId) {
       currentMode = TAGS_MODE;
@@ -717,7 +725,7 @@ class LibContentView extends React.Component {
       mode = HISTORY_MODE;
     } else if (isTrash) {
       mode = TRASH_MODE;
-    } else if (isChat && enableSeafileAI) {
+    } else if (isChat && this.canUseAIChat()) {
       mode = CHAT_MODE;
     }
     this.setState({
@@ -1388,6 +1396,9 @@ class LibContentView extends React.Component {
   };
 
   switchToChatView = () => {
+    if (!this.canUseAIChat()) {
+      return;
+    }
     const repoInfo = this.state.currentRepoInfo;
     const url = siteRoot + 'library/' + repoInfo.repo_id + '/' + encodeURIComponent(repoInfo.repo_name) + '/?chat=true&path=/';
     window.history.pushState({}, '', url);

@@ -86,7 +86,7 @@ class SharedRepoListView extends React.Component {
   onMenuItemClick = (operation, currentObject, event) => {
     const index = this.getRepoIndex(currentObject);
     if (this.repoItems[index]) {
-      this.repoItems[index].onMenuItemClick(event);
+      this.repoItems[index].onMenuItemClick(operation, event);
     }
     hideMenu();
   };

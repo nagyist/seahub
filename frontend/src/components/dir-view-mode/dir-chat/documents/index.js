@@ -37,9 +37,6 @@ const Documents = () => {
             </select>
           </div>
           <div className="sea-ticket-chat-documents-header-btns">
-            <button type="button" className="btn btn-icon p-0" onClick={() => closeDocument(currentDocument)} title={gettext('Close current tab')}>
-              <Icon symbol="close" />
-            </button>
             <button type="button" className="btn btn-icon p-0" onClick={closeDocuments} title={gettext('Close')}>
               <Icon symbol="close" />
             </button>

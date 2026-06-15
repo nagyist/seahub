@@ -1,4 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
+import deepCopy from 'deep-copy';
 import { useAskPage } from './page-type';
 import { useSessions } from './sessions';
 
@@ -23,6 +24,12 @@ export const DocumentsProvider = ({ children }) => {
     if (!document) {
       return;
     }
+    if (!isShowDocuments && typeof window !== 'undefined') {
+      const mathJaxScript = window.document?.getElementById('mathjax');
+      if (mathJaxScript?.parentNode) {
+        mathJaxScript.parentNode.removeChild(mathJaxScript);
+      }
+    }
     const nextDocument = {
       ...document,
       document_key: getDocumentKey(document),
@@ -31,13 +38,13 @@ export const DocumentsProvider = ({ children }) => {
     setDocuments((currentDocuments) => {
       const existedDocument = currentDocuments.find((item) => getDocumentKey(item) === nextDocument.document_key);
       if (existedDocument) {
-        return currentDocuments;
+        return deepCopy(currentDocuments);
       }
-      return [nextDocument, ...currentDocuments];
+      return deepCopy([nextDocument, ...currentDocuments]);
     });
-    setCurrentDocument(nextDocument);
+    setCurrentDocument(deepCopy(nextDocument));
     closeShowSessions();
-  }, [closeShowSessions]);
+  }, [closeShowSessions, isShowDocuments]);
 
   const closeDocument = useCallback((document) => {
     if (!document) {
@@ -51,7 +58,7 @@ export const DocumentsProvider = ({ children }) => {
       const nextDocuments = currentDocuments.slice(0);
       nextDocuments.splice(documentIndex, 1);
       const nextIndex = Math.min(documentIndex, nextDocuments.length - 1);
-      setCurrentDocument(nextDocuments[nextIndex] || null);
+      setCurrentDocument(deepCopy(nextDocuments[nextIndex]) || null);
       if (nextDocuments.length === 0) {
         setIsShowDocuments(false);
       }

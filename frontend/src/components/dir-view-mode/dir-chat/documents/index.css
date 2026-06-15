@@ -119,7 +119,7 @@
 
 .sea-ticket-chat-documents .sea-ticket-chat-document-content {
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .sea-ticket-chat-documents .sea-ticket-chat-document-md .sf-slate-viewer-scroll-container .sf-slate-article-content {

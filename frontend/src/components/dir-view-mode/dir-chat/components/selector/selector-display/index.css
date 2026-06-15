@@ -17,7 +17,7 @@
 }
 
 .sea-qa-customize-select.sea-qa-ai-chat-selector-display:hover {
-  background-color: var(--option-bg-color);
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .sea-qa-customize-select.sea-qa-ai-chat-selector-display:not(.border):hover {

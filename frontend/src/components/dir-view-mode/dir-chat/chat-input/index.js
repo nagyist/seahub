@@ -89,7 +89,7 @@ const ChatInput = forwardRef(({
     <div className={classNames('sea-qa-ai-ask-chat-input-wrapper', { disabled })}>
       <ClickOutside onClickOutside={onContainerBlur}>
         <div className={classNames('sea-qa-ai-ask-chat-input-container', { 'focus': containerFocus })} onClick={disabled ? () => {} : handleFocus}>
-          <AttachmentsFormatter value={attachments} onRemove={removeAttachment} />
+          {attachments && attachments.length > 0 && <AttachmentsFormatter value={attachments} onRemove={removeAttachment} />}
           <div className="sea-qa-ai-ask-chat-input-content">
             <textarea
               autoFocus
@@ -114,7 +114,7 @@ const ChatInput = forwardRef(({
               />
             </div>
             <div className="sea-qa-ai-ask-chat-operations-container-right">
-              <div className="sea-qa-ai-model-selector">
+              <div className="sea-qa-ai-model-selector d-none">
                 <AIModelSelector selectedModel={selectedModel} updateModel={setSelectedModel} />
               </div>
               <button

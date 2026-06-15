@@ -11,7 +11,7 @@
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item.active,
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item:hover,
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-more-op-btn:hover {
-  background-color: var(--option-bg-color);
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-content {
@@ -31,6 +31,9 @@
 
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-more-op-btn {
   display: none;
+  max-width: 24px;
+  height: 24px;
+  min-width: 24px;
 }
 
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item:hover .sea-qa-ai-ask-session-more-op-btn {
@@ -39,4 +42,8 @@
 
 .sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-more-op-btn .sea-qa-icon-svg {
   color: var(--bs-icon-color);
+}
+
+.sea-qa-ai-ask-session-more-op-btn .dropdown-item {
+  padding: 8px;
 }

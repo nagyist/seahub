@@ -6,6 +6,7 @@ import { gettext } from '../../../../../utils/constants';
 import Icon from '../../../../icon';
 import CommonOperationConfirmationDialog from '../../../../dialog/common-operation-confirmation-dialog';
 import { useAskPage, useSessions } from '../../hooks';
+import SeahubModalHeader from '@/components/common/seahub-modal-header';
 
 import './index.css';
 
@@ -35,7 +36,7 @@ const Session = ({ session, isSelected }) => {
         <div className="sea-qa-ai-ask-session-content">
           <div className="sea-qa-ai-ask-session-name text-truncate" title={session.name}>{session.name}</div>
         </div>
-        <Dropdown isOpen={isOpen} toggle={toggleDropdown}>
+        <Dropdown isOpen={isOpen} toggle={toggleDropdown} className="sea-qa-ai-ask-session-more-op-btn">
           <DropdownToggle color="link" className="sea-qa-ai-ask-session-more-op-btn p-0 border-0 text-secondary">
             <Icon symbol="more-level" />
           </DropdownToggle>
@@ -46,9 +47,12 @@ const Session = ({ session, isSelected }) => {
         </Dropdown>
       </div>
       {isShowRenameDialog && (
-        <Modal isOpen={true} toggle={() => setIsShowRenameDialog(false)}>
+        <Modal isOpen={true} toggle={() => setIsShowRenameDialog(false)} autoFocus={false}>
+          <SeahubModalHeader toggle={() => setIsShowRenameDialog(false)}>
+            {gettext('Chat name')}
+          </SeahubModalHeader>
           <ModalBody>
-            <Input value={renameValue} onChange={(event) => setRenameValue(event.target.value)} />
+            <Input value={renameValue} onChange={(event) => setRenameValue(event.target.value)} autoFocus />
           </ModalBody>
           <ModalFooter>
             <Button color="secondary" onClick={() => setIsShowRenameDialog(false)}>{gettext('Cancel')}</Button>

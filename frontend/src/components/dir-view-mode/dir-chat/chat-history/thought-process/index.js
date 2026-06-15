@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '../../../../../utils/constants';
 import Icon from '../../../../icon';
+import ThoughtProcessDialog from './thought-progress-dialog';
 
 import './index.css';
 
@@ -23,16 +24,18 @@ const ThoughtProcess = ({ value, settings }) => {
     <>
       <button
         type="button"
-        className="btn sea-qa-ai-thought-process-btn"
+        className="btn sea-qa-ai-thought-process-btn p-0"
         onClick={canExpand ? toggleExpanded : undefined}
         disabled={!canExpand}
       >
         <span className="mr-2">{gettext('Thought process')}</span>
         <Icon symbol="open-in-new-tab" />
       </button>
-      {canExpand && isExpanded && (
-        <pre className="sea-qa-ai-thought-process-value mb-0 mt-2">{displayValue}</pre>
-      )}
+      <ThoughtProcessDialog
+        isOpen={canExpand && isExpanded}
+        toggle={toggleExpanded}
+        value={displayValue}
+      />
     </>
   );
 };

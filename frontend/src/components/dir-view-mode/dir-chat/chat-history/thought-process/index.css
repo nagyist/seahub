@@ -13,6 +13,12 @@
   color: #666;
 }
 
+.sea-qa-ai-thought-process-btn,
+.sea-qa-ai-thought-process-btn:active {
+  border: 0;
+  outline: none;
+}
+
 .sea-qa-ai-thought-process-btn:hover {
   cursor: pointer;
   color: var(--bas-dark);
@@ -33,11 +39,9 @@
 }
 
 .sea-qa-ai-thought-process-value {
-  padding: 12px 16px;
-  border-radius: 12px;
-  background-color: #F8F9FA;
-  color: #495057;
+  white-space: pre-wrap;
+  word-break: break-word;
   font-size: 12px;
   line-height: 18px;
-  white-space: pre-wrap;
+  color: #495057;
 }

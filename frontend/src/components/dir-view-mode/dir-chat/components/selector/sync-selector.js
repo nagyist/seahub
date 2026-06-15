@@ -33,14 +33,14 @@ const SyncSelector = ({ icon, className, value, title, onChange, children, onSea
         onClick={openSelector}
         icon={icon}
         className={classnames(className, { disabled })}
-        tip={title}
+        tip={isShowSelector ? '' : title}
         tipPlacement="top-start"
       >
         {children}
       </SelectorDisplay>
       {isShowSelector && (
         <SyncOptionsEditor
-          className="sea-qa-ai-chat-selector-display-editor "
+          className="sea-qa-ai-chat-selector-display-editor"
           target={ref}
           isMultiple={true}
           placeholder={gettext('Search')}

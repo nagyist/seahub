@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import Icon from '../../../../icon';
+import { gettext } from '../../../../../utils/constants';
 
 import './index.css';
 
@@ -15,18 +16,24 @@ const Attachments = ({ attachments = [], className = '', onRemove }) => {
   return (
     <div className={classNames('sea-qa-ai-chat-message-attachments', className)}>
       {validAttachments.map((attachment, index) => (
-        <div className="sf-metadata-tag" key={attachment.key || `${attachment.repo_id}-${attachment.path}-${index}`}>
-          <Icon symbol="ai-file" className="mr-1" />
-          <span className="text-truncate" title={attachment.name}>{attachment.name}</span>
+        <div
+          className="sea-qa-ai-chat-message-attachments-item"
+          key={attachment.key || `${attachment.repo_id}-${attachment.path}-${index}`}
+        >
           {onRemove && (
             <button
               type="button"
-              className="border-0 bg-transparent ml-1 p-0 d-flex align-items-center"
+              className="sea-qa-ai-chat-message-attachments-item-remove"
               onClick={() => onRemove(attachment, index)}
             >
               <Icon symbol="close" />
             </button>
           )}
+          <span className="sea-qa-ai-chat-message-attachments-item-name text-truncate" title={attachment.name}>{attachment.name}</span>
+          <span className="d-inline-flex justify-content-center align-items-center">
+            <Icon symbol="ai-file" className="mr-1" />
+            {gettext('Seafile library')}
+          </span>
         </div>
       ))}
     </div>

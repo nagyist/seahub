@@ -2,7 +2,11 @@
 Views which allow users to create and activate accounts.
 
 """
-
+import jwt
+import time
+import logging
+import datetime
+import requests
 
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -14,6 +18,9 @@ from constance import config
 
 from seahub import settings
 from seahub.utils.auth import get_login_bg_image_path
+
+
+logger = logging.getLogger(__name__)
 
 
 def activate(request, backend,
@@ -194,6 +201,29 @@ def register(request, backend, success_url=None, form_class=None,
         form = form_class(data=request.POST, files=request.FILES)
         if form.is_valid():
             new_user = backend.register(request, **form.cleaned_data)
+
+            if settings.ENABLE_RISK_CONTROL:
+                try:
+                    from seahub.api2.utils import get_client_ip
+                    from django.utils import timezone
+                    email = form.cleaned_data['email']
+                    ip = get_client_ip(request)
+                    message = {
+                        'register_ip': ip,
+                        'register_time': str(timezone.now().isoformat()),
+                        'account_type': 'user',
+                        'account_id': new_user.username,
+                        'account_name': email,
+                    }
+                    payload = {'exp': int(time.time()) + 300, }
+                    token = jwt.encode(payload, settings.JWT_PRIVATE_KEY, algorithm='HS256')
+                    headers = {"Authorization": "Token %s" % token}
+                    url = settings.RISK_CONTROL_SERVER_URL.rstrip('/') + '/api/seafile/account-risk-control/'
+                    resp = requests.post(
+                        url, json=message, headers=headers, timeout=10)
+                except Exception as e:
+                    logger.error('Risk control account registration error, %s, %s, %s', new_user.username, email, e)
+
             if success_url is None:
                 to, args, kwargs = backend.post_registration_redirect(request, new_user)
                 return redirect(to, *args, **kwargs)

@@ -1,7 +1,11 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 # encoding: utf-8
 
+import jwt
+import time
+import requests
 import logging
+import datetime
 import json
 from urllib.parse import urlparse
 from constance import config
@@ -260,6 +264,27 @@ def org_register(request):
 
             if name:
                 Profile.objects.add_or_update(new_user.username, name)
+
+            if settings.ENABLE_RISK_CONTROL:
+                try:
+                    from seahub.api2.utils import get_client_ip
+                    from django.utils import timezone
+                    ip = get_client_ip(request)
+                    message = {
+                        'register_ip': ip,
+                        'register_time': str(timezone.now().isoformat()),
+                        'account_type': 'org',
+                        'account_id': new_org.org_id,
+                        'account_name': org_name,
+                    }
+                    payload = {'exp': int(time.time()) + 300, }
+                    token = jwt.encode(payload, settings.JWT_PRIVATE_KEY, algorithm='HS256')
+                    headers = {"Authorization": "Token %s" % token}
+                    url = settings.RISK_CONTROL_SERVER_URL.rstrip('/') + '/api/seafile/account-risk-control/'
+                    resp = requests.post(
+                        url, json=message, headers=headers, timeout=10)
+                except Exception as e:
+                    logger.error('Risk control account registration error, %s, %s, %s', new_org.org_id, org_name, e)
 
             if new_user.is_active:
                 new_user.backend = settings.AUTHENTICATION_BACKENDS[0]

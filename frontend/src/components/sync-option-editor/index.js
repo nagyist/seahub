@@ -33,7 +33,7 @@ const SyncOptionsEditor = ({
   return (
     <CustomizePopover
       target={target}
-      className={classnames('option-editor-popover sync-option-editor-popover', className)}
+      popoverClassName={classnames('option-editor-popover sync-option-editor-popover', className)}
       hidePopover={handleClose}
       hidePopoverWithEsc={handleClose}
       placement={placement}

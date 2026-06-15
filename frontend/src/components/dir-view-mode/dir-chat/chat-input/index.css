@@ -90,6 +90,7 @@
 
 .sea-ai-ask-chat-operations-container .sea-ai-ask-icon-btn {
   width: 32px;
+  min-width: 32px;
   height: 32px;
   z-index: 1;
 }

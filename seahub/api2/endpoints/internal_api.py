@@ -285,7 +285,17 @@ class CheckThumbnailAccess(APIView):
         if not path:
             error_msg = 'path invalid'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        if check_folder_permission(request, repo_id, path) is None:
+        
+        path = normalize_file_path(path)
+        
+        file_id = seafile_api.get_file_id_by_path(repo_id, path)
+        if not file_id:
+            error_msg = 'Thumbnail file not found'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
+        parent_dir = os.path.dirname(path)
+        
+        if check_folder_permission(request, repo_id, parent_dir) is None:
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         return Response({'success': True})
@@ -298,7 +308,17 @@ class CheckThumbnailAccessByUserToken(APIView):
         if not path:
             error_msg = 'path invalid'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-        if check_folder_permission(request, repo_id, path) is None:
+        
+        path = normalize_file_path(path)
+        
+        file_id = seafile_api.get_file_id_by_path(repo_id, path)
+        if not file_id:
+            error_msg = 'Thumbnail file not found'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
+        parent_dir = os.path.dirname(path)
+        
+        if check_folder_permission(request, repo_id, parent_dir) is None:
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         return Response({'success': True})

@@ -8,13 +8,13 @@
   white-space: nowrap;
 }
 
-.sea-qa-ai-ask-chats-header .chat-header-divider {
+.sea-ai-ask-chats-header .chat-header-divider {
   height: 12px;
   width: 1px;
   background-color: #eaeaea;
   margin: 0 12px;
 }
 
-.sea-qa-ai-ask-chats-header .sea-qa-tooltip-icon-btn .sea-qa-icon-svg {
+.sea-ai-ask-chats-header .sea-ai-tooltip-icon-btn .sea-ai-icon-svg {
   color: var(--bs-icon-color);
 }

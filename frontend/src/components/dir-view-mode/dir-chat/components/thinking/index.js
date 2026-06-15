@@ -6,10 +6,10 @@ import './index.css';
 
 function Thinking() {
   return (
-    <div className="sea-qa-ai-ask-chat sea-qa-ai-ask-chat-thinking">
-      <div className="sea-qa-ai-ask-message-content p-0">
+    <div className="sea-ai-ask-chat sea-ai-ask-chat-thinking">
+      <div className="sea-ai-ask-message-content p-0">
         <Loading />
-        <span className="sea-qa-tip-default">{gettext('Thinking...')}</span>
+        <span className="sea-ai-tip-default">{gettext('Thinking...')}</span>
       </div>
     </div>
   );

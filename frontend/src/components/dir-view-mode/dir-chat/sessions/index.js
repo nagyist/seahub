@@ -15,16 +15,16 @@ const Sessions = ({ sessionId }) => {
   } = useSessions();
 
   return (
-    <div className="sea-qa-ai-ask-sessions-wrapper" style={{ width: 280, marginLeft: 16 }}>
-      <div className="sea-qa-ai-ask-sessions-header">
+    <div className="sea-ai-ask-sessions-wrapper" style={{ width: 280, marginLeft: 16 }}>
+      <div className="sea-ai-ask-sessions-header">
         <div>{gettext('Histories')}</div>
         <button type="button" className="btn btn-icon p-0 border-0 bg-transparent" onClick={closeShowSessions} title={gettext('Close')}>
           <Icon symbol="close" />
         </button>
       </div>
-      <div className="sea-qa-ai-ask-sessions-body">
+      <div className="sea-ai-ask-sessions-body">
         {sessions.length === 0 && (
-          <EmptyTip className="sea-qa-ai-ask-sessions-empty" text={gettext('No chats')} />
+          <EmptyTip className="sea-ai-ask-sessions-empty" text={gettext('No chats')} />
         )}
         {sessions.map((session) => (
           <Session

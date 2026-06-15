@@ -24,7 +24,7 @@ const ThoughtProcess = ({ value, settings }) => {
     <>
       <button
         type="button"
-        className="btn sea-qa-ai-thought-process-btn p-0"
+        className="btn sea-ai-thought-process-btn p-0"
         onClick={canExpand ? toggleExpanded : undefined}
         disabled={!canExpand}
       >

@@ -177,7 +177,7 @@ const CustomizeMarkdownViewer = ({ chatId, message, repoID }) => {
   }
 
   return (
-    <div className={classNames('sea-qa-message-ai-reply', aiMessageType)} ref={containerRef}>
+    <div className={classNames('sea-ai-message-reply', aiMessageType)} ref={containerRef}>
       <MarkdownViewer
         key={viewerKey}
         value={value}

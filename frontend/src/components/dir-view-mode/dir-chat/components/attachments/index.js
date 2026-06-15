@@ -14,22 +14,22 @@ const Attachments = ({ attachments = [], className = '', onRemove }) => {
   }
 
   return (
-    <div className={classNames('sea-qa-ai-chat-message-attachments', className)}>
+    <div className={classNames('sea-ai-chat-message-attachments', className)}>
       {validAttachments.map((attachment, index) => (
         <div
-          className="sea-qa-ai-chat-message-attachments-item"
+          className="sea-ai-chat-message-attachments-item"
           key={attachment.key || `${attachment.repo_id}-${attachment.path}-${index}`}
         >
           {onRemove && (
             <button
               type="button"
-              className="sea-qa-ai-chat-message-attachments-item-remove"
+              className="sea-ai-chat-message-attachments-item-remove"
               onClick={() => onRemove(attachment, index)}
             >
               <Icon symbol="close" />
             </button>
           )}
-          <span className="sea-qa-ai-chat-message-attachments-item-name text-truncate" title={attachment.name}>{attachment.name}</span>
+          <span className="sea-ai-chat-message-attachments-item-name text-truncate" title={attachment.name}>{attachment.name}</span>
           <span className="d-inline-flex justify-content-center align-items-center">
             <Icon symbol="ai-file" className="mr-1" />
             {gettext('Seafile library')}

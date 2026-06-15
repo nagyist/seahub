@@ -6,7 +6,7 @@ import './index.css';
 
 const AttachmentsFormatter = ({ value = [], onRemove }) => {
   return (
-    <div className="sea-qa-ai-chat-attachments-container w-100 px-4 o-hidden position-relative">
+    <div className="sea-ai-chat-attachments-container w-100 px-4 o-hidden position-relative">
       <Attachments attachments={value} onRemove={onRemove} />
     </div>
   );

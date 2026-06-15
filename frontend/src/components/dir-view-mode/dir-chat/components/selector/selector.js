@@ -49,7 +49,7 @@ const Selector = ({
       </SelectorDisplay>
       {isShowMenu && (
         <OptionEditor
-          className={`sea-qa-ai-chat-selector-display-editor ${editorClassName || ''} `}
+          className={`sea-ai-chat-selector-display-editor ${editorClassName || ''} `}
           options={options}
           target={ref}
           isSearchEnabled={isSearchEnabled}

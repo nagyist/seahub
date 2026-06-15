@@ -11,7 +11,7 @@ const CommonMessage = ({ chatId, message, settings, repoID }) => {
   return (
     <>
       <Attachments attachments={message[CHAT_MESSAGE_TYPE.ATTACHMENTS]} />
-      <div className="sea-qa-ai-ask-message-content">
+      <div className="sea-ai-ask-message-content">
         <ThoughtProcess value={message[CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]} settings={settings} />
         {message[CHAT_MESSAGE_TYPE.TEXT] && <>{message[CHAT_MESSAGE_TYPE.TEXT]}</>}
         {message[CHAT_MESSAGE_TYPE.AI_REPLY] && <CustomizeMarkdownViewer chatId={chatId} message={message} repoID={repoID} />}

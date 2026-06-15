@@ -14,7 +14,7 @@ const ChatHistory = ({ chat, settings, repoID }) => {
   }
 
   return (
-    <div className={classNames('sea-qa-ai-ask-chat', { 'user-input-chat': isUserSpeak })}>
+    <div className={classNames('sea-ai-ask-chat', { 'user-input-chat': isUserSpeak })}>
       <CommonMessage chatId={chatId} message={message} settings={settings} repoID={repoID} />
     </div>
   );

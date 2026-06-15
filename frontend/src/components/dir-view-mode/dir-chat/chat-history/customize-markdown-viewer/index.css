@@ -1,19 +1,19 @@
-.sea-qa-message-ai-reply.text * {
+.sea-ai-message-reply.text * {
   margin: 0;
   padding: 0;
 }
 
-.sea-qa-message-ai-reply .sf-slate-viewer-scroll-container {
+.sea-ai-message-reply .sf-slate-viewer-scroll-container {
   padding-top: 0;
   padding-bottom: 0;
   background-color: inherit;
 }
 
-.sea-qa-message-ai-reply .sf-slate-viewer-scroll-container .sf-slate-article-content {
+.sea-ai-message-reply .sf-slate-viewer-scroll-container .sf-slate-article-content {
   overflow-x: hidden;
 }
 
-.sea-qa-message-ai-reply .article {
+.sea-ai-message-reply .article {
   padding: 0 !important;
   width: 100%;
   max-width: 100%;
@@ -21,6 +21,6 @@
   box-shadow: none !important;
 }
 
-.sea-qa-message-ai-reply.rich-text .article :last-child {
+.sea-ai-message-reply.rich-text .article :last-child {
   margin-bottom: 0;
 }

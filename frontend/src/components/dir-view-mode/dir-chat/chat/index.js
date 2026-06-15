@@ -491,19 +491,19 @@ const Chat = ({ repoID, settings }) => {
   const effectiveIsReply = loading || isReply;
 
   return (
-    <div className={classNames('sea-qa-ai-ask-wrapper', { empty: isEmpty && isNewChat, 'small-page': isSmall, 'has-header': !isNewChat })}>
+    <div className={classNames('sea-ai-ask-wrapper', { empty: isEmpty && isNewChat, 'small-page': isSmall, 'has-header': !isNewChat })}>
       {!isNewChat && (
-        <div className="sea-qa-ai-ask-chats-header">
+        <div className="sea-ai-ask-chats-header">
           <ChatHeader session={session} isEmpty={isEmpty} customHeaderTitle={session?.problem || session?.name} />
         </div>
       )}
-      <div className="sea-qa-ai-ask-chats-body" ref={chatHistoryContentRef}>
-        <div className={classNames('sea-qa-ai-ask-chats', { 'pb-0': isEmpty, 'justify-content-center': isEmpty && !isNewChat })}>
+      <div className="sea-ai-ask-chats-body" ref={chatHistoryContentRef}>
+        <div className={classNames('sea-ai-ask-chats', { 'pb-0': isEmpty, 'justify-content-center': isEmpty && !isNewChat })}>
           {isEmpty && (
-            <div className="sea-qa-ai-ask-chats-tip">
-              <Icon symbol="chat-decoration" className="sea-qa-ai-ask-chats-tip-icon" />
-              <div className="sea-qa-ai-ask-chats-tip-title">{gettext('How can I help you?')}</div>
-              <div className="sea-qa-ai-ask-chats-tip-description">
+            <div className="sea-ai-ask-chats-tip">
+              <Icon symbol="chat-decoration" className="sea-ai-ask-chats-tip-icon" />
+              <div className="sea-ai-ask-chats-tip-title">{gettext('How can I help you?')}</div>
+              <div className="sea-ai-ask-chats-tip-description">
                 {gettext('You can say "Help solve the following issue: <issue description>" to let AI solve the issue by searching knowledge bases.')}
               </div>
             </div>
@@ -520,7 +520,7 @@ const Chat = ({ repoID, settings }) => {
           {loading && <CenteredLoading className="flex-1" />}
         </div>
       </div>
-      <div className="sea-qa-ai-ask-chats-footer">
+      <div className="sea-ai-ask-chats-footer">
         <ChatInput
           ref={messageInputRef}
           isReply={effectiveIsReply}

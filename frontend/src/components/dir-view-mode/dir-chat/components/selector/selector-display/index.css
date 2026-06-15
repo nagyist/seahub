@@ -1,4 +1,4 @@
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display {
+.sea-ai-customize-select.sea-ai-chat-selector-display {
   width: fit-content;
   max-width: 100%;
   background-image: none;
@@ -8,23 +8,23 @@
   color: #212529;
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display:not(.border) {
+.sea-ai-customize-select.sea-ai-chat-selector-display:not(.border) {
   border: none;
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display.bg-color {
+.sea-ai-customize-select.sea-ai-chat-selector-display.bg-color {
   background-color: #F7F7F5;
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display:hover {
+.sea-ai-customize-select.sea-ai-chat-selector-display:hover {
   background-color: rgba(0, 0, 0, 0.04);
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display:not(.border):hover {
+.sea-ai-customize-select.sea-ai-chat-selector-display:not(.border):hover {
   background-color: #EDEDEB;
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display.highlight {
+.sea-ai-customize-select.sea-ai-chat-selector-display.highlight {
   margin: 0;
   min-height: unset;
   max-height: unset;
@@ -33,21 +33,21 @@
   background-color: rgba(237, 113, 9, 0.05);
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display.highlight .sea-qa-icon-svg {
+.sea-ai-customize-select.sea-ai-chat-selector-display.highlight .sea-ai-icon-svg {
   color: inherit !important;
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display .selected-option {
+.sea-ai-customize-select.sea-ai-chat-selector-display .selected-option {
   background-color: transparent;
   gap: 8px;
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display .selected-option .sea-qa-icon-svg {
+.sea-ai-customize-select.sea-ai-chat-selector-display .selected-option .sea-ai-icon-svg {
   height: 14px !important;
   width: 14px !important;
   color: var(--bs-icon-color);
 }
 
-.sea-qa-customize-select.sea-qa-ai-chat-selector-display .selected-option .selected-option-show {
+.sea-ai-customize-select.sea-ai-chat-selector-display .selected-option .selected-option-show {
   font-size: 14px;
 }

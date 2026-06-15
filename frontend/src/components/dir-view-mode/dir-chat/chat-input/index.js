@@ -86,11 +86,11 @@ const ChatInput = forwardRef(({
   }), [value]);
 
   return (
-    <div className={classNames('sea-qa-ai-ask-chat-input-wrapper', { disabled })}>
+    <div className={classNames('sea-ai-ask-chat-input-wrapper', { disabled })}>
       <ClickOutside onClickOutside={onContainerBlur}>
-        <div className={classNames('sea-qa-ai-ask-chat-input-container', { 'focus': containerFocus })} onClick={disabled ? () => {} : handleFocus}>
+        <div className={classNames('sea-ai-ask-chat-input-container', { 'focus': containerFocus })} onClick={disabled ? () => {} : handleFocus}>
           {attachments && attachments.length > 0 && <AttachmentsFormatter value={attachments} onRemove={removeAttachment} />}
-          <div className="sea-qa-ai-ask-chat-input-content">
+          <div className="sea-ai-ask-chat-input-content">
             <textarea
               autoFocus
               className="message-input message-input-value"
@@ -104,8 +104,8 @@ const ChatInput = forwardRef(({
             />
             <div ref={previewContentRef} className="message-input message-input-preview" />
           </div>
-          <div className="sea-qa-ai-ask-chat-operations-container">
-            <div className="sea-qa-ai-ask-chat-operations-container-left">
+          <div className="sea-ai-ask-chat-operations-container">
+            <div className="sea-ai-ask-chat-operations-container-left">
               <LibraryFilesSelector
                 repoID={repoID}
                 value={attachments}
@@ -113,18 +113,18 @@ const ChatInput = forwardRef(({
                 disabled={disabled}
               />
             </div>
-            <div className="sea-qa-ai-ask-chat-operations-container-right">
-              <div className="sea-qa-ai-model-selector d-none">
+            <div className="sea-ai-ask-chat-operations-container-right">
+              <div className="sea-ai-model-selector d-none">
                 <AIModelSelector selectedModel={selectedModel} updateModel={setSelectedModel} />
               </div>
               <button
                 type="button"
-                className={classNames('btn p-0 border-0 d-flex align-items-center justify-content-center sea-qa-ai-ask-icon-btn icon-send-wrapper no-hover-bg', { 'disabled': isSendDisabled })}
+                className={classNames('btn p-0 border-0 d-flex align-items-center justify-content-center sea-ai-ask-icon-btn icon-send-wrapper no-hover-bg', { 'disabled': isSendDisabled })}
                 onClick={handleSend}
                 disabled={isSendDisabled}
                 title={gettext('Send')}
               >
-                <Icon symbol="btn-send" className="sea-qa-icon-svg" />
+                <Icon symbol="btn-send" className="sea-ai-icon-svg" />
               </button>
             </div>
           </div>

@@ -15,7 +15,7 @@ const ThoughtProcessDialog = ({ isOpen, toggle, value }) => {
         {gettext('Thought process')}
       </SeahubModalHeader>
       <ModalBody>
-        <div className="sea-qa-ai-thought-process-value">
+        <div className="sea-ai-thought-process-value">
           {value}
         </div>
       </ModalBody>

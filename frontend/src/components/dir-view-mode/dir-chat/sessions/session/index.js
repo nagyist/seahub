@@ -29,15 +29,15 @@ const Session = ({ session, isSelected }) => {
   return (
     <>
       <div
-        className={classNames('sea-qa-ai-ask-session-item', { active: isSelected || isOpen })}
+        className={classNames('sea-ai-ask-session-item', { active: isSelected || isOpen })}
         onClick={() => togglePageSlugId(session._id)}
       >
         <Icon symbol={icon} className="mr-2" />
-        <div className="sea-qa-ai-ask-session-content">
-          <div className="sea-qa-ai-ask-session-name text-truncate" title={session.name}>{session.name}</div>
+        <div className="sea-ai-ask-session-content">
+          <div className="sea-ai-ask-session-name text-truncate" title={session.name}>{session.name}</div>
         </div>
-        <Dropdown isOpen={isOpen} toggle={toggleDropdown} className="sea-qa-ai-ask-session-more-op-btn">
-          <DropdownToggle color="link" className="sea-qa-ai-ask-session-more-op-btn p-0 border-0 text-secondary">
+        <Dropdown isOpen={isOpen} toggle={toggleDropdown} className="sea-ai-ask-session-more-op-btn">
+          <DropdownToggle color="link" className="sea-ai-ask-session-more-op-btn p-0 border-0 text-secondary">
             <Icon symbol="more-level" />
           </DropdownToggle>
           <DropdownMenu end>

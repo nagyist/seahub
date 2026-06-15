@@ -1,4 +1,4 @@
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item {
+.sea-ai-ask-sessions-wrapper .sea-ai-ask-session-item {
   display: flex;
   align-items: center;
   padding: 0 8px;
@@ -8,42 +8,42 @@
   cursor: pointer;
 }
 
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item.active,
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item:hover,
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-more-op-btn:hover {
+.sea-ai-ask-sessions-wrapper .sea-ai-ask-session-item.active,
+.sea-ai-ask-sessions-wrapper .sea-ai-ask-session-item:hover,
+.sea-ai-ask-sessions-wrapper .sea-ai-ask-session-item .sea-ai-ask-session-more-op-btn:hover {
   background-color: rgba(0, 0, 0, 0.04);
 }
 
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-content {
+.sea-ai-ask-sessions-wrapper .sea-ai-ask-session-item .sea-ai-ask-session-content {
   width: calc(100% - 16px); /* 16: icon-width(16) */
   overflow: hidden;
 }
 
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item:hover .sea-qa-ai-ask-session-content {
+.sea-ai-ask-sessions-wrapper .sea-ai-ask-session-item:hover .sea-ai-ask-session-content {
   width: calc(100% - 56px); /* 56: icon-width(16) + icon-mr(8) + more-width(24) + more-ml(8) */
   margin-right: 8px;
 }
 
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-name {
+.sea-ai-ask-sessions-wrapper .sea-ai-ask-session-item .sea-ai-ask-session-name {
   flex: 1;
   overflow: hidden;
 }
 
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-more-op-btn {
+.sea-ai-ask-sessions-wrapper .sea-ai-ask-session-item .sea-ai-ask-session-more-op-btn {
   display: none;
   max-width: 24px;
   height: 24px;
   min-width: 24px;
 }
 
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item:hover .sea-qa-ai-ask-session-more-op-btn {
+.sea-ai-ask-sessions-wrapper .sea-ai-ask-session-item:hover .sea-ai-ask-session-more-op-btn {
   display: flex;
 }
 
-.sea-qa-ai-ask-sessions-wrapper .sea-qa-ai-ask-session-item .sea-qa-ai-ask-session-more-op-btn .sea-qa-icon-svg {
+.sea-ai-ask-sessions-wrapper .sea-ai-ask-session-item .sea-ai-ask-session-more-op-btn .sea-ai-icon-svg {
   color: var(--bs-icon-color);
 }
 
-.sea-qa-ai-ask-session-more-op-btn .dropdown-item {
+.sea-ai-ask-session-more-op-btn .dropdown-item {
   padding: 8px;
 }

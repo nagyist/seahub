@@ -59,9 +59,6 @@ const Definition = ({ element, attributes, sources, onOpen, disableAutoWidth = f
       <div className="sea-ai-chat-customize-definition-content-divider"></div>
       <div className="d-flex align-items-center justify-content-between">
         <div className="d-flex align-items-center">
-          <div className="sea-ai-chat-customize-definition-avatar d-flex align-items-center justify-content-center">
-            <Icon symbol="ai-file" />
-          </div>
           {modifiedTimeText && (
             <div className="sea-ai-chat-customize-definition-mtime text-truncate">
               {`${gettext('Updated')} ${modifiedTimeText}`}

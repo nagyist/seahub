@@ -74,7 +74,8 @@ class ChatSessions(models.Model):
     class Meta:
         db_table = 'chat_sessions'
         indexes = [
-            models.Index(fields=['repo_id', 'is_shared'], name='idx_chat_repo_id_shared'),
+            models.Index(fields=['repo_id', 'is_shared'], name='idx_repo_id_is_shared'),
+            models.Index(fields=['updated_at'], name='idx_chat_sessions_updated_at'),
         ]
 
     def to_dict(self):
@@ -115,17 +116,15 @@ class ChatMessageThoughtProcessManager(models.Manager):
 
 class ChatMessageThoughtProcess(models.Model):
     id = models.BigAutoField(primary_key=True)
-    session_uuid = models.CharField(max_length=36, null=False)
-    message_id = models.CharField(max_length=4, null=False)
-    thought_process = models.TextField()
+    session_uuid = models.CharField(max_length=36, null=True, blank=True)
+    message_id = models.CharField(max_length=4, null=True, blank=True)
+    thought_process = models.TextField(null=True)
 
     objects = ChatMessageThoughtProcessManager()
 
     class Meta:
         db_table = 'chat_message_thought_process'
-        unique_together = [
-            ['session_uuid', 'message_id'],
-        ]
+        unique_together = (('session_uuid', 'message_id'),)
 
     def to_dict(self):
         try:
@@ -171,22 +170,19 @@ class ChatMessages(models.Model):
 
     id = models.BigAutoField(primary_key=True)
     session_uuid = models.CharField(max_length=36, null=False)
-    message_id = models.CharField(max_length=4, blank=True, default='')
+    message_id = models.CharField(max_length=4, null=True, blank=True, default=None)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     content = models.TextField(null=True)
     attachments = models.TextField(null=True)
     sources = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     objects = ChatMessagesManager()
 
     class Meta:
         db_table = 'chat_messages'
-        indexes = [
-            models.Index(fields=['session_uuid', 'created_at']),
-            models.Index(fields=['session_uuid', 'role', '-created_at']),
-        ]
+        unique_together = (('session_uuid', 'message_id', 'role'),)
 
     def to_dict(self):
         try:

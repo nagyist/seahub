@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { DropdownItem } from 'reactstrap';
 import { Link, navigate } from '@gatsbyjs/reach-router';
 import { gettext, siteRoot, isPro } from '../../utils/constants';
 import { seafileAPI } from '../../utils/seafile-api';
@@ -12,6 +13,7 @@ import ShareDialog from '../../components/dialog/share-dialog';
 import { LIST_MODE } from '../../components/dir-view-mode/constants';
 import OpIcon from '../../components/op-icon';
 import CustomDropdown from '../../components/dropdown';
+import MobileItemMenu from '../../components/mobile-item-menu';
 import { formatWithTimezone } from '../../utils/time';
 
 
@@ -168,7 +170,7 @@ class Item extends Component {
     const menuItems = [starItem];
 
     return (
-      <div className="flex-shrink-0 d-flex align-items-center">
+      <div className="d-flex align-items-center">
         {(isPro && data.is_admin) &&
           <OpIcon
             id={`share-${this.props.idx}`}
@@ -266,7 +268,9 @@ class Item extends Component {
                   <span className="library-size">{data.size}</span>
                 </div>
               </div>
-              {this.itemOperations()}
+              <div className='flex-shrink-0 ml-4'>
+                {this.itemOperations()}
+              </div>
             </div>
           )}
           {this.state.isShowSharedDialog && (
@@ -290,22 +294,27 @@ class Item extends Component {
     } else {
       return (
         <Fragment>
-          <div
-            className={`repo-list-item ${this.state.highlight ? 'highlight' : ''}`}
-            onMouseOver={this.handleMouseOver}
-            onMouseOut={this.handleMouseOut}
-            onClick={this.visitRepo}
-          >
-            <div className="d-flex align-items-center text-truncate">
-              <img src={data.icon_url} title={data.icon_title} alt={data.icon_title} width="24" className="mr-2" />
+          <tr onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut}>
+            <td onClick={this.visitRepo}><img src={data.icon_url} title={data.icon_title} alt={data.icon_title} width="24" /></td>
+            <td onClick={this.visitRepo}>
               <Link to={shareRepoUrl}>{data.repo_name}</Link>
-            </div>
-            <div className="d-flex align-items-center text-truncate mt-1">
+              <br />
               <span className="item-meta-info" title={data.owner_contact_email}>{data.owner_name}</span>
               <span className="item-meta-info">{data.size}</span>
               <span className="item-meta-info" title={formatWithTimezone(data.last_modified)}>{dayjs(data.last_modified).fromNow()}</span>
-            </div>
-          </div>
+            </td>
+            <td>
+              <MobileItemMenu isOpen={this.state.isOpMenuOpen} toggle={this.toggleOpMenu}>
+                <DropdownItem className="mobile-menu-item" onClick={this.onToggleStarRepo}>
+                  {this.state.isStarred ? gettext('Unstar') : gettext('Star')}
+                </DropdownItem>
+                {(isPro && data.is_admin) &&
+                  <DropdownItem className="mobile-menu-item" onClick={this.share}>{gettext('Share')}</DropdownItem>
+                }
+                <DropdownItem className="mobile-menu-item" onClick={this.leaveShare}>{gettext('Leave Share')}</DropdownItem>
+              </MobileItemMenu>
+            </td>
+          </tr>
           {this.state.isShowSharedDialog && (
             <ModalPortal>
               <ShareDialog

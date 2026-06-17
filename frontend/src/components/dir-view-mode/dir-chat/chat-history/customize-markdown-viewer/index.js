@@ -2,8 +2,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { ELementTypes, MarkdownViewer } from '@seafile/seafile-editor';
-import { mediaUrl } from '../../../../../utils/constants';
-import { useDocuments } from '../../hooks';
+import { mediaUrl, siteRoot } from '../../../../../utils/constants';
+import { Utils } from '../../../../../utils/utils';
+// import { useDocuments } from '../../hooks';
 import { CHAT_MESSAGE_TYPE } from '../../constants';
 import CustomizeDefinition from '../customize-definition';
 import CustomizeLinkReference from '../customize-link-reference';
@@ -91,23 +92,32 @@ const buildAIReply = (value, sources, chatId) => {
   return `${normalizedValue}\n\n${sourcesString}`;
 };
 
-const buildDocumentPayload = (source, repoID) => {
+// const buildDocumentPayload = (source, repoID) => {
+//   const repoId = source?.repo_id || repoID;
+//   const path = source?.path || '';
+//   const title = source?.title || source?.name || path;
+//   return {
+//     ...source,
+//     repo_id: repoId,
+//     path,
+//     name: title,
+//     title,
+//     content: source?.ai_summary || source?.content || '',
+//     document_key: source?.document_key || `${repoId}:${path || title}`,
+//   };
+// };
+
+const buildDocumentUrl = (source, repoID) => {
   const repoId = source?.repo_id || repoID;
   const path = source?.path || '';
-  const title = source?.title || source?.name || path;
-  return {
-    ...source,
-    repo_id: repoId,
-    path,
-    name: title,
-    title,
-    content: source?.ai_summary || source?.content || '',
-    document_key: source?.document_key || `${repoId}:${path || title}`,
-  };
+  if (!repoId || !path) {
+    return '';
+  }
+  return `${siteRoot}lib/${repoId}/file${Utils.encodePath(path)}`;
 };
 
 const CustomizeMarkdownViewer = ({ chatId, message, repoID }) => {
-  const { openDocument } = useDocuments();
+  // const { openDocument } = useDocuments();
   const containerRef = useRef(null);
   const retryCountRef = useRef(0);
   const [viewerKey, setViewerKey] = useState(0);
@@ -148,8 +158,18 @@ const CustomizeMarkdownViewer = ({ chatId, message, repoID }) => {
   }, [value, viewerKey]);
 
   const handleOpenDocument = useCallback((source) => {
-    openDocument(buildDocumentPayload(source, repoID));
-  }, [openDocument, repoID]);
+    const url = buildDocumentUrl(source, repoID);
+    if (!url) {
+      return;
+    }
+
+    // openDocument(buildDocumentPayload(source, repoID));
+    if (Utils.isWeChat()) {
+      location.href = url;
+      return;
+    }
+    window.open(url);
+  }, [repoID]);
 
   const options = useMemo(() => {
     return {

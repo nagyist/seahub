@@ -2,9 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, ModalFooter, ModalBody, Alert, Row, Col } from 'reactstrap';
 import RepoListWrapper from '../file-chooser/repo-list-wrapper';
+import Searcher from '../file-chooser/searcher';
 import { MODE_TYPE_MAP } from '../../constants';
 import { seafileAPI } from '../../utils/seafile-api';
-import { gettext } from '../../utils/constants';
+import { gettext, isPro } from '../../utils/constants';
 import { RepoInfo } from '../../models';
 import CreateFolder from '../dialog/create-folder-dialog';
 import Icon from '../icon';
@@ -118,6 +119,13 @@ class SelectDirentBody extends React.Component {
   };
 
   selectMode = (mode) => {
+    if (mode === MODE_TYPE_MAP.SEARCH_RESULTS && this.props.onOpenSearch) {
+      if (this.props.mode !== MODE_TYPE_MAP.SEARCH_RESULTS) {
+        this.props.onOpenSearch();
+      }
+      return;
+    }
+
     this.props.onUpdateMode(mode);
     switch (mode) {
       case MODE_TYPE_MAP.ONLY_CURRENT_LIBRARY:
@@ -174,9 +182,26 @@ class SelectDirentBody extends React.Component {
             currentMode={mode}
             onUpdateMode={this.selectMode}
           />
+          {isPro && (
+            <LibraryOption
+              mode={MODE_TYPE_MAP.SEARCH_RESULTS}
+              label={gettext('Search')}
+              currentMode={mode}
+              onUpdateMode={this.selectMode}
+            />
+          )}
         </Col>
         <Col xs="12" md="9" className='file-list-col'>
-          <ModalBody>
+          <ModalBody className={mode === MODE_TYPE_MAP.SEARCH_RESULTS ? 'copy-move-dirent-search-body' : ''}>
+            {(mode === MODE_TYPE_MAP.SEARCH_RESULTS && isPro) && (
+              <div className="copy-move-dirent-search-input">
+                <Searcher
+                  className="file-chooser-searcher-inline"
+                  onUpdateSearchStatus={this.props.onUpdateSearchStatus}
+                  onUpdateSearchResults={this.props.onUpdateSearchResults}
+                />
+              </div>
+            )}
             <RepoListWrapper
               key={repoListWrapperKey}
               mode={mode}
@@ -245,6 +270,9 @@ SelectDirentBody.propTypes = {
   setErrMessage: PropTypes.func,
   mode: PropTypes.string,
   onUpdateMode: PropTypes.func,
+  onOpenSearch: PropTypes.func,
+  onUpdateSearchStatus: PropTypes.func,
+  onUpdateSearchResults: PropTypes.func,
   searchStatus: PropTypes.string,
   searchResults: PropTypes.array,
   onSearchedItemClick: PropTypes.func,
@@ -253,7 +281,6 @@ SelectDirentBody.propTypes = {
   onSelectSearchedRepo: PropTypes.func,
   onAddFolder: PropTypes.func,
   initToShowChildren: PropTypes.bool,
-  fetchRepoInfo: PropTypes.func,
   selectedSearchedItem: PropTypes.object,
 };
 

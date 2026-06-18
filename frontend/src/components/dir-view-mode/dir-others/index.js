@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { gettext, username, isPro, siteRoot, enableSeafileAI } from '../../../utils/constants';
+import { gettext, username, isPro, siteRoot, enableAIChat, enableSeafileAI } from '../../../utils/constants';
 import { Utils } from '../../../utils/utils';
 import TreeSection from '../../tree-section';
 import LibSettingsDialog from '../../dialog/lib-settings';
@@ -66,7 +66,7 @@ const DirOthers = ({ userPerm, repoID, currentRepoInfo, currentMode, updateRepoI
 
   return (
     <TreeSection title={gettext('Others')} className="dir-others">
-      {enableSeafileAI && !isVirtual && (
+      {enableSeafileAI && enableAIChat && !isVirtual && (
         <Item
           text={gettext('Chat')}
           iconSymbol="new-chat"

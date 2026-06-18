@@ -1093,6 +1093,7 @@ METADATA_FILE_TYPES = {
 #         seafile ai         #
 ##############################
 ENABLE_SEAFILE_AI = False
+ENABLE_AI_CHAT = False
 ENABLE_FACE_RECOGNITION = False
 
 SEAFILE_AI_SERVER_URL = ''

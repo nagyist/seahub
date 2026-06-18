@@ -49,6 +49,12 @@ export const EVENT_BUS_TYPE = {
   HISTORY_FILTER: 'history_filter',
   HISTORY_COMMITS_UPDATED: 'history_commits_updated',
   SWITCH_TO_HISTORY_VIEW: 'switch_to_history_view',
+  SWITCH_TO_CHAT_VIEW: 'switch_to_chat_view',
+  CHAT_NEW_SESSION: 'chat_new_session',
+  CHAT_TOGGLE_SESSIONS: 'chat_toggle_sessions',
+  ASK_QUESTION: 'ask_question',
+  AI_REPLY: 'ai_reply',
+  AI_STREAM_REPLY: 'ai_stream_reply',
 
   // column visibility
   HIDDEN_COLUMNS_CHANGED: 'hidden_columns_changed',

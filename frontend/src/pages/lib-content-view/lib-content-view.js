@@ -11,6 +11,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import {
+  enableSeafileAI,
   enableThumbnailServer,
   gettext,
   SF_DIRECTORY_TREE_SORT_BY_KEY,
@@ -57,7 +58,8 @@ import {
   METADATA_MODE,
   TAGS_MODE,
   HISTORY_MODE,
-  TRASH_MODE
+  TRASH_MODE,
+  CHAT_MODE
 } from '../../components/dir-view-mode/constants';
 
 import CurDirPath from '../../components/cur-dir-path';
@@ -204,12 +206,17 @@ class LibContentView extends React.Component {
     });
   };
 
+  canUseAIChat = (repoInfo = this.state.currentRepoInfo) => {
+    return Boolean(enableSeafileAI && repoInfo && !repoInfo.is_virtual);
+  };
+
   componentDidMount() {
     this.unsubscribeEvent = this.props.eventBus.subscribe(EVENT_BUS_TYPE.SEARCH_LIBRARY_CONTENT, this.onSearchedClick);
     this.unsubscribeSelectSearchedTag = this.props.eventBus.subscribe(EVENT_BUS_TYPE.SELECT_TAG, this.onTreeNodeClick);
 
     this.unsubscribeOpenTreePanel = eventBus.subscribe(EVENT_BUS_TYPE.OPEN_TREE_PANEL, this.openTreePanel);
     this.unsubscribeSwitchToHistoryView = eventBus.subscribe(EVENT_BUS_TYPE.SWITCH_TO_HISTORY_VIEW, this.switchToHistoryView);
+    this.unsubscribeSwitchToChatView = eventBus.subscribe(EVENT_BUS_TYPE.SWITCH_TO_CHAT_VIEW, this.switchToChatView);
     this.unsubscribeSwitchToTrashView = eventBus.subscribe(EVENT_BUS_TYPE.SWITCH_TO_TRASH_VIEW, this.switchToTrashView);
     this.unsubscribeUpdateTrashPath = eventBus.subscribe(EVENT_BUS_TYPE.UPDATE_TRASH_PATH, this.updateTrashPath);
 
@@ -308,12 +315,14 @@ class LibContentView extends React.Component {
   calculatePara = async (props) => {
     const { repoID } = props;
 
-    const { path, viewId, tagId, isHistory, isTrash } = this.getInfoFromLocation(repoID);
+    const { path, viewId, tagId, isHistory, isTrash, isChat } = this.getInfoFromLocation(repoID);
     let currentMode;
     if (isTrash) {
       currentMode = TRASH_MODE;
     } else if (isHistory) {
       currentMode = HISTORY_MODE;
+    } else if (isChat && enableSeafileAI) {
+      currentMode = CHAT_MODE;
     } else if (tagId) {
       currentMode = TAGS_MODE;
     } else if (viewId) {
@@ -323,10 +332,14 @@ class LibContentView extends React.Component {
     }
     // Initialize isDirentDetailShow from localStorage, but only for modes that use it
     const storedDirentDetailShowState = localStorage.getItem(DIRENT_DETAIL_SHOW_KEY);
-    const isDirentDetailShow = !isHistory && !isTrash && storedDirentDetailShowState === 'true';
 
     try {
       const repoInfo = await this.fetchRepoInfo(repoID);
+      const canUseAIChat = this.canUseAIChat(repoInfo);
+      if (currentMode === CHAT_MODE && !canUseAIChat) {
+        currentMode = Cookies.get('seafile_view_mode') || LIST_MODE;
+      }
+      const isDirentDetailShow = !isHistory && !isTrash && currentMode !== CHAT_MODE && storedDirentDetailShowState === 'true';
       const isGroupOwnedRepo = repoInfo.owner_email.includes('@seafile_group');
       document.title = repoInfo.repo_name;
 
@@ -354,7 +367,7 @@ class LibContentView extends React.Component {
 
       this.isNeedUpdateHistoryState = false;
 
-      if (!repoInfo.lib_need_decrypt) {
+      if (!repoInfo.lib_need_decrypt && currentMode !== CHAT_MODE) {
         this.loadDirData(path);
       }
     } catch (error) {
@@ -372,6 +385,9 @@ class LibContentView extends React.Component {
 
     const isHistory = urlParams.get('history');
     if (isHistory) return { path: '/', isHistory: true };
+
+    const isChat = urlParams.get('chat');
+    if (isChat) return { path: '/', isChat: true };
 
     let location = window.location.href.split('?')[0];
     location = decodeURIComponent(location);
@@ -418,6 +434,7 @@ class LibContentView extends React.Component {
     this.unsubscribeEventBus && this.unsubscribeEventBus();
     this.unsubscribeSelectSearchedTag && this.unsubscribeSelectSearchedTag();
     this.unsubscribeSwitchToHistoryView && this.unsubscribeSwitchToHistoryView();
+    this.unsubscribeSwitchToChatView && this.unsubscribeSwitchToChatView();
     this.unsubscribeColumnVisibilityChanged && this.unsubscribeColumnVisibilityChanged();
     this.unsubscribeTableViewColumnVisibilityChanged && this.unsubscribeTableViewColumnVisibilityChanged();
     this.unsubscribeDirentStatusChanged && this.unsubscribeDirentStatusChanged();
@@ -458,7 +475,7 @@ class LibContentView extends React.Component {
 
   onpopstate = (event) => {
     const { repoID } = this.props;
-    const { path: urlPath, viewId, tagId, isTrash } = this.getInfoFromLocation(repoID);
+    const { path: urlPath, viewId, tagId, isTrash, isChat } = this.getInfoFromLocation(repoID);
 
     let currentMode;
     let resolvedPath = urlPath;
@@ -466,6 +483,8 @@ class LibContentView extends React.Component {
 
     if (isTrash) {
       currentMode = TRASH_MODE;
+    } else if (isChat && this.canUseAIChat()) {
+      currentMode = CHAT_MODE;
     } else if (tagId) {
       currentMode = TAGS_MODE;
     } else if (viewId) {
@@ -700,12 +719,14 @@ class LibContentView extends React.Component {
 
   hideMetadataView = (isSetRoot = false) => {
     const { repoID } = this.props;
-    const { path, isHistory, isTrash } = this.getInfoFromLocation(repoID);
+    const { path, isHistory, isTrash, isChat } = this.getInfoFromLocation(repoID);
     let mode = Cookies.get('seafile_view_mode') || LIST_MODE;
     if (isHistory) {
       mode = HISTORY_MODE;
     } else if (isTrash) {
       mode = TRASH_MODE;
+    } else if (isChat && this.canUseAIChat()) {
+      mode = CHAT_MODE;
     }
     this.setState({
       currentMode: mode,
@@ -1363,6 +1384,22 @@ class LibContentView extends React.Component {
   switchToHistoryView = () => {
     this.setState({
       currentMode: HISTORY_MODE,
+      path: '/',
+      isDirentDetailShow: false,
+      isDirentSelected: false,
+    });
+  };
+
+  switchToChatView = () => {
+    if (!this.canUseAIChat()) {
+      return;
+    }
+    const repoInfo = this.state.currentRepoInfo;
+    const url = siteRoot + 'library/' + repoInfo.repo_id + '/' + encodeURIComponent(repoInfo.repo_name) + '/?chat=true&path=/';
+    window.history.pushState({}, '', url);
+
+    this.setState({
+      currentMode: CHAT_MODE,
       path: '/',
       isDirentDetailShow: false,
       isDirentSelected: false,
@@ -2969,7 +3006,7 @@ class LibContentView extends React.Component {
                           'animation-children': isDirentSelected
                         })}>
                         {isDirentSelected ? (
-                          [METADATA_MODE, TAGS_MODE, TRASH_MODE].includes(currentMode) ? (
+                          [METADATA_MODE, TAGS_MODE, TRASH_MODE, CHAT_MODE].includes(currentMode) ? (
                             <ViewToolbar
                               repoID={repoID}
                               repoInfo={currentRepoInfo}
@@ -3145,7 +3182,7 @@ class LibContentView extends React.Component {
                         :
                         <div className="message err-tip">{gettext('Folder does not exist.')}</div>
                       }
-                      {!isCustomPermission && this.state.isDirentDetailShow && (
+                      {!isCustomPermission && this.state.isDirentDetailShow && currentMode !== CHAT_MODE && (
                         <Detail
                           path={detailPath}
                           repoID={this.props.repoID}
@@ -3161,7 +3198,7 @@ class LibContentView extends React.Component {
                       )}
                     </div>
                   </div>
-                  {canUpload && this.state.pathExist && !this.state.isViewFile && ![METADATA_MODE, TAGS_MODE, HISTORY_MODE, TRASH_MODE].includes(this.state.currentMode) && (
+                  {canUpload && this.state.pathExist && !this.state.isViewFile && ![METADATA_MODE, TAGS_MODE, HISTORY_MODE, TRASH_MODE, CHAT_MODE].includes(this.state.currentMode) && (
                     <FileUploader
                       ref={uploader => this.uploader = uploader}
                       dragAndDrop={true}

@@ -1,0 +1,9 @@
+.sea-ai-chat-selector-display-editor .popover.bs-popover-auto[data-popper-placement^=top],
+.sea-ai-chat-selector-display-editor .popover.bs-popover-top {
+  margin-bottom: 0;
+  bottom: -4px !important;
+}
+
+.sea-ai-chat-selector-display-editor .popover.bs-popover-auto[data-popper-placement^=bottom-start] {
+  top: -4px !important;
+}

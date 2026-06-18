@@ -553,6 +553,10 @@ class DirentListItem extends React.Component {
     if (Utils.isEditableSdocFile(dirent.name)) {
       return;
     }
+
+    if (dirent.encoded_thumbnail_src !== '') {
+      this.props.updateDirent(dirent, { encoded_thumbnail_src: '' });
+    }
   };
 
   getItemMenuList = (dirent, isContextmenu = true) => {

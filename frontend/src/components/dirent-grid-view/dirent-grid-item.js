@@ -444,9 +444,16 @@ class DirentGridItem extends React.Component {
   onError = () => {
     const { dirent } = this.state;
     if (Utils.isEditableSdocFile(dirent.name)) {
-      let dirent = this.state.dirent;
-      dirent.encoded_thumbnail_src = '';
-      this.setState({ dirent });
+      return;
+    }
+
+    if (dirent.encoded_thumbnail_src !== '') {
+      this.setState((prevState) => ({
+        dirent: {
+          ...prevState.dirent,
+          encoded_thumbnail_src: ''
+        }
+      }));
     }
   };
 

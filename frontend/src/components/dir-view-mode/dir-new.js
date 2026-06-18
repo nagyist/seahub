@@ -126,7 +126,7 @@ class DirNew extends React.Component {
       return null;
     }
 
-    const newBtnClassName = 'dir-new-btn mt-3 mx-5 flex-fill d-flex align-items-center justify-content-center btn btn-secondary';
+    const newBtnClassName = 'dir-new-btn btn btn-secondary';
 
     if ([METADATA_MODE, TAGS_MODE, HISTORY_MODE, TRASH_MODE].includes(currentMode)) {
       return (

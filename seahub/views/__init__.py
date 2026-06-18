@@ -131,6 +131,8 @@ def check_folder_permission(request, repo_id, path):
         return PERMISSION_READ
 
     username = request.user.username
+    if not username:
+        return None
     permission = seafile_api.check_permission_by_path(repo_id, path, username)
     if permission == PERMISSION_INVISIBLE:
         return None

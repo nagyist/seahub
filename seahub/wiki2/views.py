@@ -207,9 +207,7 @@ def wiki_publish_view(request, publish_url, page_id=None):
             page_info = pages[0]
 
         file_path = page_info.get('path', '')
-
-        wiki_file_name = os.path.basename(file_path)
-        wiki_title = os.path.splitext(wiki_file_name)[0]
+        wiki_title = page_info.get('name', '')
         page_map = {page['id']: page for page in pages}
 
         def find_navigation_path(items, target_id):

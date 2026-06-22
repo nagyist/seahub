@@ -238,6 +238,37 @@ class Libraries extends Component {
     this.setState({ repoList });
   };
 
+  onToggleStarRepo = (repo) => {
+    const repoList = this.state.repoList.map(item => {
+      if (item.repo_id === repo.repo_id) {
+        item.starred = !item.starred;
+      }
+      return item;
+    });
+    this.toggleStarRelatedGroupsRepos(repo.repo_id);
+    this.setState({ repoList });
+  };
+
+  onToggleSharedStarRepo = (repo) => {
+    const sharedRepoList = this.state.sharedRepoList.map(item => {
+      if (item.repo_id === repo.repo_id) {
+        item.starred = !item.starred;
+      }
+      return item;
+    });
+    this.setState({ sharedRepoList });
+  };
+
+  onTogglePublicStarRepo = (repo) => {
+    const publicRepoList = this.state.publicRepoList.map(item => {
+      if (item.repo_id === repo.repo_id) {
+        item.starred = !item.starred;
+      }
+      return item;
+    });
+    this.setState({ publicRepoList });
+  };
+
   deleteRepo = (repoId, repoList) => {
     if (!Array.isArray(repoList) || repoList.length === 0) {
       return repoList;
@@ -344,6 +375,29 @@ class Libraries extends Component {
         return group;
       }
       const updatedRepos = this.renameRepo(repoId, newName, repos);
+      return { ...group, repos: updatedRepos };
+    });
+    this.setState({ groupList: updatedGroups });
+  };
+
+  toggleStarRelatedGroupsRepos = (repoId) => {
+    const relatedGroups = this.groupsReposManager.getRepoInGroupsIdsById(repoId);
+    if (relatedGroups.length === 0) {
+      return;
+    }
+
+    const { groupList } = this.state;
+    const updatedGroups = groupList.map((group) => {
+      const { repos } = group;
+      if (!relatedGroups.includes(group.id)) {
+        return group;
+      }
+      const updatedRepos = repos.map((repo) => {
+        if (repo.repo_id === repoId) {
+          repo.starred = !repo.starred;
+        }
+        return repo;
+      });
       return { ...group, repos: updatedRepos };
     });
     this.setState({ groupList: updatedGroups });
@@ -494,6 +548,7 @@ class Libraries extends Component {
                               onRenameRepo={this.onRenameRepo}
                               onDeleteRepo={this.onDeleteRepo}
                               onTransferRepo={this.onTransferRepo}
+                              onToggleStarRepo={this.onToggleStarRepo}
                               onRepoClick={this.onRepoClick}
                               sortRepoList={this.sortRepoList}
                               inAllLibs={true}
@@ -515,6 +570,7 @@ class Libraries extends Component {
                     isItemFreezed={this.state.isItemFreezed}
                     onFreezedItem={this.onFreezedItem}
                     onUnfreezedItem={this.onUnfreezedItem}
+                    onToggleStarRepo={this.onToggleSharedStarRepo}
                   />
 
                   {canViewOrg && (
@@ -525,6 +581,7 @@ class Libraries extends Component {
                       isItemFreezed={this.state.isItemFreezed}
                       onFreezedItem={this.onFreezedItem}
                       onUnfreezedItem={this.onUnfreezedItem}
+                      onToggleStarRepo={this.onTogglePublicStarRepo}
                     />
                   )}
 
@@ -545,6 +602,7 @@ class Libraries extends Component {
                         inAllLibs={true}
                         group={group}
                         renameRelatedGroupsRepos={this.renameRelatedGroupsRepos}
+                        toggleStarRelatedGroupsRepos={this.toggleStarRelatedGroupsRepos}
                         deleteRelatedGroupsRepos={this.deleteRelatedGroupsRepos}
                         addRepoToGroup={this.addRepoToGroup}
                         onGroupNameChanged={this.onGroupNameChanged}

@@ -156,7 +156,6 @@ class PublishWikiDialog extends React.Component {
               </p>
             </div>
             <Switch
-              className="ms-3 mb-0"
               checked={enableServerRender}
               onChange={this.handleServerRenderToggle}
             />

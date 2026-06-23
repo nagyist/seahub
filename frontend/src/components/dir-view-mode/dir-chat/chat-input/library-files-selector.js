@@ -4,33 +4,7 @@ import { seafileAPI } from '../../../../utils/seafile-api';
 import AttachmentObject from '../models/attachment_object';
 import SyncSelector from '../components/selector/sync-selector';
 
-const TEXT_ATTACHMENT_SUFFIXES = new Set([
-  '.txt', '.md', '.markdown', '.json', '.yaml', '.yml', '.csv', '.tsv',
-  '.py', '.js', '.ts', '.jsx', '.tsx', '.java', '.c', '.cc', '.cpp', '.h', '.hpp',
-  '.go', '.rs', '.sql', '.sh', '.css', '.scss', '.less', '.html', '.xml',
-]);
-
-const canLoadAttachmentContent = (path) => {
-  const lowerPath = (path || '').toLowerCase();
-  const dotIndex = lowerPath.lastIndexOf('.');
-  if (dotIndex < 0) {
-    return false;
-  }
-  return TEXT_ATTACHMENT_SUFFIXES.has(lowerPath.slice(dotIndex));
-};
-
-const resolveAttachmentContent = async (repoId, path) => {
-  if (!canLoadAttachmentContent(path)) {
-    return '';
-  }
-  try {
-    const downloadLinkRes = await seafileAPI.getFileDownloadLink(repoId, path);
-    const fileContentRes = await seafileAPI.getFileContent(downloadLinkRes.data);
-    return typeof fileContentRes.data === 'string' ? fileContentRes.data : '';
-  } catch (error) {
-    return '';
-  }
-};
+const CHAT_ATTACHMENT_EXTENSIONS = 'md,sdoc,docx,pdf,pptx';
 
 const LibraryFilesSelector = ({ repoID, value: attachments = [], onChange: propsOnChange, disabled }) => {
   const searchResultsRef = useRef(new Map());
@@ -53,38 +27,35 @@ const LibraryFilesSelector = ({ repoID, value: attachments = [], onChange: props
     if (!value.trim()) {
       return Promise.resolve([]);
     }
-    return seafileAPI.searchFileInRepo(repoID, value).then((res) => {
-      let fileList = [];
-      if (Array.isArray(res.data)) {
-        fileList = res.data;
-      } else if (res.data && Array.isArray(res.data.data)) {
-        fileList = res.data.data;
-      } else if (res.data && Array.isArray(res.data.results)) {
-        fileList = res.data.results;
-      } else if (res.data && Array.isArray(res.data.obj_list)) {
-        fileList = res.data.obj_list;
-      }
-
-      const files = fileList.filter((item) => item.type === 'file' || item.is_dir === false || !item.type);
+    return seafileAPI.searchFiles({
+      q: value,
+      search_repo: repoID,
+      obj_type: 'file',
+      search_ftypes: 'custom',
+      input_fexts: CHAT_ATTACHMENT_EXTENSIONS,
+      per_page: 100,
+      page: 1,
+    }).then((res) => {
+      const files = Array.isArray(res.data?.results)
+        ? res.data.results.filter((item) => item.is_dir === false && item.fullpath)
+        : [];
 
       files.forEach((file) => {
-        const path = file.path || file.fullpath || file.name || '';
-        if (!path) return;
+        const path = file.fullpath;
         const key = `${repoID}:${path}`;
         searchResultsRef.current.set(key, file);
       });
 
       return files.map((file) => {
-        const path = file.path || file.fullpath || file.name || '';
-        if (!path) return null;
+        const path = file.fullpath;
         const key = `${repoID}:${path}`;
-        const name = path.substr(path.lastIndexOf('/') + 1);
+        const name = file.name;
         return {
           value: key,
           label: name,
           icon: 'file',
         };
-      }).filter(Boolean);
+      });
     }).catch((error) => {
       // Suppress abort/cancel errors
       if (error && error.name === 'AbortError') return [];
@@ -92,7 +63,7 @@ const LibraryFilesSelector = ({ repoID, value: attachments = [], onChange: props
     });
   }, [repoID]);
 
-  const onChange = useCallback(async (selectedKeys) => {
+  const onChange = useCallback((selectedKeys) => {
     const currentKeys = attachments.map((att) => att.key);
 
     const addedKeys = selectedKeys.filter((key) => !currentKeys.includes(key));
@@ -108,13 +79,12 @@ const LibraryFilesSelector = ({ repoID, value: attachments = [], onChange: props
       for (const key of addedKeys) {
         const file = searchResultsRef.current.get(key);
         if (file) {
-          const name = file.path.substr(file.path.lastIndexOf('/') + 1);
-          const content = await resolveAttachmentContent(repoID, file.path);
+          const path = file.fullpath || file.path;
+          const name = file.name || path.substr(path.lastIndexOf('/') + 1);
           const newAtt = new AttachmentObject({
             repo_id: repoID,
-            path: file.path,
+            path,
             name: name,
-            content: content,
           });
           if (!updatedAttachments.some((att) => att.key === newAtt.key)) {
             updatedAttachments.push(newAtt);

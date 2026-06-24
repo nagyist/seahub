@@ -1,7 +1,7 @@
 import React, { Fragment, useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
-import { gettext, enableRepoAutoDel, enableFaceRecognitionFeature } from '../../utils/constants';
+import { gettext, enableRepoAutoDel, enableFaceRecognitionFeature, enableSeafileAI } from '../../utils/constants';
 import { TAB } from '../../constants/repo-setting-tabs';
 import LibHistorySettingPanel from './lib-settings/lib-history-setting-panel';
 import LibAutoDelSettingPanel from './lib-settings/lib-old-files-auto-del-setting-panel';
@@ -206,6 +206,7 @@ const LibSettingsDialog = ({ repoID, currentRepoInfo, toggleDialog, tab, showMig
                     repoID={repoID}
                     value={enableTags}
                     lang={tagsLang}
+                    enableAI={enableSeafileAI}
                     submit={updateEnableTags}
                     toggleDialog={toggleDialog}
                     enableMetadata={enableMetadata}

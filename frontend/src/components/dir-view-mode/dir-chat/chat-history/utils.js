@@ -1,5 +1,5 @@
 const INTERNAL_REFERENCE_RE = /<reference_(\d+)>/g;
-const GROUPED_REFERENCE_RE = /\((?:\s*(?:Reference|Source|Document|Documents|Docs|Doc)\s*\d+\s*,?)+\s*\)/gi;
+const GROUPED_REFERENCE_RE = /\(\s*(?:Documents|Document|Reference|Source|Docs|Doc)\s*\d+(?:(?:\s*,\s*|\s+)(?:Documents|Document|Reference|Source|Docs|Doc)\s*\d+)*(?:\s*,)?\s*\)/gi;
 const REFERENCE_GROUP_FORMAT_RE = /([[\(])(Reference|Source|Document|Documents|Docs|Doc)\s*(\d+(?:\s*,\s*(?:\d+|(?:Reference|Source|Document|Documents|Docs|Doc)\s*\d+))*)\s*([\]\)])/gi;
 const REFERENCE_MARK_RE = /\[(Reference)\s+(\d+)\]/g;
 const REFERENCE_MARK_WORD_RE = /(Reference|Source|Document|Documents|Docs|Doc)\s*/gi;

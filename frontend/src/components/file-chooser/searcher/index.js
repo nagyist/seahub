@@ -14,11 +14,20 @@ export const SearchStatus = {
   RESULTS: 'results',
 };
 
-const Searcher = ({ className = '', onUpdateSearchStatus, onUpdateSearchResults }) => {
+const Searcher = ({
+  className = '',
+  onUpdateSearchStatus,
+  onUpdateSearchResults,
+  searchResults = [],
+  onInputArrowKeyDown,
+  onInputEnterKeyDown,
+  inputRef,
+}) => {
   const [inputValue, setInputValue] = useState('');
 
   const searchTimer = useRef(null);
   const source = useRef(null);
+  const isComposingRef = useRef(false);
 
   const clearSearchRequest = useCallback(() => {
     if (searchTimer.current) {
@@ -97,9 +106,41 @@ const Searcher = ({ className = '', onUpdateSearchStatus, onUpdateSearchResults 
     return items;
   };
 
-  const handleKeyDown = useCallback((e) => {
-    e.stopPropagation();
+  const handleCompositionStart = useCallback(() => {
+    isComposingRef.current = true;
   }, []);
+
+  const handleCompositionEnd = useCallback(() => {
+    isComposingRef.current = false;
+  }, []);
+
+  const handleKeyDown = useCallback((e) => {
+    const isImeComposing = isComposingRef.current || e.nativeEvent?.isComposing || e.keyCode === 229;
+    if (isImeComposing) {
+      e.stopPropagation();
+      return;
+    }
+
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && searchResults.length > 0) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (onInputArrowKeyDown) {
+        onInputArrowKeyDown(e.key);
+      }
+      return;
+    }
+
+    if (e.key === 'Enter' && searchResults.length > 0) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (onInputEnterKeyDown) {
+        onInputEnterKeyDown();
+      }
+      return;
+    }
+
+    e.stopPropagation();
+  }, [onInputArrowKeyDown, onInputEnterKeyDown, searchResults.length]);
 
   const onCloseSearching = useCallback(() => {
     clearSearchRequest();
@@ -119,6 +160,9 @@ const Searcher = ({ className = '', onUpdateSearchStatus, onUpdateSearchResults 
           value={inputValue}
           onChange={handleSearchInputChange}
           onKeyDown={handleKeyDown}
+          onCompositionStart={handleCompositionStart}
+          onCompositionEnd={handleCompositionEnd}
+          innerRef={inputRef}
           autoFocus
         />
         {inputValue.length !== 0 && (
@@ -136,6 +180,13 @@ Searcher.propTypes = {
   className: PropTypes.string,
   onUpdateSearchStatus: PropTypes.func,
   onUpdateSearchResults: PropTypes.func,
+  searchResults: PropTypes.array,
+  onInputArrowKeyDown: PropTypes.func,
+  onInputEnterKeyDown: PropTypes.func,
+  inputRef: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.shape({ current: PropTypes.any }),
+  ]),
 };
 
 export default Searcher;

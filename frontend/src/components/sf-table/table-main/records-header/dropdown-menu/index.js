@@ -227,13 +227,27 @@ const HeaderDropdownMenu = forwardRef(({
     items.push({
       key: 'delete',
       label: gettext('Delete property'),
-      icon_dom: <Icon className="sf-metadata-icon" symbol="delete" />,
+      icon_dom: <Icon className="sf-metadata-icon" symbol="delete1" />,
       disabled: !canDeleteColumnFn,
       onClick: onDelete,
     });
 
     return items;
   }, [column, canModifyColumnData, canDeleteColumn, canRenameColumn, canModifyView, getDateFormatItems, openOptionPopover, openNumberFormatPopover, openRenamePopover, onDelete, modifySort]);
+
+  const hasEnabledMenuItem = useMemo(() => {
+    return menuItems.some(item => {
+      if (item === 'Divider') return false;
+      if (Array.isArray(item.children) && item.children.length > 0) {
+        return item.children.some(child => !child.disabled);
+      }
+      return !item.disabled;
+    });
+  }, [menuItems]);
+
+  if (!hasEnabledMenuItem) {
+    return null;
+  }
 
   return (
     <>

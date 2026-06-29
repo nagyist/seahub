@@ -16,6 +16,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from seahub.api2.authentication import RepoAPITokenAuthentication
+from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
 from seahub.base.models import FileComment, FileTrash
 from seahub.repo_api_tokens.utils import get_dir_file_info_list
 from seahub.api2.throttling import UserRateThrottle
@@ -34,7 +35,7 @@ from seahub.api2.endpoints.multi_share_links import check_permissions_arg, get_s
 from seahub.utils.repo import parse_repo_perm
 from seahub.share.models import FileShare
 from seahub.share.decorators import check_share_link_count
-from seahub.constants import PERMISSION_READ_WRITE, PERMISSION_PREVIEW_EDIT, PERMISSION_PREVIEW
+from seahub.constants import PERMISSION_READ_WRITE, PERMISSION_PREVIEW_EDIT, PERMISSION_PREVIEW, REPO_TYPE_WIKI
 
 
 
@@ -48,11 +49,12 @@ from seahub.tags.models import FileUUIDMap
 
 from seahub.utils import normalize_dir_path, check_filename_with_rename, gen_file_upload_url, is_valid_dirent_name, \
     normalize_file_path, render_error, gen_file_get_url, is_pro_version, gen_inner_file_upload_url, \
-    get_file_type_and_ext, SEADOC
+    get_file_type_and_ext, SEADOC, HAS_FILE_SEARCH, HAS_FILE_SEASEARCH
 from seahub.utils.file_op import check_file_lock
 
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.views.file import can_preview_file, can_edit_file
+from seahub.search.utils import search_files, ai_search_files, format_repos
 
 logger = logging.getLogger(__name__)
 json_content_type = 'application/json; charset=utf-8'
@@ -509,6 +511,120 @@ class RepoInfoView(APIView):
             'last_modified': timestamp_to_isoformat_timestr(repo.last_modify),
         }
         return Response(data)
+
+
+class ViaRepoSearchFilesView(APIView):
+    authentication_classes = (RepoAPITokenAuthentication, )
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request):
+        repo_id = request.repo_api_token_obj.repo_id
+        keyword = request.GET.get('q', None)
+        if not keyword:
+            error_msg = 'q invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        repo = seafile_api.get_repo(repo_id)
+        if not repo or getattr(repo, 'repo_type', None) == REPO_TYPE_WIKI:
+            error_msg = 'Library %s not found.' % repo_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        permission = check_folder_permission_by_repo_api(request, repo_id, '/')
+        if not permission:
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        file_list = []
+
+        if is_pro_version():
+            if HAS_FILE_SEARCH:
+                map_id = repo.origin_repo_id if repo.origin_repo_id else repo_id
+                repo_id_map = {map_id: repo}
+                obj_desc = {
+                    'obj_type': 'file',
+                    'suffixes': None,
+                    'time_range': (None, None),
+                    'size_range': (None, None),
+                }
+                start = 0
+                size = 100
+
+                try:
+                    pro_file_list = []
+                    while True:
+                        results, total = search_files(
+                            repo_id_map, None, keyword, obj_desc, start, size, None, False
+                        )
+                        for result in results:
+                            if result.get('is_dir'):
+                                continue
+                            pro_file_list.append({
+                                'path': result['fullpath'],
+                                'size': result['size'],
+                                'mtime': timestamp_to_isoformat_timestr(result['last_modified']),
+                                'type': 'file',
+                            })
+
+                        start += size
+                        if start >= total:
+                            return Response({'data': pro_file_list})
+                except Exception as e:
+                    logger.error(e)
+
+            if HAS_FILE_SEASEARCH:
+                repos = [(repo.id, repo.origin_repo_id, repo.origin_path, repo.name)]
+                searched_repos, repos_map = format_repos(repos)
+                try:
+                    pro_file_list = []
+                    results, _ = ai_search_files(keyword, searched_repos, 1000, [], obj_type='file')
+                    for result in results:
+                        if result.get('is_dir'):
+                            continue
+
+                        repo_info = repos_map.get(result['repo_id'])
+                        if not repo_info:
+                            continue
+
+                        real_repo_id, origin_path, _ = repo_info
+                        fullpath = result['fullpath']
+                        if origin_path and origin_path != '/':
+                            if not fullpath.startswith(origin_path):
+                                continue
+                            fullpath = fullpath.removeprefix(origin_path)
+
+                        mtime = result.get('last_modified')
+                        size = result.get('size')
+                        if mtime is None or size is None:
+                            dirent = seafile_api.get_dirent_by_path(real_repo_id, fullpath)
+                            if not dirent:
+                                continue
+                            mtime = dirent.mtime
+                            size = dirent.size
+
+                        pro_file_list.append({
+                            'path': fullpath,
+                            'size': size,
+                            'mtime': timestamp_to_isoformat_timestr(mtime),
+                            'type': 'file',
+                        })
+
+                    return Response({'data': pro_file_list})
+                except Exception as e:
+                    logger.error(e)
+
+        searched_files = seafile_api.search_files(repo_id, keyword)
+        for searched_file in searched_files:
+            if searched_file.is_dir:
+                continue
+
+            file_list.append({
+                'path': searched_file.path,
+                'size': searched_file.size,
+                'mtime': timestamp_to_isoformat_timestr(searched_file.mtime),
+                'type': 'file',
+            })
+
+        return Response({'data': file_list})
 
 
 class ViaRepoBatchMove(APIView):

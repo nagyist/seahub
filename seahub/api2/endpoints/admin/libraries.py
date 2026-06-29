@@ -29,11 +29,20 @@ from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.api2.endpoints.group_owned_libraries import get_group_id_by_repo_owner
 from seahub.constants import PERMISSION_READ_WRITE
 from seahub.base.models import RepoTransfer
+from seahub.repo_metadata.models import RepoMetadata, RepoMetadataViews
+from seahub.repo_metadata.utils import init_metadata, init_tags, add_init_metadata_task
+from seahub.repo_metadata.metadata_server_api import MetadataServerAPI
 
 try:
     from seahub.settings import MULTI_TENANCY
 except ImportError:
     MULTI_TENANCY = False
+
+try:
+    from seahub.settings import ENABLE_METADATA_FOR_NEW_LIBRARY, ENABLE_METADATA_MANAGEMENT
+except ImportError:
+    ENABLE_METADATA_FOR_NEW_LIBRARY = False
+    ENABLE_METADATA_MANAGEMENT = False
 
 logger = logging.getLogger(__name__)
 
@@ -215,6 +224,20 @@ class AdminLibraries(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        try:
+            if ENABLE_METADATA_MANAGEMENT and ENABLE_METADATA_FOR_NEW_LIBRARY:
+                RepoMetadata.objects.enable_metadata_and_tags(repo_id)
+                metadata_server_api = MetadataServerAPI(repo_id, repo_owner)
+                init_metadata(metadata_server_api)
+                init_tags(metadata_server_api)
+                add_init_metadata_task(params={
+                    'repo_id': repo_id,
+                    'username': repo_owner
+                })
+                RepoMetadataViews.objects.add_view(repo_id, 'All files', 'table')
+        except Exception as e:
+            logger.error(e)
 
         # send admin operation log signal
         admin_op_detail = {

@@ -31,7 +31,8 @@ class SysAdminCreateRepoDialog extends React.Component {
 
   handleSubmit = () => {
     const { repoName, selectedUsers } = this.state;
-    this.props.createRepo(repoName.trim(), selectedUsers[0].email);
+    const owner = selectedUsers[0] ? selectedUsers[0].email : '';
+    this.props.createRepo(repoName.trim(), owner);
     this.toggle();
   };
 

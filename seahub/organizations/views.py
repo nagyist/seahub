@@ -235,6 +235,11 @@ def org_register(request):
             post_data['url_prefix'] = url_prefix
             form = OrgRegistrationForm(post_data)
 
+        from seahub.utils.turnstile import check_turnstile
+        enable_turnstile = getattr(settings, 'ENABLE_TURNSTILE', False)
+        if enable_turnstile and not check_turnstile(request):
+            form.add_error(None, _("Cloudflare Turnstile check failed. Please refresh and try again."))
+
         if form.is_valid():
             name = form.cleaned_data['name']
             email = form.cleaned_data['email']
@@ -300,14 +305,21 @@ def org_register(request):
     up = urlparse(service_url)
     service_url_scheme = up.scheme
     service_url_remaining = up.netloc + up.path
-    return render(request, 'organizations/org_register.html', {
+
+    enable_turnstile = getattr(settings, 'ENABLE_TURNSTILE', False)
+    context = {
         'form': form,
         'login_bg_image_path': login_bg_image_path,
         'service_url_scheme': service_url_scheme,
         'service_url_remaining': service_url_remaining,
         'org_auto_url_prefix': ORG_AUTO_URL_PREFIX,
-        'strong_pwd_required': config.USER_STRONG_PASSWORD_REQUIRED
-    })
+        'strong_pwd_required': config.USER_STRONG_PASSWORD_REQUIRED,
+        'enable_turnstile': enable_turnstile,
+    }
+    if enable_turnstile:
+        context['turnstile_site_key'] = getattr(settings, 'TURNSTILE_SITE_KEY', '')
+
+    return render(request, 'organizations/org_register.html', context)
 
 
 @login_required
@@ -333,7 +345,9 @@ def react_fake_view(request, **kwargs):
         'enable_subscription': subscription_check(),
         'enable_external_billing_service': ENABLE_EXTERNAL_BILLING_SERVICE,
         'sys_enable_user_clean_trash': config.ENABLE_USER_CLEAN_TRASH,
-        'sys_enable_encrypted_library': config.ENABLE_ENCRYPTED_LIBRARY
+        'sys_enable_encrypted_library': config.ENABLE_ENCRYPTED_LIBRARY,
+        'enable_turnstile': settings.ENABLE_TURNSTILE,
+        'turnstile_site_key': settings.TURNSTILE_SITE_KEY,
         })
 
 

@@ -1130,6 +1130,11 @@ GOOGLE_MAP_ID = 'google_map_id'
 ENABLE_RISK_CONTROL = False
 RISK_CONTROL_SERVER_URL = ''
 
+# Cloudflare Turnstile
+ENABLE_TURNSTILE = False
+TURNSTILE_SITE_KEY = ''
+TURNSTILE_SECRET_KEY = ''
+
 #####################
 # External settings #
 #####################

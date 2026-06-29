@@ -11,6 +11,7 @@ import requests
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.http import Http404
+from django.utils.translation import gettext as _
 
 from registration.backends import get_backend
 
@@ -199,6 +200,12 @@ def register(request, backend, success_url=None, form_class=None,
 
     if request.method == 'POST':
         form = form_class(data=request.POST, files=request.FILES)
+
+        from seahub.utils.turnstile import check_turnstile
+        enable_turnstile = getattr(settings, 'ENABLE_TURNSTILE', False)
+        if enable_turnstile and not check_turnstile(request):
+            form.add_error(None, _("Cloudflare Turnstile check failed. Please refresh and try again."))
+
         if form.is_valid():
             new_user = backend.register(request, **form.cleaned_data)
 
@@ -248,4 +255,10 @@ def register(request, backend, success_url=None, form_class=None,
     login_bg_image_path = get_login_bg_image_path()
     context['login_bg_image_path'] = login_bg_image_path
     context['strong_pwd_required'] = config.USER_STRONG_PASSWORD_REQUIRED
+
+    enable_turnstile = getattr(settings, 'ENABLE_TURNSTILE', False)
+    context['enable_turnstile'] = enable_turnstile
+    if enable_turnstile:
+        context['turnstile_site_key'] = getattr(settings, 'TURNSTILE_SITE_KEY', '')
+
     return render(request, template_name, context)

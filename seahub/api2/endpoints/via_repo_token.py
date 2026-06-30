@@ -16,7 +16,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from seahub.api2.authentication import RepoAPITokenAuthentication
-from seahub.base.templatetags.seahub_tags import email2nickname, email2contact_email
 from seahub.base.models import FileComment, FileTrash
 from seahub.repo_api_tokens.utils import get_dir_file_info_list
 from seahub.api2.throttling import UserRateThrottle
@@ -35,7 +34,7 @@ from seahub.api2.endpoints.multi_share_links import check_permissions_arg, get_s
 from seahub.utils.repo import parse_repo_perm
 from seahub.share.models import FileShare
 from seahub.share.decorators import check_share_link_count
-from seahub.constants import PERMISSION_READ_WRITE, PERMISSION_PREVIEW_EDIT, PERMISSION_PREVIEW, REPO_TYPE_WIKI
+from seahub.constants import PERMISSION_READ_WRITE, PERMISSION_PREVIEW_EDIT, PERMISSION_PREVIEW
 
 
 
@@ -525,7 +524,7 @@ class ViaRepoSearchFilesView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         repo = seafile_api.get_repo(repo_id)
-        if not repo or getattr(repo, 'repo_type', None) == REPO_TYPE_WIKI:
+        if not repo:
             error_msg = 'Library %s not found.' % repo_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 

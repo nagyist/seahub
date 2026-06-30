@@ -1688,9 +1688,11 @@ CREATE TABLE `wiki_settings` (
 CREATE TABLE `wiki_file_views` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `wiki_id` varchar(36) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `linked_repo_id` varchar(255) DEFAULT NULL,
   `details` longtext NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_wiki_file_views_wiki_id` (`wiki_id`)
+  UNIQUE KEY `idx_wiki_file_views_wiki_id` (`wiki_id`,`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `webhook_jobs` (

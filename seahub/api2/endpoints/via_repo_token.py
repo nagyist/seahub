@@ -53,7 +53,7 @@ from seahub.utils.file_op import check_file_lock
 
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from seahub.views.file import can_preview_file, can_edit_file
-from seahub.search.utils import search_files, ai_search_files, format_repos
+from seahub.search.utils import search_files, ai_search_files
 
 logger = logging.getLogger(__name__)
 json_content_type = 'application/json; charset=utf-8'
@@ -539,8 +539,7 @@ class ViaRepoSearchFilesView(APIView):
 
         if is_pro_version():
             if HAS_FILE_SEARCH:
-                map_id = repo.origin_repo_id if repo.origin_repo_id else repo_id
-                repo_id_map = {map_id: repo}
+                repo_id_map = {repo_id: repo}
                 obj_desc = {
                     'obj_type': 'file',
                     'suffixes': suffixes,
@@ -567,8 +566,7 @@ class ViaRepoSearchFilesView(APIView):
                     logger.error(e)
 
             elif HAS_FILE_SEASEARCH:
-                repos = [(repo.id, repo.origin_repo_id, repo.origin_path, repo.name)]
-                searched_repos, repos_map = format_repos(repos)
+                searched_repos = [(repo.id, None, None)]
                 try:
                     pro_file_list = []
                     results, _ = ai_search_files(keyword, searched_repos, 100, suffixes, obj_type='file')
@@ -576,21 +574,12 @@ class ViaRepoSearchFilesView(APIView):
                         if result.get('is_dir'):
                             continue
 
-                        repo_info = repos_map.get(result['repo_id'])
-                        if not repo_info:
-                            continue
-
-                        real_repo_id, origin_path, _ = repo_info
                         fullpath = result['fullpath']
-                        if origin_path and origin_path != '/':
-                            if not fullpath.startswith(origin_path):
-                                continue
-                            fullpath = fullpath.removeprefix(origin_path)
 
                         mtime = result.get('last_modified')
                         size = result.get('size')
                         if mtime is None or size is None:
-                            dirent = seafile_api.get_dirent_by_path(real_repo_id, fullpath)
+                            dirent = seafile_api.get_dirent_by_path(repo_id, fullpath)
                             if not dirent:
                                 continue
                             mtime = dirent.mtime

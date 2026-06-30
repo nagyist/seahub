@@ -59,6 +59,7 @@ logger = logging.getLogger(__name__)
 json_content_type = 'application/json; charset=utf-8'
 HTTP_443_ABOVE_QUOTA = 443
 HTTP_520_OPERATION_FAILED = 520
+CHAT_ATTACHMENT_EXTENSIONS = 'md,sdoc,docx,pdf,pptx'
 
 
 def check_folder_permission_by_repo_api(request, repo_id, path):
@@ -533,7 +534,8 @@ class ViaRepoSearchFilesView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        file_list = []
+        suffixes = [i_ext.strip() for i_ext in CHAT_ATTACHMENT_EXTENSIONS.split(',') if i_ext.strip()]
+        suffix_set = set(suffixes)
 
         if is_pro_version():
             if HAS_FILE_SEARCH:
@@ -541,41 +543,35 @@ class ViaRepoSearchFilesView(APIView):
                 repo_id_map = {map_id: repo}
                 obj_desc = {
                     'obj_type': 'file',
-                    'suffixes': None,
+                    'suffixes': suffixes,
                     'time_range': (None, None),
                     'size_range': (None, None),
                 }
-                start = 0
-                size = 100
 
                 try:
                     pro_file_list = []
-                    while True:
-                        results, total = search_files(
-                            repo_id_map, None, keyword, obj_desc, start, size, None, False
-                        )
-                        for result in results:
-                            if result.get('is_dir'):
-                                continue
-                            pro_file_list.append({
-                                'path': result['fullpath'],
-                                'size': result['size'],
-                                'mtime': timestamp_to_isoformat_timestr(result['last_modified']),
-                                'type': 'file',
-                            })
-
-                        start += size
-                        if start >= total:
-                            return Response({'data': pro_file_list})
+                    results, _ = search_files(
+                        repo_id_map, None, keyword, obj_desc, 0, 100, None, False
+                    )
+                    for result in results:
+                        if result.get('is_dir'):
+                            continue
+                        pro_file_list.append({
+                            'path': result['fullpath'],
+                            'size': result['size'],
+                            'mtime': timestamp_to_isoformat_timestr(result['last_modified']),
+                            'type': 'file',
+                        })
+                    return Response({'data': pro_file_list})
                 except Exception as e:
                     logger.error(e)
 
-            if HAS_FILE_SEASEARCH:
+            elif HAS_FILE_SEASEARCH:
                 repos = [(repo.id, repo.origin_repo_id, repo.origin_path, repo.name)]
                 searched_repos, repos_map = format_repos(repos)
                 try:
                     pro_file_list = []
-                    results, _ = ai_search_files(keyword, searched_repos, 1000, [], obj_type='file')
+                    results, _ = ai_search_files(keyword, searched_repos, 100, suffixes, obj_type='file')
                     for result in results:
                         if result.get('is_dir'):
                             continue
@@ -611,9 +607,13 @@ class ViaRepoSearchFilesView(APIView):
                 except Exception as e:
                     logger.error(e)
 
+        file_list = []
         searched_files = seafile_api.search_files(repo_id, keyword)
         for searched_file in searched_files:
             if searched_file.is_dir:
+                continue
+            ext = os.path.splitext(searched_file.path)[1].lower().lstrip('.')
+            if ext not in suffix_set:
                 continue
 
             file_list.append({

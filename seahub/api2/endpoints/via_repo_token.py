@@ -59,7 +59,6 @@ logger = logging.getLogger(__name__)
 json_content_type = 'application/json; charset=utf-8'
 HTTP_443_ABOVE_QUOTA = 443
 HTTP_520_OPERATION_FAILED = 520
-CHAT_ATTACHMENT_EXTENSIONS = 'md,sdoc,docx,pdf,pptx'
 
 
 def check_folder_permission_by_repo_api(request, repo_id, path):
@@ -516,6 +515,7 @@ class RepoInfoView(APIView):
 class ViaRepoSearchFilesView(APIView):
     authentication_classes = (RepoAPITokenAuthentication, )
     throttle_classes = (UserRateThrottle,)
+    SEARCH_DOCUMENT_EXTENSIONS = 'md,sdoc,docx,pdf,pptx'
 
     def get(self, request):
         repo_id = request.repo_api_token_obj.repo_id
@@ -534,7 +534,7 @@ class ViaRepoSearchFilesView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        suffixes = [i_ext.strip() for i_ext in CHAT_ATTACHMENT_EXTENSIONS.split(',') if i_ext.strip()]
+        suffixes = [i_ext.strip() for i_ext in self.SEARCH_DOCUMENT_EXTENSIONS.split(',') if i_ext.strip()]
         suffix_set = set(suffixes)
 
         if is_pro_version():

@@ -1531,7 +1531,7 @@ class WikiSearch(APIView):
         }
         if HAS_FILE_SEARCH:
             try:
-                results = search_wikis(search_wiki, query, count)
+                results = search_wikis([search_wiki], query, count)
             except Exception as e:
                 logger.error(e)
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')

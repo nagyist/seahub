@@ -9,11 +9,14 @@ import toaster from '../../../components/toast';
 import { Utils } from '../../../utils/utils';
 import Icon from '../../../components/icon';
 import CustomDropdown from '../../../components/dropdown';
+import EventBus from '../../../components/common/event-bus';
+import { EVENT_BUS_TYPE } from '../../../metadata/constants';
 
 const AllTagsOperationToolbar = ({ repoID }) => {
   const [isShowEditTagDialog, setShowEditTagDialog] = useState(false);
   const [isShowImportLoadingDialog, setShowImportLoadingDialog] = useState(false);
   const { tagsData, addTag, reloadTags } = useTags();
+  const eventBus = EventBus.getInstance();
 
   const tags = useMemo(() => {
     if (!tagsData) return [];
@@ -54,6 +57,15 @@ const AllTagsOperationToolbar = ({ repoID }) => {
     fileInput.click();
   }, [reloadTags, repoID]);
 
+  const handleExportTags = useCallback(() => {
+    const tagsIds = tagsData?.row_ids || [];
+    if (tagsIds.length === 0) {
+      return;
+    }
+
+    eventBus.dispatch(EVENT_BUS_TYPE.EXPORT_TAGS, tagsIds);
+  }, [eventBus, tagsData]);
+
   const menuItems = useMemo(() => ([
     {
       key: 'new-tag',
@@ -66,8 +78,14 @@ const AllTagsOperationToolbar = ({ repoID }) => {
       label: gettext('Import tags'),
       icon_dom: <Icon symbol="import-sdoc" className="mr-1 dropdown-item-icon" />,
       onClick: handleImportTags,
+    },
+    {
+      key: 'export-tags',
+      label: gettext('Export tags'),
+      icon_dom: <Icon symbol="download" className="mr-1 dropdown-item-icon" />,
+      onClick: handleExportTags,
     }
-  ]), [openAddTag, handleImportTags]);
+  ]), [openAddTag, handleImportTags, handleExportTags]);
 
   return (
     <>

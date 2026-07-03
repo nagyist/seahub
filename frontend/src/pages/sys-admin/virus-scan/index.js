@@ -13,14 +13,33 @@ const VirusScan = ({ children, ...commonProps }) => {
 
 
   const deleteSelectedItems = () => {
-    const op = 'delete-virus';
-    eventBus.dispatch(EVENT_BUS_TYPE.HANDLE_SELECTED_OPERATIONS, op);
+    eventBus.dispatch(EVENT_BUS_TYPE.HANDLE_SELECTED_OPERATIONS, {
+      operation: 'delete-virus',
+      scope: 'selected'
+    });
   };
 
   const ignoreSelectedItems = () => {
-    const op = 'ignore-virus';
-    eventBus.dispatch(EVENT_BUS_TYPE.HANDLE_SELECTED_OPERATIONS, op);
+    eventBus.dispatch(EVENT_BUS_TYPE.HANDLE_SELECTED_OPERATIONS, {
+      operation: 'ignore-virus',
+      scope: 'selected'
+    });
   };
+
+  const deleteAllUnhandledItems = () => {
+    eventBus.dispatch(EVENT_BUS_TYPE.HANDLE_SELECTED_OPERATIONS, {
+      operation: 'delete-virus',
+      scope: 'all'
+    });
+  };
+
+  const ignoreAllUnhandledItems = () => {
+    eventBus.dispatch(EVENT_BUS_TYPE.HANDLE_SELECTED_OPERATIONS, {
+      operation: 'ignore-virus',
+      scope: 'all'
+    });
+  };
+
   return (
     <>
       {path === 'unhandled' ? (
@@ -28,6 +47,8 @@ const VirusScan = ({ children, ...commonProps }) => {
           <>
             <Button onClick={deleteSelectedItems} className="operation-item">{gettext('Delete')}</Button>
             <Button onClick={ignoreSelectedItems} className="operation-item">{gettext('Ignore')}</Button>
+            <Button onClick={deleteAllUnhandledItems} className="operation-item">{gettext('Delete All')}</Button>
+            <Button onClick={ignoreAllUnhandledItems} className="operation-item">{gettext('Ignore All')}</Button>
           </>
         </MainPanelTopbar>
       ) : (

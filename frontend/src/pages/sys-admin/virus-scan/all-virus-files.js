@@ -91,6 +91,7 @@ class VirusFileItem extends Component {
         <td>{virusFile.repo_name}</td>
         <td>{virusFile.repo_owner}</td>
         <td>{virusFile.file_path}</td>
+        <td>{virusFile.virus_signature || '--'}</td>
         <td>{fileStatus}</td>
         <td>
           {fileOpList.length > 0 && this.state.isOpIconShown &&
@@ -164,10 +165,11 @@ class Content extends Component {
           <table>
             <thead>
               <tr>
-                <th width="27%">{gettext('Library')}</th>
-                <th width="25%">{gettext('Owner')}</th>
-                <th width="28%">{gettext('Virus File')}</th>
-                <th width="15%">{gettext('Status')}</th>
+                <th width="20%">{gettext('Library')}</th>
+                <th width="18%">{gettext('Owner')}</th>
+                <th width="22%">{gettext('Infected File')}</th>
+                <th width="25%">{gettext('Signature')}</th>
+                <th width="5%">{gettext('Status')}</th>
                 <th width="5%">{/* Operations */}</th>
               </tr>
             </thead>
@@ -239,6 +241,7 @@ class AllVirusFiles extends Component {
       this.setState({
         loading: false,
         virusFiles: data.virus_file_list,
+        currentPage: page,
         hasNextPage: data.has_next_page
       });
     }).catch((error) => {

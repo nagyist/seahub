@@ -212,6 +212,9 @@ def rewrite_ai_reply_with_uploaded_markdown_links(ai_reply, repo_id, username):
             logger.warning('Failed to upload generated markdown file %s: %s', safe_file_name, error)
             return match.group(0)
 
+        if file_link in match.string:
+            return match.group(0)
+
         return f'{file_link}\n\n{match.group(0)}'
 
     next_ai_reply = MARKDOWN_FILE_RE.sub(replace_markdown_file, ai_reply)

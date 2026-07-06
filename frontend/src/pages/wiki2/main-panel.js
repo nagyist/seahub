@@ -67,7 +67,7 @@ class MainPanel extends Component {
     const appConfig = window.app.config;
     const pageOptions = window.app.pageOptions;
     const { repos = [], wikiSettings = {} } = window.wiki.config;
-    const { assetsUrl, seadocServerUrl: sdocServer, publishUrl, wikiId, navConfig, permission } = window.wiki.config;
+    const { assetsUrl, seadocServerUrl: sdocServer, publishUrl, wikiId, permission } = window.wiki.config;
 
     const currentPageConfig = getCurrentPageConfig(config.pages, currentPageId);
     window.seafile = {

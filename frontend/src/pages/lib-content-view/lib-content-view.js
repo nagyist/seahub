@@ -2991,8 +2991,8 @@ class LibContentView extends React.Component {
                       </div>
                     )}
                     <div className="cur-view-path lib-cur-view-path">
-                      <div className={classnames(
-                        'cur-view-path-left', {
+                      <div className={classnames('cur-view-path-left',
+                        {
                           'w-100': !isDesktop,
                           'animation-children': isDirentSelected
                         })}

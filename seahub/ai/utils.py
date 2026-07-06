@@ -19,7 +19,7 @@ from seaserv import seafile_api
 from seahub.settings import SEAFILE_AI_SECRET_KEY, SEAFILE_AI_SERVER_URL
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
 from seahub.constants import DEFAULT_USER
-from seahub.utils import HAS_FILE_SEASEARCH, gen_inner_file_upload_url, mkstemp
+from seahub.utils import HAS_FILE_SEASEARCH, gen_inner_file_upload_url, get_service_url, mkstemp
 from seahub.utils.user_permissions import get_user_role
 from seahub.utils.ccnet_db import CcnetDB
 from seahub.organizations.models import OrgMemberQuota
@@ -190,9 +190,9 @@ def upload_generated_markdown_file(repo_id, username, file_name, content):
     finally:
         if os.path.exists(tmp_file):
             os.remove(tmp_file)
-
+    service_url = get_service_url().rstrip('/')
     encoded_path = quote(file_path, safe='/')
-    return f'[{safe_file_name}](/lib/{repo_id}/file{encoded_path})', safe_file_name
+    return f'[{safe_file_name}]({service_url}/lib/{repo_id}/file{encoded_path})', safe_file_name
 
 
 def rewrite_ai_reply_with_uploaded_markdown_links(ai_reply, repo_id, username):

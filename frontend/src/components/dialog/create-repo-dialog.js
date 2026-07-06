@@ -232,6 +232,7 @@ class CreateRepoDialog extends React.Component {
                       disabled={this.state.disabled}
                       value={this.state.password1}
                       onChange={this.handlePassword1Change}
+                      onKeyDown={this.handleKeyDown}
                       autoComplete="new-password"
                     />
                   </FormGroup>
@@ -245,6 +246,7 @@ class CreateRepoDialog extends React.Component {
                       disabled={this.state.disabled}
                       value={this.state.password2}
                       onChange={this.handlePassword2Change}
+                      onKeyDown={this.handleKeyDown}
                       autoComplete="new-password"
                     />
                   </FormGroup>

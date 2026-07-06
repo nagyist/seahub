@@ -1,21 +1,25 @@
 import json
 import logging
+import os
+import posixpath
+import re
 import requests
 import jwt
 import time
 import uuid
 from copy import deepcopy
-from urllib.parse import urljoin
+from urllib.parse import quote, urljoin
 
 from django.core.cache import cache
 from django.utils import timezone
 from django.db.models.functions import Coalesce
 from django.db.models import Sum, Value
+from seaserv import seafile_api
 
 from seahub.settings import SEAFILE_AI_SECRET_KEY, SEAFILE_AI_SERVER_URL
 from seahub.role_permissions.utils import get_enabled_role_permissions_by_role
 from seahub.constants import DEFAULT_USER
-from seahub.utils import HAS_FILE_SEASEARCH
+from seahub.utils import HAS_FILE_SEASEARCH, gen_inner_file_upload_url, mkstemp
 from seahub.utils.user_permissions import get_user_role
 from seahub.utils.ccnet_db import CcnetDB
 from seahub.organizations.models import OrgMemberQuota
@@ -28,6 +32,10 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 AI_REPLY_TIMEOUT = 180
+GENERATED_MARKDOWN_DIR = '/AI Generated/'
+MARKDOWN_FILE_RE = re.compile(
+    r'<seafile-ai-markdown(?:\s+file_name=(["\'])([^"\']*?)\1)?\s*>([\s\S]*?)</seafile-ai-markdown>'
+)
 
 
 # API
@@ -153,6 +161,91 @@ def strip_content_details_from_attachments(attachments):
     return new_attachments
 
 
+def upload_generated_markdown_file(repo_id, username, file_name, content):
+    safe_file_name = os.path.basename((file_name or '').strip()) or 'answer.md'
+    file_path = posixpath.join(GENERATED_MARKDOWN_DIR, safe_file_name)
+    if seafile_api.get_dir_id_by_path(repo_id, GENERATED_MARKDOWN_DIR) is None:
+        seafile_api.mkdir_with_parents(repo_id, '/', GENERATED_MARKDOWN_DIR.strip('/'), username)
+
+    fd, tmp_file = mkstemp()
+    try:
+        os.write(fd, (content or '').encode('utf-8'))
+    finally:
+        os.close(fd)
+
+    try:
+        obj_id = json.dumps({'parent_dir': GENERATED_MARKDOWN_DIR})
+        token = seafile_api.get_fileserver_access_token(
+            repo_id, obj_id, 'upload-link', username, use_onetime=False)
+        if not token:
+            raise Exception('upload token invalid')
+
+        upload_link = gen_inner_file_upload_url('upload-api', token) + '?replace=1'
+        with open(tmp_file, 'rb') as file_obj:
+            files = {'file': (safe_file_name, file_obj)}
+            data = {'parent_dir': GENERATED_MARKDOWN_DIR, 'relative_path': '', 'replace': 1}
+            resp = requests.post(upload_link, files=files, data=data)
+        if not resp.ok:
+            raise Exception(resp.text)
+    finally:
+        if os.path.exists(tmp_file):
+            os.remove(tmp_file)
+
+    encoded_path = quote(file_path, safe='/')
+    return f'[{safe_file_name}](/lib/{repo_id}/file{encoded_path})', safe_file_name
+
+
+def rewrite_ai_reply_with_uploaded_markdown_links(ai_reply, repo_id, username):
+    if not isinstance(ai_reply, str) or '<seafile-ai-markdown' not in ai_reply or not repo_id or not username:
+        return ai_reply
+
+    failed_files = []
+
+    def replace_markdown_file(match):
+        file_name = match.group(2) or 'answer.md'
+        content = match.group(3) or ''
+        try:
+            file_link, safe_file_name = upload_generated_markdown_file(repo_id, username, file_name, content)
+        except Exception as error:
+            safe_file_name = os.path.basename((file_name or '').strip()) or 'answer.md'
+            failed_files.append(safe_file_name)
+            logger.warning('Failed to upload generated markdown file %s: %s', safe_file_name, error)
+            return match.group(0)
+
+        if file_link in match.string:
+            return match.group(0)
+
+        return f'{file_link}\n\n{match.group(0)}'
+
+    next_ai_reply = MARKDOWN_FILE_RE.sub(replace_markdown_file, ai_reply)
+    if failed_files:
+        failed_files_text = ', '.join(failed_files)
+        failure_message = (
+            f'Failed to upload the generated Markdown document(s) to {GENERATED_MARKDOWN_DIR}: '
+            f'{failed_files_text}.'
+        )
+        next_ai_reply = f'{next_ai_reply}\n\n{failure_message}'
+    return next_ai_reply
+
+
+def process_generated_markdown_result(ai_result, repo_id, username):
+    if not isinstance(ai_result, dict):
+        return ai_result
+
+    ai_reply = ai_result.get('ai_reply')
+    if ai_reply is None:
+        ai_reply = ai_result.get('answer')
+
+    next_ai_reply = rewrite_ai_reply_with_uploaded_markdown_links(ai_reply, repo_id, username)
+    if next_ai_reply == ai_reply:
+        return ai_result
+
+    ai_result['ai_reply'] = next_ai_reply
+    if 'answer' in ai_result:
+        ai_result['answer'] = next_ai_reply
+    return ai_result
+
+
 def record_message_to_db(ai_result, session_uuid, message_id, query, attachments):
     if not isinstance(ai_result, dict):
         ai_result = {
@@ -203,7 +296,7 @@ def record_message_to_db(ai_result, session_uuid, message_id, query, attachments
     return ai_result
 
 
-def process_stream_ai_reply(chat_task_id, ai_response, session_uuid, message_id, query, attachments):
+def process_stream_ai_reply(chat_task_id, ai_response, session_uuid, message_id, query, attachments, repo_id, username):
     has_recorded_result = False
     has_generator_exit = False
     error_msg = None
@@ -217,6 +310,7 @@ def process_stream_ai_reply(chat_task_id, ai_response, session_uuid, message_id,
             content = line_str[len('data: '):]
             if content.startswith('{"results": ') and content.endswith('}'):
                 results = json.loads(content)['results']
+                results = process_generated_markdown_result(results, repo_id, username)
                 item = 'data: %s\n\n' % json.dumps({
                     'results': record_message_to_db(results, session_uuid, message_id, query, attachments),
                 })

@@ -651,7 +651,16 @@ class ChatView(APIView):
 
         try:
             return StreamingHttpResponse(
-                process_stream_ai_reply(chat_task_id, get_ai_reply(params), session_uuid, message_id, query, attachments),
+                process_stream_ai_reply(
+                    chat_task_id,
+                    get_ai_reply(params),
+                    session_uuid,
+                    message_id,
+                    query,
+                    attachments,
+                    repo_id,
+                    request.user.username,
+                ),
                 content_type='text/event-stream',
                 headers={
                     'Cache-Control': 'no-cache',

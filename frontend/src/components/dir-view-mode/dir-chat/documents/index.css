@@ -1,14 +1,14 @@
-.sea-ticket-chat-documents-wrapper {
+.seafile-ai-chat-documents-wrapper {
   width: 50%;
   height: 100%;
   overflow: hidden;
 }
 
-.sea-ticket-chat-documents-wrapper.full-content {
+.seafile-ai-chat-documents-wrapper.full-content {
   width: 100%;
 }
 
-.sea-ticket-chat-documents-wrapper .sea-ticket-chat-documents {
+.seafile-ai-chat-documents-wrapper .seafile-ai-chat-documents {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -16,12 +16,12 @@
   flex-direction: column;
 }
 
-.sea-ticket-chat-documents-wrapper:not(.full-content) .sea-ticket-chat-documents {
+.seafile-ai-chat-documents-wrapper:not(.full-content) .seafile-ai-chat-documents {
   border-left: 1px solid #eee;
 }
 
 /* header */
-.sea-ticket-chat-documents .sea-ticket-chat-documents-header {
+.seafile-ai-chat-documents .seafile-ai-chat-documents-header {
   height: 41px;
   width: calc(100% - 16px);
   margin-left: 16px;
@@ -32,50 +32,102 @@
   gap: 24px;
 }
 
-.sea-ai-customize-select.sea-ai-chat-selector-display.sea-ticket-chat-documents-selector {
+.sea-ai-customize-select.sea-ai-chat-selector-display.seafile-ai-chat-documents-selector {
   padding: 0 8px;
   height: 30px;
 }
 
-.sea-ai-customize-select.sea-ai-chat-selector-display.sea-ticket-chat-documents-selector .selected-option-show {
+.sea-ai-customize-select.sea-ai-chat-selector-display.seafile-ai-chat-documents-selector .selected-option-show {
   display: flex;
   align-items: center;
 }
 
-.sea-ticket-chat-documents-selector-editor .popover {
+.seafile-ai-chat-documents-selector-editor .popover {
   width: fit-content;
   min-width: 240px;
   max-width: 400px;
   min-height: auto;
 }
 
-.sea-ticket-chat-documents-selector-editor .option-editor-container {
+.seafile-ai-chat-documents-selector-editor .option-editor-container {
   min-height: auto;
 }
 
-.sea-ticket-chat-documents-selector-editor .option-editor-container .option-editor-content {
+.seafile-ai-chat-documents-selector-editor .option-editor-container .option-editor-content {
   min-height: auto;
 }
 
-.sea-ai-customize-select.sea-ai-chat-selector-display.sea-ticket-chat-documents-selector .sea-ticket-chat-documents-divider {
+.sea-ai-customize-select.sea-ai-chat-selector-display.seafile-ai-chat-documents-selector .seafile-ai-chat-documents-divider {
   height: 12px;
   width: 1px;
   background-color: #eaeaea;
 }
 
-.sea-ai-customize-select.sea-ai-chat-selector-display.sea-ticket-chat-documents-selector .sea-ticket-chat-document-name {
+.sea-ai-customize-select.sea-ai-chat-selector-display.seafile-ai-chat-documents-selector .seafile-ai-chat-document-name {
   font-weight: 500;
 }
 
-.sea-ticket-chat-documents .sea-ticket-chat-documents-header .sea-ticket-chat-documents-header-btns {
+.seafile-ai-chat-documents .seafile-ai-chat-documents-header .seafile-ai-chat-documents-header-btns {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-documents .seafile-ai-chat-documents-header .seafile-ai-chat-documents-header-btns {
+  gap: 4px;
+}
+
+.seafile-ai-chat-documents .seafile-ai-chat-documents-header .seafile-ai-chat-documents-header-btns .seafile-multicolor-icon {
+  cursor: pointer;
+}
+
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-documents .seafile-ai-chat-documents-header .seafile-ai-chat-document-icon {
+  flex-shrink: 0;
+}
+
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-documents .seafile-ai-chat-documents-header .seafile-ai-chat-documents-count {
+  color: #666;
+  flex-shrink: 0;
+}
+
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-documents-icon-btn,
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-documents-more-btn {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bs-icon-color);
+  border-radius: 3px;
+}
+
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-documents-icon-btn:hover,
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-documents-more-btn:hover {
+  background-color: var(--bs-icon-btn-hover-bg-color) !important;
+}
+
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-documents-icon-btn:focus,
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-documents-more-btn:focus {
+  box-shadow: none;
+  outline: none;
+}
+
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-documents-dropdown-menu {
+  min-width: 200px;
+  max-width: 240px;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-documents-dropdown-menu .dropdown-item {
+  border-radius: 6px;
+  line-height: 20px;
+  padding: 8px 12px;
+}
+
 /* body */
-.sea-ticket-chat-documents .sea-ticket-chat-documents-body {
+.seafile-ai-chat-documents .seafile-ai-chat-documents-body {
   flex: 1;
   overflow: hidden;
   display: flex;
@@ -83,7 +135,7 @@
 }
 
 /* document */
-.sea-ticket-chat-documents .sea-ticket-chat-document-info {
+.seafile-ai-chat-documents .seafile-ai-chat-document-info {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -96,7 +148,7 @@
   flex-shrink: 0;
 }
 
-.sea-ticket-chat-documents .sea-ticket-chat-document-info .sea-ticket-chat-document-info-content {
+.seafile-ai-chat-documents .seafile-ai-chat-document-info .seafile-ai-chat-document-info-content {
   flex: 1;
   overflow: hidden;
   white-space: nowrap;
@@ -104,12 +156,12 @@
   align-items: center;
 }
 
-.sea-ticket-chat-documents .sea-ticket-chat-document-info .sea-ticket-chat-document-info-size {
+.seafile-ai-chat-documents .seafile-ai-chat-document-info .seafile-ai-chat-document-info-size {
   color: #59636e;
   font-size: 12px;
 }
 
-.sea-ticket-chat-documents .sea-ticket-chat-document-info .sea-ticket-chat-document-btns {
+.seafile-ai-chat-documents .seafile-ai-chat-document-info .seafile-ai-chat-document-btns {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -117,17 +169,56 @@
   gap: 8px;
 }
 
-.sea-ticket-chat-documents .sea-ticket-chat-document-content {
+.seafile-ai-chat-documents .seafile-ai-chat-document-content {
   flex: 1;
   overflow-y: auto;
 }
 
-.sea-ticket-chat-documents .sea-ticket-chat-document-md .sf-slate-viewer-scroll-container .sf-slate-article-content {
-  padding-left: 16px;
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-documents .seafile-ai-chat-document-content {
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-document-md .sf-slate-viewer-container {
+  flex: 1;
+  min-height: 0;
+}
+
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-document-md .sf-slate-viewer-scroll-container {
+  padding: 0 !important;
+  overflow: auto;
+  background-color: #fff !important;
+}
+
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-document-md .sf-slate-viewer-scroll-container .sf-slate-article-content {
+  display: block;
+  width: 100%;
+  padding-left: 0;
   overflow-x: hidden;
 }
 
-.sea-ticket-chat-documents .sea-ticket-chat-document-md .sf-slate-viewer-scroll-container .article {
-  padding: 24px 8px !important;
-  max-width: 100%;
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-document-md .sf-slate-viewer-article-container {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+}
+
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-document-md .sf-slate-viewer-scroll-container .article {
+  min-height: auto;
+  max-width: none;
+  margin: 0;
+  border: none !important;
+  padding: 24px !important;
+  box-shadow: none !important;
+}
+
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-document-md .sf-slate-viewer-scroll-container .article h1,
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-document-md .sf-slate-viewer-scroll-container .article h2,
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-document-md .sf-slate-viewer-scroll-container .article h3,
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-document-md .sf-slate-viewer-scroll-container .article h4,
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-document-md .sf-slate-viewer-scroll-container .article h5,
+.seafile-ai-chat-documents-wrapper.markdown-artifact .seafile-ai-chat-document-md .sf-slate-viewer-scroll-container .article h6 {
+  border-bottom: none !important;
 }

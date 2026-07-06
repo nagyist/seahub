@@ -55,25 +55,25 @@ const ProcessDetails = ({ value }) => {
           {!isPrimaryContainer && (
             <button
               type="button"
-              className={classnames('seaqa-icon-btn no-hover-bg', { 'rotate-icon-180': isShowDetails })}
+              className={classnames('seafile-ai-icon-btn no-hover-bg', { 'rotate-icon-180': isShowDetails })}
               aria-label={gettext('Toggle details')}
               onClick={handleToggleClick}
             >
-              <Icon symbol="arrow-down" className="seaqa-icon-svg" />
+              <Icon symbol="arrow-down" className="seafile-ai-icon-svg" />
             </button>
           )}
           <span className="sea-ai-thought-process-order-title">
-            {isPrimaryContainer && <Icon symbol={icon} className="seaqa-icon-svg" />}
+            {isPrimaryContainer && <Icon symbol={icon} className="seafile-ai-icon-svg" />}
             <span>{name}</span>
           </span>
           {isPrimaryContainer && (
             <button
               type="button"
-              className={classnames('seaqa-icon-btn no-hover-bg', { 'rotate-icon-180': isShowDetails })}
+              className={classnames('seafile-ai-icon-btn no-hover-bg', { 'rotate-icon-180': isShowDetails })}
               aria-label={gettext('Toggle details')}
               onClick={handleToggleClick}
             >
-              <Icon symbol="arrow-down" className="seaqa-icon-svg" />
+              <Icon symbol="arrow-down" className="seafile-ai-icon-svg" />
             </button>
           )}
         </div>
@@ -110,7 +110,7 @@ const ProcessDetails = ({ value }) => {
       {hasName && (<Label className="sea-ai-thought-process-content-title">{value.name}</Label>)}
       <div className="sea-ai-thought-process-content-value">
         {(formattedValue || formattedValue === 0) ? formattedValue : (
-          <span className="seaqa-tip-default">{gettext('Empty')}</span>
+          <span className="seafile-ai-tip-default">{gettext('Empty')}</span>
         )}
       </div>
     </FormGroup>

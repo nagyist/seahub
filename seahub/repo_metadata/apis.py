@@ -3351,12 +3351,17 @@ class MetadataImportTags(APIView):
 
         metadata_server_api = MetadataServerAPI(repo_id, request.user.username)
         from seafevents.repo_metadata.constants import TAGS_TABLE
+        
+        try:
+            file_content = json.loads(file.read().decode('utf-8'))
+        except:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Invalid JSON file')
+        
         try:
             tags_table = get_table_by_name(metadata_server_api, TAGS_TABLE.name)
             if not tags_table:
                 return api_error(status.HTTP_404_NOT_FOUND, 'tags table not found')
             tags_table_id = tags_table['id']
-            file_content = json.loads(file.read().decode('utf-8'))
             if not self._is_valid_file_content(file_content, TAGS_TABLE):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'The imported tags are invalid')
             tag_names = [tag.get(TAGS_TABLE.columns.name.name, '') for tag in file_content]

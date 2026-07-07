@@ -1247,7 +1247,6 @@ ai_conf_dir = os.getenv('CONF_PATH', '/opt/seafile/conf/')
 ai_yaml_file_path = os.path.join(ai_conf_dir, os.environ.get('SEAFILE_AI_CONFIG_NAME', 'seafile_ai_config.yaml'))
 ai_configs = ConfigParser(ai_yaml_file_path, 'seahub')
 
-JWT_PRIVATE_KEY = ai_configs.get('JWT_PRIVATE_KEY', JWT_PRIVATE_KEY)
 LLM_MODELS = [
     {
         'type': model.get('type', 'openai'),

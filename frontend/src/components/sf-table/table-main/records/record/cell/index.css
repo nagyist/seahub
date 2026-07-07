@@ -4,11 +4,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  border-right: 1px solid var(--bs-border-secondary-color);
+  border-right: 1px solid var(--bs-border-quartus-color);
   padding: 4px 8px;
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
+}
+
+.sf-table-cell.default-row-height-cell {
+  align-items: center;
 }
 
 .sf-table-cell:not(.table-cell-uneditable):hover {
@@ -33,7 +37,7 @@
 }
 
 .sf-table-cell.actions-cell {
-  padding: 4px 8px;
+  padding: 0 8px;
 }
 
 .sf-table-cell .select-cell-checkbox-container,
@@ -67,10 +71,11 @@
 }
 
 /* cell formatter */
-.sf-table-cell .sf-metadata-ui.cell-formatter-container {
+.sf-table-cell .cell-formatter-container {
+  height: 22px;
   display: flex;
   align-items: center;
-  line-height: 20px;
+  line-height: 22px;
 }
 
 .sf-table-cell .collaborator-avatar {
@@ -136,17 +141,15 @@
   line-height: 1;
 }
 
+.sf-table-cell.sf-table-number-cell {
+  justify-content: flex-end;
+}
+
 @media screen and (max-width: 991.8px) {
   .sf-table-cell .select-cell-checkbox {
     width: 14px;
     height: 14px;
   }
-}
-
-/* row cell ui */
-.sf-table-row:hover .sf-table-cell,
-.sf-table-row:hover .column {
-  background-color: var(--bs-tr-hover-bg);
 }
 
 .sf-table-row:hover .cell-selected {
@@ -163,7 +166,7 @@
 
 .sf-table-row.row-selected .sf-table-cell,
 .sf-table-row.row-selected .column {
-  background-color: var(--bs-tr-active-secondary-bg) !important;
+  background-color: var(--bs-tr-active-bg) !important;
 }
 
 .sf-table-cell .sf-metadata-ui.cell-formatter-container .sf-metadata-file-icon-container .locked {

@@ -114,7 +114,7 @@ const ChatInput = forwardRef(({
               />
             </div>
             <div className="sea-ai-ask-chat-operations-container-right">
-              <div className="sea-ai-model-selector d-none">
+              <div className="sea-ai-model-selector">
                 <AIModelSelector selectedModel={selectedModel} updateModel={setSelectedModel} />
               </div>
               <button

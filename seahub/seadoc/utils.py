@@ -100,7 +100,7 @@ def is_valid_seadoc_access_token(auth, file_uuid, return_payload=False):
     return is_valid
 
 
-def get_seadoc_file_uuid(repo, path):
+def get_seadoc_file_uuid(repo, path, pending=False):
     repo_id = repo.repo_id
     if repo.is_virtual:
         repo_id = repo.origin_repo_id
@@ -111,7 +111,7 @@ def get_seadoc_file_uuid(repo, path):
     filename = os.path.basename(path)
 
     uuid_map = FileUUIDMap.objects.get_or_create_fileuuidmap(
-        repo_id, parent_dir, filename, is_dir=False)
+        repo_id, parent_dir, filename, is_dir=False, pending=pending)
 
     file_uuid = str(uuid_map.uuid)  # 36 chars str
     return file_uuid

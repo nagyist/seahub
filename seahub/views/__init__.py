@@ -149,7 +149,7 @@ def get_seadoc_file_uuid(repo, path):
     filename = os.path.basename(path)
 
     uuid_map = FileUUIDMap.objects.get_or_create_fileuuidmap(
-        repo_id, parent_dir, filename, is_dir=False)
+        repo_id, parent_dir, filename, is_dir=False, pending=True)
 
     file_uuid = str(uuid_map.uuid)  # 36 chars str
     return file_uuid

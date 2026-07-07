@@ -615,7 +615,7 @@ def view_lib_file(request, repo_id, path):
         # redirect to sdoc export
         filetype, fileext = get_file_type_and_ext(filename)
         if filetype == SEADOC:
-            file_uuid = get_seadoc_file_uuid(repo, path)
+            file_uuid = get_seadoc_file_uuid(repo, path, pending=True)
             file_url = reverse('seadoc_export', args=[file_uuid])
             return HttpResponseRedirect(file_url)
 
@@ -744,7 +744,7 @@ def view_lib_file(request, repo_id, path):
     return_dict['fileext'] = fileext
     return_dict['filetype'] = filetype
 
-    file_uuid = get_seadoc_file_uuid(repo, path)
+    file_uuid = get_seadoc_file_uuid(repo, path, pending=True)
     return_dict['file_uuid'] = file_uuid
 
     # get file raw url

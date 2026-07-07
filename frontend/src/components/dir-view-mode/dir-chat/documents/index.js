@@ -158,9 +158,6 @@ const Documents = () => {
                 </DropdownMenu>
               </Dropdown>
             )}
-            <button type="button" className="btn btn-icon p-0 border-0 bg-transparent seafile-ai-chat-documents-icon-btn" onClick={handleCopy} title={gettext('Copy')} aria-label={gettext('Copy')}>
-              <Icon symbol="copy" />
-            </button>
             <button type="button" className="btn btn-icon p-0 border-0 bg-transparent seafile-ai-chat-documents-icon-btn" onClick={handleDownload} title={gettext('Download')} aria-label={gettext('Download')}>
               <Icon symbol="download" />
             </button>

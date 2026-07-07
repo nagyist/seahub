@@ -10,13 +10,13 @@ import SeahubModalHeader from '@/components/common/seahub-modal-header';
 
 import './index.css';
 
-const Session = ({ session, isSelected }) => {
+const Session = ({ session, permission, isSelected, isTeamTab = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isShowRenameDialog, setIsShowRenameDialog] = useState(false);
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false);
   const [renameValue, setRenameValue] = useState(session.name);
 
-  const { modifySession, deleteSession } = useSessions();
+  const { modifySession, deleteSession, shareSession, unshareSession } = useSessions();
   const { togglePageSlugId } = useAskPage();
 
   const toggleDropdown = useCallback((event) => {
@@ -24,7 +24,22 @@ const Session = ({ session, isSelected }) => {
     setIsOpen((currentValue) => !currentValue);
   }, []);
 
-  const icon = 'new-chat';
+  const icon = session.is_shared ? 'group' : 'new-chat';
+  const isReadWrite = permission === 'rw';
+
+  if (isTeamTab) {
+    return (
+      <div
+        className={classNames('sea-ai-ask-session-item', { active: isSelected })}
+        onClick={() => togglePageSlugId(session._id)}
+      >
+        <Icon symbol="group" className="mr-2" />
+        <div className="sea-ai-ask-session-content">
+          <div className="sea-ai-ask-session-name text-truncate" title={session.name}>{session.name}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -36,15 +51,22 @@ const Session = ({ session, isSelected }) => {
         <div className="sea-ai-ask-session-content">
           <div className="sea-ai-ask-session-name text-truncate" title={session.name}>{session.name}</div>
         </div>
-        <Dropdown isOpen={isOpen} toggle={toggleDropdown} className="sea-ai-ask-session-more-op-btn">
-          <DropdownToggle color="link" className="sea-ai-ask-session-more-op-btn p-0 border-0 text-secondary">
-            <Icon symbol="more-level" />
-          </DropdownToggle>
-          <DropdownMenu end>
-            <DropdownItem onClick={() => setIsShowRenameDialog(true)}>{gettext('Rename')}</DropdownItem>
-            <DropdownItem onClick={() => setIsShowDeleteDialog(true)}>{gettext('Delete')}</DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
+        {isReadWrite && (
+          <Dropdown isOpen={isOpen} toggle={toggleDropdown} className="sea-ai-ask-session-more-op-btn">
+            <DropdownToggle color="link" className="sea-ai-ask-session-more-op-btn p-0 border-0 text-secondary">
+              <Icon symbol="more-level" />
+            </DropdownToggle>
+            <DropdownMenu end>
+              <DropdownItem onClick={() => setIsShowRenameDialog(true)}>{gettext('Rename')}</DropdownItem>
+              {session.is_shared ? (
+                <DropdownItem onClick={() => unshareSession(session._id)}>{gettext('Unshare within library')}</DropdownItem>
+              ) : (
+                <DropdownItem onClick={() => shareSession(session._id)}>{gettext('Share within library')}</DropdownItem>
+              )}
+              <DropdownItem onClick={() => setIsShowDeleteDialog(true)}>{gettext('Delete')}</DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        )}
       </div>
       {isShowRenameDialog && (
         <Modal isOpen={true} toggle={() => setIsShowRenameDialog(false)} autoFocus={false}>
@@ -75,7 +97,9 @@ const Session = ({ session, isSelected }) => {
 
 Session.propTypes = {
   session: PropTypes.object,
+  permission: PropTypes.string,
   isSelected: PropTypes.bool,
+  isTeamTab: PropTypes.bool,
 };
 
 export default Session;

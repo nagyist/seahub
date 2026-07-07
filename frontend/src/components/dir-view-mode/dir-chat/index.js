@@ -74,7 +74,7 @@ const ChatEvents = () => {
   return null;
 };
 
-const Main = ({ repoID, settings }) => {
+const Main = ({ repoID, settings, userPerm }) => {
   const { isLoading: isAskPageLoading, pageSlugId, togglePageSlugId } = useAskPage();
   const { isLoading: isSessionsLoading, isShowSessions, toggleIsShowSessions } = useSessions();
 
@@ -109,7 +109,7 @@ const Main = ({ repoID, settings }) => {
             <Chat repoID={repoID} settings={settings} />
             <Documents />
           </div>
-          {isShowSessions && <Sessions sessionId={pageSlugId} />}
+          {isShowSessions && <Sessions sessionId={pageSlugId} permission={userPerm} />}
         </>
       )}
     </div>
@@ -119,9 +119,10 @@ const Main = ({ repoID, settings }) => {
 Main.propTypes = {
   repoID: PropTypes.string.isRequired,
   settings: PropTypes.object,
+  userPerm: PropTypes.string,
 };
 
-const DirChat = ({ repoID, repoName, settings }) => {
+const DirChat = ({ repoID, repoName, settings, userPerm }) => {
   const resetURL = useCallback((pageSlugId) => {
     const baseUrl = `${siteRoot}library/${repoID}/${encodeURIComponent(repoName)}/?chat=true&path=/`;
     const url = pageSlugId === ASK_PAGE_SLUG_ID.NEW ? baseUrl : `${baseUrl}&chatSessionId=${pageSlugId}`;
@@ -144,7 +145,7 @@ const DirChat = ({ repoID, repoName, settings }) => {
       <SessionsProvider repoID={repoID} api={chatAPI}>
         <DocumentsProvider>
           <AIChatToolsProvider>
-            <Main repoID={repoID} settings={mergedSettings} />
+            <Main repoID={repoID} settings={mergedSettings} userPerm={userPerm} />
           </AIChatToolsProvider>
         </DocumentsProvider>
       </SessionsProvider>
@@ -156,6 +157,7 @@ DirChat.propTypes = {
   repoID: PropTypes.string.isRequired,
   repoName: PropTypes.string.isRequired,
   settings: PropTypes.object,
+  userPerm: PropTypes.string,
 };
 
 export default DirChat;

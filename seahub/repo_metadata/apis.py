@@ -3229,6 +3229,26 @@ class MetadataImportTags(APIView):
     permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
+    def _is_valid_file_content(self, file_content, tags_table):
+        if not isinstance(file_content, list):
+            return False
+
+        for tag_data in file_content:
+            if not isinstance(tag_data, dict):
+                return False
+
+            tag_name = tag_data.get(tags_table.columns.name.name, '')
+            tag_color = tag_data.get(tags_table.columns.color.name, '')
+            if not tag_name or not tag_color:
+                return False
+
+            tag_sub_links = tag_data.get(tags_table.columns.sub_links.key, [])
+            tag_parent_links = tag_data.get(tags_table.columns.parent_links.key, [])
+            if not isinstance(tag_sub_links, list) or not isinstance(tag_parent_links, list):
+                return False
+
+        return True
+
     def _handle_tag_links(self, new_tags, existing_tags, exist_tags_id_map, imported_existing_tags, resp, tags_table):
         exist_tags_ids = [tag.get(tags_table.columns.id.name, '') for tag in existing_tags]
         all_tags = new_tags + imported_existing_tags
@@ -3331,12 +3351,19 @@ class MetadataImportTags(APIView):
 
         metadata_server_api = MetadataServerAPI(repo_id, request.user.username)
         from seafevents.repo_metadata.constants import TAGS_TABLE
+        
+        try:
+            file_content = json.loads(file.read().decode('utf-8'))
+        except:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Invalid JSON file')
+        
         try:
             tags_table = get_table_by_name(metadata_server_api, TAGS_TABLE.name)
             if not tags_table:
                 return api_error(status.HTTP_404_NOT_FOUND, 'tags table not found')
             tags_table_id = tags_table['id']
-            file_content = json.loads(file.read().decode('utf-8'))
+            if not self._is_valid_file_content(file_content, TAGS_TABLE):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'The imported tags are invalid')
             tag_names = [tag.get(TAGS_TABLE.columns.name.name, '') for tag in file_content]
             if not tag_names:
                 return Response({'success': True})

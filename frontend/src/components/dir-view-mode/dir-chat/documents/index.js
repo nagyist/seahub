@@ -2,8 +2,9 @@ import React, { useCallback, useMemo, useState } from 'react';
 import classnames from 'classnames';
 import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
 import { MarkdownViewer } from '@seafile/seafile-editor';
+import CenteredLoading from '../../../centered-loading';
 import Icon from '../../../icon';
-import { gettext } from '../../../../utils/constants';
+import { mediaUrl, gettext } from '../../../../utils/constants';
 import { Selector } from '../components';
 import { useDocuments } from '../hooks';
 
@@ -35,6 +36,7 @@ const Documents = () => {
     isShowDocuments,
     documents,
     currentDocument,
+    isDocumentLoading,
     closeDocuments,
     setCurrentDocument,
   } = useDocuments();
@@ -152,12 +154,19 @@ const Documents = () => {
         </div>
         <div className="seafile-ai-chat-documents-body">
           <div className={classnames('seafile-ai-chat-document-content', { 'seafile-ai-chat-document-md': isMarkdownArtifact })}>
-            <MarkdownViewer
-              key={currentDocument.document_key}
-              value={currentDocument.content || ''}
-              isFetching={false}
-              isShowOutline={false}
-            />
+            {isDocumentLoading ? (
+              <div className="seafile-ai-chat-documents-loading">
+                <CenteredLoading />
+              </div>
+            ) : (
+              <MarkdownViewer
+                key={currentDocument.document_key}
+                value={currentDocument.content || ''}
+                isFetching={false}
+                isShowOutline={false}
+                mathJaxSource={mediaUrl + 'js/mathjax/tex-svg.js'}
+              />
+            )}
           </div>
         </div>
       </div>

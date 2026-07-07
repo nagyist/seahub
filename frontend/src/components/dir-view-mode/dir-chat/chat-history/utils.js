@@ -7,6 +7,7 @@ const REFERENCE_PARENTHESES_RE = /\((\s*\[Reference \d+\](?:\s*,\s*\[Reference \
 const REFERENCE_COMMA_RE = /(\[Reference\s+\d+\](?:\s*,\s*\[Reference\s+\d+\])+)/g;
 const MARKDOWN_FILE_RE = /<seafile-ai-markdown(?:\s+file_name=(["'])([^"']*?)\1)?\s*>([\s\S]*?)<\/seafile-ai-markdown>/g;
 const MARKDOWN_FILE_LINK_RE = /<seafile-ai-markdown-link\s+url=(["'])(.*?)\1\s*><\/seafile-ai-markdown-link>/g;
+const LIB_MARKDOWN_LINK_RE = /\[[^\]]+\.md\]\((?:https?:\/\/[^)]+)?\/lib\/[^)]+\)\s*/g;
 
 export const getSourceTitle = (source, index) => {
   return source?.title || source?.name || source?.path || `Reference ${index}`;
@@ -50,12 +51,13 @@ export const transformMarkdownFilesToLinks = (value = '', mdFiles = [], messageI
     const escapedFileName = safeFileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const repoLinkMatch = (sourceValue || '').match(new RegExp(`\\[${escapedFileName}\\]\\(((?:https?:\\/\\/[^)]+)?\\/lib\\/[^)]+)\\)`));
     const fileUrl = previewUrls[markdownIndex] || repoLinkMatch?.[1] || '';
+    const fileUuidMatch = fileUrl.match(/smart-link\/([-0-9a-f]{36})\//i);
     markdownIndex += 1;
     mdFiles.push({
       name: safeFileName,
       url,
       fileUrl,
-      content: (content || '').trimStart(),
+      fileUuid: fileUuidMatch?.[1] || '',
       kind: 'markdown_artifact',
       document_key: url,
     });
@@ -78,7 +80,10 @@ export const buildAIReply = (value, sources, chatId, mdFiles = []) => {
     return '';
   }
 
-  const nextValue = transformMarkdownFilesToLinks(value, mdFiles, chatId);
+  const nextValue = transformMarkdownFilesToLinks(value, mdFiles, chatId)
+    .replace(MARKDOWN_FILE_LINK_RE, '')
+    .replace(LIB_MARKDOWN_LINK_RE, '')
+    .trim();
   if (chatId === 'typing') {
     return nextValue.replace(INTERNAL_REFERENCE_RE, '');
   }

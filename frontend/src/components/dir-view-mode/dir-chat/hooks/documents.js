@@ -1,5 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import deepCopy from 'deep-copy';
+import { chatAPI } from '../../../../utils/chat-api';
 import { useAskPage } from './page-type';
 import { useSessions } from './sessions';
 
@@ -16,6 +17,7 @@ export const DocumentsProvider = ({ children }) => {
   const [isShowDocuments, setIsShowDocuments] = useState(false);
   const [documents, setDocuments] = useState([]);
   const [currentDocument, setCurrentDocument] = useState(null);
+  const [isDocumentLoading, setIsDocumentLoading] = useState(false);
 
   const { pageSlugId } = useAskPage();
   const { closeShowSessions } = useSessions();
@@ -30,20 +32,48 @@ export const DocumentsProvider = ({ children }) => {
         mathJaxScript.parentNode.removeChild(mathJaxScript);
       }
     }
+    const applyOpenDocument = (nextDocument) => {
+      setIsShowDocuments(true);
+      setDocuments((currentDocuments) => {
+        const existedDocument = currentDocuments.find((item) => getDocumentKey(item) === nextDocument.document_key);
+        if (existedDocument) {
+          const nextDocuments = currentDocuments.map((item) => {
+            if (getDocumentKey(item) !== nextDocument.document_key) {
+              return item;
+            }
+            return { ...item, ...nextDocument };
+          });
+          return deepCopy(nextDocuments);
+        }
+        return deepCopy([nextDocument, ...currentDocuments]);
+      });
+      setCurrentDocument(deepCopy(nextDocument));
+      closeShowSessions();
+    };
+
     const nextDocument = {
       ...document,
       document_key: getDocumentKey(document),
     };
-    setIsShowDocuments(true);
-    setDocuments((currentDocuments) => {
-      const existedDocument = currentDocuments.find((item) => getDocumentKey(item) === nextDocument.document_key);
-      if (existedDocument) {
-        return deepCopy(currentDocuments);
-      }
-      return deepCopy([nextDocument, ...currentDocuments]);
-    });
-    setCurrentDocument(deepCopy(nextDocument));
-    closeShowSessions();
+
+    if (document.kind === 'markdown_artifact' && document.fileUuid && !document.content) {
+      setIsShowDocuments(true);
+      setCurrentDocument(deepCopy(nextDocument));
+      closeShowSessions();
+      setIsDocumentLoading(true);
+      chatAPI.getMarkdownArtifact(document.fileUuid).then((res) => {
+        const { content = '', path = '' } = res.data || {};
+        applyOpenDocument({ ...nextDocument, content, path });
+      }).catch(() => {
+        applyOpenDocument(nextDocument);
+      }).finally(() => {
+        setIsDocumentLoading(false);
+      });
+      return;
+    }
+
+    setIsDocumentLoading(false);
+    applyOpenDocument(nextDocument);
   }, [closeShowSessions, isShowDocuments]);
 
   const closeDocument = useCallback((document) => {
@@ -74,12 +104,14 @@ export const DocumentsProvider = ({ children }) => {
     setIsShowDocuments(false);
     setDocuments([]);
     setCurrentDocument(null);
+    setIsDocumentLoading(false);
   }, []);
 
   useEffect(() => {
     setDocuments([]);
     setCurrentDocument(null);
     setIsShowDocuments(false);
+    setIsDocumentLoading(false);
   }, [pageSlugId]);
 
   return (
@@ -87,6 +119,7 @@ export const DocumentsProvider = ({ children }) => {
       isShowDocuments,
       documents,
       currentDocument,
+      isDocumentLoading,
       openDocument,
       closeDocument,
       closeDocuments,

@@ -34,13 +34,16 @@ export const transformMarkdownFilesToLinks = (value = '', mdFiles = [], messageI
     return value;
   }
 
-  return value.replace(MARKDOWN_FILE_RE, (match, quotationType, fileName, content) => {
+  return value.replace(MARKDOWN_FILE_RE, (match, quotationType, fileName, content, offset, sourceValue) => {
     const safeFileName = fileName || 'answer.md';
     const urlObject = new URL(`file:///seafile-ai/${safeFileName}?t=${messageId}`);
     const url = urlObject.href;
+    const escapedFileName = safeFileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const repoLinkMatch = (sourceValue || '').match(new RegExp(`\\[${escapedFileName}\\]\\(((?:https?:\\/\\/[^)]+)?\\/lib\\/[^)]+)\\)`));
     mdFiles.push({
       name: safeFileName,
       url,
+      fileUrl: repoLinkMatch?.[1] || '',
       content: (content || '').trimStart(),
       kind: 'markdown_artifact',
       document_key: url,

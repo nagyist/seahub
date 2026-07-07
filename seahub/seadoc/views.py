@@ -273,7 +273,7 @@ def sdoc_preview(request, repo_id, file_path):
 
     filename = os.path.basename(file_path)
     parent_path = os.path.dirname(file_path)
-    uuid_map = FileUUIDMap.objects.get_or_create_fileuuidmap(repo_id, parent_path, filename, is_dir=False)
+    uuid_map = FileUUIDMap.objects.get_or_create_fileuuidmap(repo_id, parent_path, filename, is_dir=False, pending=True)
     file_uuid = str(uuid_map.uuid)  # 36 chars str
     return_dict = {
         'repo': repo,
@@ -284,5 +284,4 @@ def sdoc_preview(request, repo_id, file_path):
     }
 
     return render(request, 'sdoc_preview.html', return_dict)
-
 

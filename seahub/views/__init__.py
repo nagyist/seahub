@@ -60,7 +60,7 @@ from seahub.settings import AVATAR_FILE_STORAGE, ENABLE_REPO_SNAPSHOT_LABEL, \
     UPLOAD_LINK_EXPIRE_DAYS_MIN, UPLOAD_LINK_EXPIRE_DAYS_MAX, UPLOAD_LINK_EXPIRE_DAYS_DEFAULT, \
     ENABLE_RESET_ENCRYPTED_REPO_PASSWORD, \
     ADDITIONAL_SHARE_DIALOG_NOTE, ADDITIONAL_ABOUT_DIALOG_LINKS, \
-    SEADOC_SERVER_URL, SHOW_WECHAT_SUPPORT_GROUP, MULTI_TENANCY
+    SEADOC_SERVER_URL, SHOW_WECHAT_SUPPORT_GROUP, MULTI_TENANCY, LLM_MODELS
 
 from seahub.ocm.settings import ENABLE_OCM, OCM_REMOTE_SERVERS
 from seahub.ocm_via_webdav.settings import ENABLE_OCM_VIA_WEBDAV
@@ -1174,7 +1174,8 @@ def react_fake_view(request, **kwargs):
         'enable_file_tags': settings.ENABLE_FILE_TAGS,
         'enable_show_about': settings.ENABLE_SHOW_ABOUT,
         'multi_tenancy': MULTI_TENANCY,
-        'is_seafile_plus': settings.IS_SEAFILE_PLUS
+        'is_seafile_plus': settings.IS_SEAFILE_PLUS,
+        'llm_models': json.dumps(LLM_MODELS)
     }
 
     return render(request, "react_app.html", return_dict)

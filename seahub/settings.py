@@ -7,6 +7,7 @@ import os
 import re
 import copy
 import json
+from .config_parser import ConfigParser
 
 from seaserv import FILE_SERVER_PORT
 
@@ -1099,6 +1100,27 @@ ENABLE_FACE_RECOGNITION = False
 SEAFILE_AI_SERVER_URL = ''
 SEAFILE_AI_SECRET_KEY = ''
 AI_PRICES = {}
+LLM_MODELS = []
+
+
+def validate_llm_models(models):
+    if not models or not isinstance(models, list):
+        return []
+    validated_models = []
+
+    for model in models:
+        if not isinstance(model, dict) or model.get('disable', False):
+            continue
+        if model.get('type') in ('other', 'hosted_vllm'):
+            required_fields = ('model', 'url')
+        else:
+            required_fields = ('model', 'key')
+        if not all(field in model for field in required_fields):
+            continue
+        model['label'] = model.get('label', model['model'])
+        validated_models.append(model)
+
+    return validated_models
 
 d = os.path.dirname
 EVENTS_CONFIG_FILE = os.environ.get(
@@ -1219,6 +1241,22 @@ for module in LOGGING_IGNORE_MODULES:
 
 # config in env
 JWT_PRIVATE_KEY = os.environ.get('JWT_PRIVATE_KEY', '') or JWT_PRIVATE_KEY
+
+# config in yaml & env
+ai_conf_dir = os.getenv('CONF_PATH', '/opt/seafile/conf/')
+ai_yaml_file_path = os.path.join(ai_conf_dir, os.environ.get('SEAFILE_AI_CONFIG_NAME', 'seafile_ai_config.yaml'))
+ai_configs = ConfigParser(ai_yaml_file_path, 'seahub')
+
+JWT_PRIVATE_KEY = ai_configs.get('JWT_PRIVATE_KEY', JWT_PRIVATE_KEY)
+LLM_MODELS = [
+    {
+        'type': model.get('type', 'openai'),
+        'model': model['model'],
+        'label': model['label'],
+        'default': model.get('default', False),
+    }
+    for model in validate_llm_models(ai_configs.get('LLM_MODELS', []))if not model.get('hidden', False)
+]
 
 # For database conf., now Seafile only support MySQL, skip for other engine
 

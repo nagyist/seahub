@@ -6,6 +6,7 @@ const REFERENCE_MARK_WORD_RE = /(Reference|Source|Document|Documents|Docs|Doc)\s
 const REFERENCE_PARENTHESES_RE = /\((\s*\[Reference \d+\](?:\s*,\s*\[Reference \d+\])*)\s*\)/gi;
 const REFERENCE_COMMA_RE = /(\[Reference\s+\d+\](?:\s*,\s*\[Reference\s+\d+\])+)/g;
 const MARKDOWN_FILE_RE = /<seafile-ai-markdown(?:\s+file_name=(["'])([^"']*?)\1)?\s*>([\s\S]*?)<\/seafile-ai-markdown>/g;
+const MARKDOWN_FILE_LINK_RE = /<seafile-ai-markdown-link\s+url=(["'])(.*?)\1\s*><\/seafile-ai-markdown-link>/g;
 
 export const getSourceTitle = (source, index) => {
   return source?.title || source?.name || source?.path || `Reference ${index}`;
@@ -34,16 +35,26 @@ export const transformMarkdownFilesToLinks = (value = '', mdFiles = [], messageI
     return value;
   }
 
+  const previewUrls = [];
+  value.replace(MARKDOWN_FILE_LINK_RE, (match, quotationType, url) => {
+    previewUrls.push(url || '');
+    return match;
+  });
+
+  let markdownIndex = 0;
+
   return value.replace(MARKDOWN_FILE_RE, (match, quotationType, fileName, content, offset, sourceValue) => {
     const safeFileName = fileName || 'answer.md';
     const urlObject = new URL(`file:///seafile-ai/${safeFileName}?t=${messageId}`);
     const url = urlObject.href;
     const escapedFileName = safeFileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const repoLinkMatch = (sourceValue || '').match(new RegExp(`\\[${escapedFileName}\\]\\(((?:https?:\\/\\/[^)]+)?\\/lib\\/[^)]+)\\)`));
+    const fileUrl = previewUrls[markdownIndex] || repoLinkMatch?.[1] || '';
+    markdownIndex += 1;
     mdFiles.push({
       name: safeFileName,
       url,
-      fileUrl: repoLinkMatch?.[1] || '',
+      fileUrl,
       content: (content || '').trimStart(),
       kind: 'markdown_artifact',
       document_key: url,

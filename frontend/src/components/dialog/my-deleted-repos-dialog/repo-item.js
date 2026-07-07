@@ -7,6 +7,8 @@ import { gettext, lang } from '../../../utils/constants';
 import toaster from '../../toast';
 import { Utils } from '../../../utils/utils';
 import Icon from '../../icon';
+import ModalPortal from '../../modal-portal';
+import CommonOperationConfirmationDialog from '../common-operation-confirmation-dialog';
 
 dayjs.locale(lang);
 dayjs.extend(relativeTime);
@@ -21,6 +23,7 @@ const RepoItem = ({ repo, filterRestoredRepo }) => {
   const iconUrl = useMemo(() => Utils.getLibIconUrl(repo), [repo]);
 
   const [highlight, setHighlight] = useState(false);
+  const [isDeleteRepoDialogOpen, setDeleteRepoDialogOpen] = useState(false);
 
   const onMouseEnter = useCallback(() => {
     setHighlight(true);
@@ -41,29 +44,74 @@ const RepoItem = ({ repo, filterRestoredRepo }) => {
     });
   }, [repoID, repoName, filterRestoredRepo]);
 
+  const toggleDeleteRepoDialog = useCallback((event) => {
+    if (event) {
+      event.preventDefault();
+    }
+    setDeleteRepoDialogOpen(currentValue => !currentValue);
+  }, []);
+
+  const deleteDeletedRepo = useCallback(() => {
+    seafileAPI.deleteDeletedRepo(repoID).then(() => {
+      const message = gettext('Successfully deleted {name}.').replace('{name}', repoName);
+      toaster.success(message);
+      filterRestoredRepo(repoID);
+    }).catch(error => {
+      const errMessage = Utils.getErrorMsg(error);
+      toaster.danger(errMessage);
+    });
+  }, [repoID, repoName, filterRestoredRepo]);
+
+  const deleteRepoMessage = useMemo(() => {
+    const escapedRepoName = Utils.HTMLescape(repoName);
+    return gettext('Are you sure you want to delete {placeholder} completely?').replace('{placeholder}', `<span class="op-target">${escapedRepoName}</span>`);
+  }, [repoName]);
+
   return (
-    <tr
-      className={highlight ? 'tr-highlight' : ''}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      tabIndex="0"
-      onFocus={onMouseEnter}
-    >
-      <td className="text-center pl-2 pr-2"><img src={iconUrl} alt='' width="24" /></td>
-      <td className="name">{repoName}</td>
-      <td className="update">{localTime}</td>
-      <td>
-        <span
-          role="button"
-          onClick={restoreDeletedRepo}
-          title={gettext('Restore')}
-          aria-label={gettext('Restore')}
-          className={`op-icon ${highlight ? '' : 'vh'}`}
-        >
-          <Icon symbol="reply" />
-        </span>
-      </td>
-    </tr>
+    <>
+      <tr
+        className={highlight ? 'tr-highlight' : ''}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        tabIndex="0"
+        onFocus={onMouseEnter}
+      >
+        <td className="text-center pl-2 pr-2"><img src={iconUrl} alt='' width="24" /></td>
+        <td className="name">{repoName}</td>
+        <td className="update">{localTime}</td>
+        <td>
+          <span
+            role="button"
+            onClick={restoreDeletedRepo}
+            title={gettext('Restore')}
+            aria-label={gettext('Restore')}
+            className={`op-icon ${highlight ? '' : 'vh'}`}
+          >
+            <Icon symbol="reply" />
+          </span>
+          <span
+            role="button"
+            onClick={toggleDeleteRepoDialog}
+            title={gettext('Delete')}
+            aria-label={gettext('Delete')}
+            className={`op-icon ml-2 ${highlight ? '' : 'vh'}`}
+          >
+            <Icon symbol="delete" />
+          </span>
+        </td>
+      </tr>
+      {isDeleteRepoDialogOpen && (
+        <ModalPortal>
+          <CommonOperationConfirmationDialog
+            title={gettext('Delete Library')}
+            message={deleteRepoMessage}
+            executeOperation={deleteDeletedRepo}
+            confirmBtnText={gettext('Delete')}
+            toggleDialog={toggleDeleteRepoDialog}
+          />
+        </ModalPortal>
+      )}
+    </>
   );
 
 };

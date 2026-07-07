@@ -80,7 +80,7 @@ from seahub.api2.endpoints.repo_trash import RepoTrash, RepoTrashRevertDirents, 
 from seahub.api2.endpoints.repo_commit import RepoCommitView
 from seahub.api2.endpoints.repo_commit_dir import RepoCommitDirView
 from seahub.api2.endpoints.repo_commit_revert import RepoCommitRevertView
-from seahub.api2.endpoints.deleted_repos import DeletedRepos
+from seahub.api2.endpoints.deleted_repos import DeletedRepo, DeletedRepos
 from seahub.api2.endpoints.repo_history import RepoHistory
 from seahub.api2.endpoints.repo_set_password import RepoSetPassword
 from seahub.api2.endpoints.repo_send_new_password import RepoSendNewPassword
@@ -456,6 +456,7 @@ urlpatterns = [
 
     ## user::deleted repos
     re_path(r'^api/v2.1/deleted-repos/$', DeletedRepos.as_view(), name='api2-v2.1-deleted-repos'),
+    re_path(r'^api/v2.1/deleted-repos/(?P<repo_id>[-0-9a-f]{36})/$', DeletedRepo.as_view(), name='api2-v2.1-deleted-repo'),
 
     ## user::repos
     re_path(r'^api/v2.1/repos/$', ReposView.as_view(), name='api-v2.1-repos-view'),

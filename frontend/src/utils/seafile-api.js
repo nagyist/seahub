@@ -878,6 +878,16 @@ class SeafileAPI {
     return this._sendPostRequest(url, form);
   }
 
+  deleteDeletedRepo(repoID) {
+    const url = this.server + '/api/v2.1/deleted-repos/' + repoID + '/';
+    return this.req.delete(url);
+  }
+
+  cleanDeletedRepos() {
+    const url = this.server + '/api/v2.1/deleted-repos/';
+    return this.req.delete(url);
+  }
+
   // ---- directory operation
   listDir(repoID, dirPath, { recursive = false, type = '', with_thumbnail = false, with_parents = false } = {}) {
     /*

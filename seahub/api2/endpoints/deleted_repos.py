@@ -75,3 +75,49 @@ class DeletedRepos(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({"success": True})
+
+    def delete(self, request):
+        """
+        clean all deleted-repos
+            return:
+                return True if success, otherwise api_error
+        """
+        username = request.user.username
+
+        try:
+            seafile_api.empty_repo_trash_by_owner(username)
+        except Exception as e:
+            logger.error(e)
+            error_msg = "Internal Server Error"
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({"success": True})
+
+
+class DeletedRepo(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def delete(self, request, repo_id):
+        """
+        permanently delete deleted-repo
+            return:
+                return True if success, otherwise api_error
+        """
+        owner = seafile_api.get_trash_repo_owner(repo_id)
+        username = request.user.username
+        if owner is None:
+            error_msg = "Library does not exist in trash."
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        if owner != username:
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        try:
+            seafile_api.del_repo_from_trash(repo_id)
+        except Exception as e:
+            logger.error(e)
+            error_msg = "Internal Server Error"
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({"success": True})

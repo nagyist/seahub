@@ -22,6 +22,7 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.authentication import TokenAuthentication, SdocJWTTokenAuthentication
 from seahub.utils import get_file_type_and_ext, IMAGE
 from seahub.views import check_folder_permission
+from seahub.constants import PERMISSION_READ_WRITE
 from seahub.ai.utils import image_caption, translate, writing_assistant, verify_ai_config, generate_summary, \
     generate_file_tags, ocr, is_ai_usage_over_limit, gen_chat_task_id, gen_message_id, \
     get_ai_reply, process_stream_ai_reply, strip_content_details_from_attachments, verify_chat_ai_config, AI_REPLY_TIMEOUT
@@ -441,8 +442,11 @@ class ChatSessionsView(APIView):
         repo = seafile_api.get_repo(repo_id)
         if not repo:
             return api_error(status.HTTP_404_NOT_FOUND, 'Library not found.')
-        if not check_folder_permission(request, repo_id, '/'):
+        if not check_folder_permission(request, repo_id, '/'): 
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        repo_permission = check_folder_permission(request, repo_id, '/')
+        can_upload = repo_permission == PERMISSION_READ_WRITE
 
         sessions = ChatSessions.objects.get_sessions_by_repo(repo_id, request.user.username)
         return Response({'sessions': [session.to_dict() for session in sessions]})
@@ -648,6 +652,9 @@ class ChatView(APIView):
         if not check_folder_permission(request, repo_id, '/'):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
+        repo_permission = check_folder_permission(request, repo_id, '/')
+        can_upload = repo_permission == PERMISSION_READ_WRITE
+
         org_id = request.user.org.org_id if getattr(request.user, 'org', None) else None
         if is_ai_usage_over_limit(request.user, org_id):
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Credit not enough')
@@ -704,6 +711,7 @@ class ChatView(APIView):
                     attachments,
                     repo_id,
                     request.user.username,
+                    can_upload,
                 ),
                 content_type='text/event-stream',
                 headers={

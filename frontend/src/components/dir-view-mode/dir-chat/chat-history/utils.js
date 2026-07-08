@@ -7,6 +7,7 @@ const REFERENCE_PARENTHESES_RE = /\((\s*\[Reference \d+\](?:\s*,\s*\[Reference \
 const REFERENCE_COMMA_RE = /(\[Reference\s+\d+\](?:\s*,\s*\[Reference\s+\d+\])+)/g;
 const MARKDOWN_FILE_RE = /<seafile-ai-markdown(?:\s+file_name=(["'])([^"']*?)\1)?\s*>([\s\S]*?)<\/seafile-ai-markdown>/g;
 const MARKDOWN_FILE_LINK_RE = /<seafile-ai-markdown-link\s+url=(["'])(.*?)\1\s*><\/seafile-ai-markdown-link>/g;
+const MARKDOWN_READONLY_TIPS_RE = /<markdown-readonly-tips>([\s\S]*?)<\/markdown-readonly-tips>/g;
 const LIB_MARKDOWN_LINK_RE = /\[[^\]]+\.md\]\((?:https?:\/\/[^)]+)?\/lib\/[^)]+\)\s*/g;
 
 export const getSourceTitle = (source, index) => {
@@ -58,11 +59,26 @@ export const transformMarkdownFilesToLinks = (value = '', mdFiles = [], messageI
       url,
       fileUrl,
       fileUuid: fileUuidMatch?.[1] || '',
+      content: (content || '').trimStart(),
       kind: 'markdown_artifact',
       document_key: url,
     });
     return `[${safeFileName}](${url})`;
   });
+};
+
+export const buildReadonlyTips = (value = '') => {
+  const tips = [];
+  const nextValue = value.replace(MARKDOWN_READONLY_TIPS_RE, (match, content) => {
+    if (content && content.trim()) {
+      tips.push(content.trim());
+    }
+    return '';
+  });
+  return {
+    value: nextValue,
+    tips,
+  };
 };
 
 const normalizeReferenceGroups = (value = '') => {
@@ -80,16 +96,24 @@ export const buildAIReply = (value, sources, chatId, mdFiles = []) => {
     return '';
   }
 
-  const nextValue = transformMarkdownFilesToLinks(value, mdFiles, chatId)
+  const { value: valueWithoutTips, tips } = buildReadonlyTips(value);
+  const nextValue = transformMarkdownFilesToLinks(valueWithoutTips, mdFiles, chatId)
     .replace(MARKDOWN_FILE_LINK_RE, '')
     .replace(LIB_MARKDOWN_LINK_RE, '')
     .trim();
   if (chatId === 'typing') {
-    return nextValue.replace(INTERNAL_REFERENCE_RE, '');
+    const typingValue = nextValue.replace(INTERNAL_REFERENCE_RE, '');
+    if (tips.length === 0) {
+      return typingValue;
+    }
+    return `${typingValue}\n\n${tips.map((tip) => `> ${tip}`).join('\n\n')}`;
   }
 
   if (!Array.isArray(sources) || sources.length === 0) {
-    return nextValue;
+    if (tips.length === 0) {
+      return nextValue;
+    }
+    return `${nextValue}\n\n${tips.map((tip) => `> ${tip}`).join('\n\n')}`;
   }
 
   const normalizedValue = normalizeReferenceGroups(nextValue)
@@ -115,5 +139,10 @@ export const buildAIReply = (value, sources, chatId, mdFiles = []) => {
     return `[${index + 1}]: #reference-${index + 1} "${source.title}"`;
   }).join('\n');
 
-  return `${normalizedValue}\n\n${sourcesString}`;
+  const replyWithSources = `${normalizedValue}\n\n${sourcesString}`;
+  if (tips.length === 0) {
+    return replyWithSources;
+  }
+
+  return `${replyWithSources}\n\n${tips.map((tip) => `> ${tip}`).join('\n\n')}`;
 };

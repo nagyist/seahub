@@ -56,7 +56,7 @@ export const DocumentsProvider = ({ children }) => {
       document_key: getDocumentKey(document),
     };
 
-    if (document.kind === 'markdown_artifact' && document.fileUuid && !document.content) {
+    if (document.kind === 'markdown_artifact' && document.fileUuid) {
       setIsShowDocuments(true);
       setCurrentDocument(deepCopy(nextDocument));
       closeShowSessions();

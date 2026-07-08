@@ -42,6 +42,9 @@ MARKDOWN_FILE_RE = re.compile(
 MARKDOWN_LINK_TAG_RE = re.compile(
     r'\s*<seafile-ai-markdown-link\s+url=(?:["\']).*?(?:["\'])\s*></seafile-ai-markdown-link>\s*'
 )
+MARKDOWN_READONLY_TIPS_RE = re.compile(
+    r'\s*<markdown-readonly-tips>[\s\S]*?</markdown-readonly-tips>\s*'
+)
 
 
 # API
@@ -210,6 +213,7 @@ def rewrite_ai_reply_with_uploaded_markdown_links(ai_reply, repo_id, username, c
     # Remove any previously generated hidden preview links from the reply body,
     # then regenerate exactly one link for each current markdown artifact.
     ai_reply = MARKDOWN_LINK_TAG_RE.sub('\n', ai_reply)
+    ai_reply = MARKDOWN_READONLY_TIPS_RE.sub('\n', ai_reply)
 
     failed_files = []
     readonly_files = []

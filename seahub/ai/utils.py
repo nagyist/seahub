@@ -11,7 +11,6 @@ from copy import deepcopy
 from urllib.parse import urljoin
 
 from django.core.cache import cache
-from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.utils import timezone
 from django.db.models.functions import Coalesce
@@ -202,7 +201,7 @@ def upload_generated_markdown_file(repo_id, username, file_name, content):
 
     file_uuid = FileUUIDMap.objects.get_or_create_fileuuidmap_by_path(repo_id, file_path, False)
     service_url = get_service_url().rstrip('/')
-    preview_url = service_url + reverse('view_lib_file_via_smart_link', args=[file_uuid.uuid, safe_file_name])
+    preview_url = f'{service_url}/smart-link/{file_uuid.uuid}/{safe_file_name}'
     return safe_file_name, preview_url
 
 

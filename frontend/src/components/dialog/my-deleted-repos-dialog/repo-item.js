@@ -103,7 +103,7 @@ const RepoItem = ({ repo, filterRestoredRepo }) => {
       {isDeleteRepoDialogOpen && (
         <ModalPortal>
           <CommonOperationConfirmationDialog
-            title={gettext('Delete Library')}
+            title={gettext('Delete library')}
             message={deleteRepoMessage}
             executeOperation={deleteDeletedRepo}
             confirmBtnText={gettext('Delete')}

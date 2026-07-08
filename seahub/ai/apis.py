@@ -653,7 +653,7 @@ class ChatView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         repo_permission = check_folder_permission(request, repo_id, '/')
-        can_upload = repo_permission == PERMISSION_READ_WRITE
+        can_upload = parse_repo_perm(repo_permission).can_upload if repo_permission else False
 
         org_id = request.user.org.org_id if getattr(request.user, 'org', None) else None
         if is_ai_usage_over_limit(request.user, org_id):

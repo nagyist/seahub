@@ -37,8 +37,8 @@ const Repos = ({ repos, filterRestoredRepo, cleanDeletedRepos }) => {
       {isCleanDialogOpen && (
         <ModalPortal>
           <CommonOperationConfirmationDialog
-            title={gettext('Clear trash')}
-            message={gettext('Are you sure you want to clear trash?')}
+            title={gettext('Delete all deleted libraries')}
+            message={gettext('Are you sure you want to delete all deleted libraries?')}
             executeOperation={cleanDeletedRepos}
             confirmBtnText={gettext('Clean')}
             toggleDialog={toggleCleanDialog}

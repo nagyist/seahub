@@ -6,6 +6,9 @@ const REFERENCE_MARK_WORD_RE = /(Reference|Source|Document|Documents|Docs|Doc)\s
 const REFERENCE_PARENTHESES_RE = /\((\s*\[Reference \d+\](?:\s*,\s*\[Reference \d+\])*)\s*\)/gi;
 const REFERENCE_COMMA_RE = /(\[Reference\s+\d+\](?:\s*,\s*\[Reference\s+\d+\])+)/g;
 const MARKDOWN_FILE_RE = /<seafile-ai-markdown(?:\s+file_name=(["'])([^"']*?)\1)?\s*>([\s\S]*?)<\/seafile-ai-markdown>/g;
+const MARKDOWN_FILE_LINK_RE = /<seafile-ai-markdown-link\s+url=(["'])(.*?)\1\s*><\/seafile-ai-markdown-link>/g;
+const MARKDOWN_READONLY_TIPS_RE = /<markdown-readonly-tips>([\s\S]*?)<\/markdown-readonly-tips>/g;
+const LIB_MARKDOWN_LINK_RE = /\[[^\]]+\.md\]\((?:https?:\/\/[^)]+)?\/lib\/[^)]+\)\s*/g;
 
 export const getSourceTitle = (source, index) => {
   return source?.title || source?.name || source?.path || `Reference ${index}`;
@@ -34,19 +37,48 @@ export const transformMarkdownFilesToLinks = (value = '', mdFiles = [], messageI
     return value;
   }
 
-  return value.replace(MARKDOWN_FILE_RE, (match, quotationType, fileName, content) => {
+  const previewUrls = [];
+  value.replace(MARKDOWN_FILE_LINK_RE, (match, quotationType, url) => {
+    previewUrls.push(url || '');
+    return match;
+  });
+
+  let markdownIndex = 0;
+
+  return value.replace(MARKDOWN_FILE_RE, (match, quotationType, fileName, content, offset, sourceValue) => {
     const safeFileName = fileName || 'answer.md';
     const urlObject = new URL(`file:///seafile-ai/${safeFileName}?t=${messageId}`);
     const url = urlObject.href;
+    const escapedFileName = safeFileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const repoLinkMatch = (sourceValue || '').match(new RegExp(`\\[${escapedFileName}\\]\\(((?:https?:\\/\\/[^)]+)?\\/lib\\/[^)]+)\\)`));
+    const fileUrl = previewUrls[markdownIndex] || repoLinkMatch?.[1] || '';
+    const fileUuidMatch = fileUrl.match(/smart-link\/([-0-9a-f]{36})\//i);
+    markdownIndex += 1;
     mdFiles.push({
       name: safeFileName,
       url,
+      fileUrl,
+      fileUuid: fileUuidMatch?.[1] || '',
       content: (content || '').trimStart(),
       kind: 'markdown_artifact',
       document_key: url,
     });
     return `[${safeFileName}](${url})`;
   });
+};
+
+export const buildReadonlyTips = (value = '') => {
+  const tips = [];
+  const nextValue = value.replace(MARKDOWN_READONLY_TIPS_RE, (match, content) => {
+    if (content && content.trim()) {
+      tips.push(content.trim());
+    }
+    return '';
+  });
+  return {
+    value: nextValue,
+    tips,
+  };
 };
 
 const normalizeReferenceGroups = (value = '') => {
@@ -64,13 +96,24 @@ export const buildAIReply = (value, sources, chatId, mdFiles = []) => {
     return '';
   }
 
-  const nextValue = transformMarkdownFilesToLinks(value, mdFiles, chatId);
+  const { value: valueWithoutTips, tips } = buildReadonlyTips(value);
+  const nextValue = transformMarkdownFilesToLinks(valueWithoutTips, mdFiles, chatId)
+    .replace(MARKDOWN_FILE_LINK_RE, '')
+    .replace(LIB_MARKDOWN_LINK_RE, '')
+    .trim();
   if (chatId === 'typing') {
-    return nextValue.replace(INTERNAL_REFERENCE_RE, '');
+    const typingValue = nextValue.replace(INTERNAL_REFERENCE_RE, '');
+    if (tips.length === 0) {
+      return typingValue;
+    }
+    return `${typingValue}\n\n${tips.map((tip) => `> ${tip}`).join('\n\n')}`;
   }
 
   if (!Array.isArray(sources) || sources.length === 0) {
-    return nextValue;
+    if (tips.length === 0) {
+      return nextValue;
+    }
+    return `${nextValue}\n\n${tips.map((tip) => `> ${tip}`).join('\n\n')}`;
   }
 
   const normalizedValue = normalizeReferenceGroups(nextValue)
@@ -96,5 +139,10 @@ export const buildAIReply = (value, sources, chatId, mdFiles = []) => {
     return `[${index + 1}]: #reference-${index + 1} "${source.title}"`;
   }).join('\n');
 
-  return `${normalizedValue}\n\n${sourcesString}`;
+  const replyWithSources = `${normalizedValue}\n\n${sourcesString}`;
+  if (tips.length === 0) {
+    return replyWithSources;
+  }
+
+  return `${replyWithSources}\n\n${tips.map((tip) => `> ${tip}`).join('\n\n')}`;
 };

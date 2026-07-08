@@ -1,12 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import copy from 'copy-to-clipboard';
 import classnames from 'classnames';
-import JSZip from 'jszip';
 import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
 import { MarkdownViewer } from '@seafile/seafile-editor';
+import CenteredLoading from '../../../centered-loading';
 import Icon from '../../../icon';
 import { mediaUrl, gettext } from '../../../../utils/constants';
-import toaster from '../../../toast';
 import { Selector } from '../components';
 import { useDocuments } from '../hooks';
 
@@ -38,8 +36,8 @@ const Documents = () => {
     isShowDocuments,
     documents,
     currentDocument,
+    isDocumentLoading,
     closeDocuments,
-    clear,
     setCurrentDocument,
   } = useDocuments();
   const [isFull, setIsFull] = useState(false);
@@ -58,10 +56,6 @@ const Documents = () => {
     }));
   }, [documents]);
 
-  const toggleMoreMenu = useCallback(() => {
-    setIsMoreMenuShow((currentValue) => !currentValue);
-  }, []);
-
   const handleToggleCurrentDocument = useCallback((documentKey) => {
     const nextDocument = documents.find((item) => item.document_key === documentKey);
     if (nextDocument) {
@@ -69,36 +63,20 @@ const Documents = () => {
     }
   }, [documents, setCurrentDocument]);
 
-  const handleCopy = useCallback(() => {
-    copy(currentDocument?.content || '');
-    toaster.success(gettext(isMarkdownArtifact ? 'Markdown copied' : 'The content has been copied'));
-  }, [currentDocument, isMarkdownArtifact]);
+  const toggleMoreMenu = useCallback(() => {
+    setIsMoreMenuShow((currentValue) => !currentValue);
+  }, []);
 
   const handleDownload = useCallback(() => {
-    downloadContent(currentDocument?.content || '', currentDocument?.name, () => {
-      if (isMarkdownArtifact) {
-        toaster.success(gettext('Markdown downloaded'));
-      }
-    });
-  }, [currentDocument, isMarkdownArtifact]);
+    downloadContent(currentDocument?.content || '', currentDocument?.name);
+  }, [currentDocument]);
 
-  const handleDownloadAll = useCallback(async () => {
-    const zip = new JSZip();
-    const documentNameCount = {};
-
-    documents.forEach((document) => {
-      const documentName = document.name;
-      if (!documentNameCount[documentName]) {
-        documentNameCount[documentName] = 0;
-      }
-      const documentsCount = documentNameCount[documentName] + 1;
-      documentNameCount[documentName] = documentsCount;
-      zip.file(documentsCount > 1 ? `${documentName}(${documentsCount - 1})` : documentName, document.content || '');
-    });
-
-    const blob = await zip.generateAsync({ type: 'blob' });
-    downloadBlob(blob, 'files.zip');
-  }, [documents]);
+  const handleOpenFile = useCallback(() => {
+    if (!currentDocument?.fileUrl) {
+      return;
+    }
+    window.open(currentDocument.fileUrl, '_blank', 'noopener');
+  }, [currentDocument]);
 
   if (!isShowDocuments || !Array.isArray(documents) || documents.length === 0 || !currentDocument) {
     return null;
@@ -141,7 +119,7 @@ const Documents = () => {
             </div>
           )}
           <div className="seafile-ai-chat-documents-header-btns">
-            {isMarkdownArtifact && (
+            {isMarkdownArtifact && currentDocument?.fileUrl && (
               <Dropdown isOpen={isMoreMenuShow} toggle={toggleMoreMenu} className="d-flex">
                 <DropdownToggle
                   tag="button"
@@ -153,14 +131,10 @@ const Documents = () => {
                   <Icon symbol="more" />
                 </DropdownToggle>
                 <DropdownMenu end className="seafile-ai-chat-documents-dropdown-menu">
-                  <DropdownItem onClick={handleDownloadAll}>{gettext('Download all files')}</DropdownItem>
-                  <DropdownItem onClick={clear}>{gettext('Close all tabs')}</DropdownItem>
+                  <DropdownItem onClick={handleOpenFile}>{gettext('Open file')}</DropdownItem>
                 </DropdownMenu>
               </Dropdown>
             )}
-            <button type="button" className="btn btn-icon p-0 border-0 bg-transparent seafile-ai-chat-documents-icon-btn" onClick={handleCopy} title={gettext('Copy')} aria-label={gettext('Copy')}>
-              <Icon symbol="copy" />
-            </button>
             <button type="button" className="btn btn-icon p-0 border-0 bg-transparent seafile-ai-chat-documents-icon-btn" onClick={handleDownload} title={gettext('Download')} aria-label={gettext('Download')}>
               <Icon symbol="download" />
             </button>
@@ -180,13 +154,19 @@ const Documents = () => {
         </div>
         <div className="seafile-ai-chat-documents-body">
           <div className={classnames('seafile-ai-chat-document-content', { 'seafile-ai-chat-document-md': isMarkdownArtifact })}>
-            <MarkdownViewer
-              key={currentDocument.document_key}
-              value={currentDocument.content || ''}
-              isFetching={false}
-              isShowOutline={false}
-              mathJaxSource={mediaUrl + 'js/mathjax/tex-svg.js'}
-            />
+            {isDocumentLoading ? (
+              <div className="seafile-ai-chat-documents-loading">
+                <CenteredLoading />
+              </div>
+            ) : (
+              <MarkdownViewer
+                key={currentDocument.document_key}
+                value={currentDocument.content || ''}
+                isFetching={false}
+                isShowOutline={false}
+                mathJaxSource={mediaUrl + 'js/mathjax/tex-svg.js'}
+              />
+            )}
           </div>
         </div>
       </div>

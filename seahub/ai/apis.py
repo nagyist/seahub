@@ -2,7 +2,6 @@ import time
 import logging
 import os.path
 import json
-
 from django.core.cache import cache
 from django.http import StreamingHttpResponse
 from django.utils.translation import gettext as _
@@ -23,9 +22,12 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.authentication import TokenAuthentication, SdocJWTTokenAuthentication
 from seahub.utils import get_file_type_and_ext, IMAGE
 from seahub.views import check_folder_permission
+from seahub.utils.repo import parse_repo_perm
 from seahub.ai.utils import image_caption, translate, writing_assistant, verify_ai_config, generate_summary, \
     generate_file_tags, ocr, is_ai_usage_over_limit, gen_chat_task_id, gen_message_id, \
     get_ai_reply, process_stream_ai_reply, strip_content_details_from_attachments, verify_chat_ai_config, AI_REPLY_TIMEOUT
+from seahub.tags.models import FileUUIDMap
+from seahub.views.file import get_file_view_path_and_perm, get_file_content
 
 logger = logging.getLogger(__name__)
 
@@ -440,8 +442,11 @@ class ChatSessionsView(APIView):
         repo = seafile_api.get_repo(repo_id)
         if not repo:
             return api_error(status.HTTP_404_NOT_FOUND, 'Library not found.')
-        if not check_folder_permission(request, repo_id, '/'):
+        if not check_folder_permission(request, repo_id, '/'): 
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        repo_permission = check_folder_permission(request, repo_id, '/')
+        can_upload = parse_repo_perm(repo_permission).can_upload if repo_permission else False
 
         sessions = ChatSessions.objects.get_sessions_by_repo(repo_id, request.user.username)
         return Response({'sessions': [session.to_dict() for session in sessions]})
@@ -540,6 +545,49 @@ class ChatMessagesView(APIView):
         return Response(results)
 
 
+class ChatMarkdownArtifactView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, file_uuid):
+        uuid_map = FileUUIDMap.objects.get_fileuuidmap_by_uuid(file_uuid)
+        if not uuid_map or uuid_map.is_dir:
+            return api_error(status.HTTP_404_NOT_FOUND, 'File not found.')
+
+        repo_id = uuid_map.repo_id
+        file_path = os.path.join(uuid_map.parent_path, uuid_map.filename)
+        if not check_folder_permission(request, repo_id, '/'):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        repo = seafile_api.get_repo(repo_id)
+        if not repo:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Library not found.')
+
+        obj_id = seafile_api.get_file_id_by_path(repo_id, file_path)
+        if not obj_id:
+            return api_error(status.HTTP_404_NOT_FOUND, 'File not found.')
+
+        file_name = os.path.basename(file_path)
+        file_type, _ = get_file_type_and_ext(file_name)
+        raw_path, inner_path, user_perm = get_file_view_path_and_perm(request, repo_id, obj_id, file_path)
+        if user_perm is None:
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        err, file_content, encoding = get_file_content(file_type, inner_path, 'utf-8')
+        if err:
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, err)
+
+        return Response({
+            'repo_id': repo_id,
+            'file_uuid': str(uuid_map.uuid),
+            'file_name': file_name,
+            'path': file_path,
+            'content': file_content,
+            'encoding': encoding,
+        })
+
+
 class ChatView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
@@ -604,6 +652,9 @@ class ChatView(APIView):
         if not check_folder_permission(request, repo_id, '/'):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
+        repo_permission = check_folder_permission(request, repo_id, '/')
+        can_upload = parse_repo_perm(repo_permission).can_upload if repo_permission else False
+
         org_id = request.user.org.org_id if getattr(request.user, 'org', None) else None
         if is_ai_usage_over_limit(request.user, org_id):
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Credit not enough')
@@ -660,6 +711,7 @@ class ChatView(APIView):
                     attachments,
                     repo_id,
                     request.user.username,
+                    can_upload,
                 ),
                 content_type='text/event-stream',
                 headers={

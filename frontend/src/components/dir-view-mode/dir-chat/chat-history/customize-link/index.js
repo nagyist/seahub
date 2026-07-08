@@ -1,18 +1,11 @@
 import React, { useCallback, useMemo } from 'react';
 import classNames from 'classnames';
-import { getPreviewContent } from '@seafile/seafile-editor';
 import Icon from '../../../../icon';
 import { gettext } from '../../../../../utils/constants';
 
 import './index.css';
 
 const FILE_URL_PREFIX = 'file:///seafile-ai/';
-const PREVIEW_TEXT_MAX_LENGTH = 500;
-
-const buildPreviewText = (content = '') => {
-  const { previewText = '' } = getPreviewContent(content, true, false) || {};
-  return previewText.slice(0, PREVIEW_TEXT_MAX_LENGTH);
-};
 
 const CustomizeLink = ({
   element,
@@ -83,9 +76,6 @@ const CustomizeLink = ({
         >
           <Icon symbol="view-issue" />
         </button>
-      </div>
-      <div className="sea-ai-chat-customize-md-link-body">
-        <span className="preview-text-content">{buildPreviewText(file.content)}</span>
       </div>
     </div>
   );

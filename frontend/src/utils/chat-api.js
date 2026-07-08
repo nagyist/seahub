@@ -82,6 +82,10 @@ class ChatAPI {
   getChatMessages(sessionUUID) {
     return this.req.get(this.server + '/api/v2.1/ai/chat/sessions/' + sessionUUID + '/messages/');
   }
+
+  getMarkdownArtifact(fileUUID) {
+    return this.req.get(this.server + '/api/v2.1/ai/chat/markdown-artifacts/' + fileUUID + '/');
+  }
 }
 
 const chatAPI = new ChatAPI();

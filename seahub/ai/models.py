@@ -1,7 +1,7 @@
 import json
 import uuid
 
-from django.db import models
+from django.db import models, transaction
 
 
 class StatsAIByTeam(models.Model):
@@ -57,6 +57,42 @@ class ChatSessionsManager(models.Manager):
             return self.get(session_uuid=session_uuid)
         except self.model.DoesNotExist:
             return None
+
+    def copy_session(self, source_session, username):
+        """Create a user's own session from an existing session history."""
+        with transaction.atomic():
+            new_session = self.create_session(
+                repo_id=source_session.repo_id,
+                session_name=source_session.session_name,
+                username=username,
+            )
+
+            source_messages = ChatMessages.objects.get_messages_by_session(source_session.session_uuid)
+            if source_messages:
+                ChatMessages.objects.bulk_create([
+                    ChatMessages(
+                        session_uuid=new_session.session_uuid,
+                        message_id=message.message_id,
+                        role=message.role,
+                        content=message.content,
+                        attachments=message.attachments,
+                        sources=message.sources,
+                    )
+                    for message in source_messages
+                ])
+
+            source_thought_processes = ChatMessageThoughtProcess.objects.filter(session_uuid=source_session.session_uuid)
+            if source_thought_processes:
+                ChatMessageThoughtProcess.objects.bulk_create([
+                    ChatMessageThoughtProcess(
+                        session_uuid=new_session.session_uuid,
+                        message_id=thought_process.message_id,
+                        thought_process=thought_process.thought_process,
+                    )
+                    for thought_process in source_thought_processes
+                ])
+
+            return new_session
 
 
 class ChatSessions(models.Model):

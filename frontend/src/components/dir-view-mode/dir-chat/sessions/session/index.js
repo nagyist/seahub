@@ -10,7 +10,7 @@ import SeahubModalHeader from '@/components/common/seahub-modal-header';
 
 import './index.css';
 
-const Session = ({ session, permission, isSelected, isTeamTab = false }) => {
+const Session = ({ session, isSelected, isTeamTab = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isShowRenameDialog, setIsShowRenameDialog] = useState(false);
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false);
@@ -25,7 +25,6 @@ const Session = ({ session, permission, isSelected, isTeamTab = false }) => {
   }, []);
 
   const icon = session.is_shared ? 'group' : 'new-chat';
-  const isReadWrite = permission === 'rw';
 
   if (isTeamTab) {
     return (
@@ -44,29 +43,27 @@ const Session = ({ session, permission, isSelected, isTeamTab = false }) => {
   return (
     <>
       <div
-        className={classNames('sea-ai-ask-session-item', { active: isSelected || isOpen })}
+        className={classNames('sea-ai-ask-session-item', 'has-more-menu', { active: isSelected || isOpen })}
         onClick={() => togglePageSlugId(session._id)}
       >
         <Icon symbol={icon} className="mr-2" />
         <div className="sea-ai-ask-session-content">
           <div className="sea-ai-ask-session-name text-truncate" title={session.name}>{session.name}</div>
         </div>
-        {isReadWrite && (
-          <Dropdown isOpen={isOpen} toggle={toggleDropdown} className="sea-ai-ask-session-more-op-btn">
-            <DropdownToggle color="link" className="sea-ai-ask-session-more-op-btn p-0 border-0 text-secondary">
-              <Icon symbol="more-level" />
-            </DropdownToggle>
-            <DropdownMenu end>
-              <DropdownItem onClick={() => setIsShowRenameDialog(true)}>{gettext('Rename')}</DropdownItem>
-              {session.is_shared ? (
-                <DropdownItem onClick={() => unshareSession(session._id)}>{gettext('Unshare within library')}</DropdownItem>
-              ) : (
-                <DropdownItem onClick={() => shareSession(session._id)}>{gettext('Share within library')}</DropdownItem>
-              )}
-              <DropdownItem onClick={() => setIsShowDeleteDialog(true)}>{gettext('Delete')}</DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-        )}
+        <Dropdown isOpen={isOpen} toggle={toggleDropdown} className="sea-ai-ask-session-more-op-btn">
+          <DropdownToggle color="link" className="sea-ai-ask-session-more-op-btn p-0 border-0 text-secondary">
+            <Icon symbol="more-level" />
+          </DropdownToggle>
+          <DropdownMenu end>
+            <DropdownItem onClick={() => setIsShowRenameDialog(true)}>{gettext('Rename')}</DropdownItem>
+            {session.is_shared ? (
+              <DropdownItem onClick={() => unshareSession(session._id)}>{gettext('Unshare within library')}</DropdownItem>
+            ) : (
+              <DropdownItem onClick={() => shareSession(session._id)}>{gettext('Share within library')}</DropdownItem>
+            )}
+            <DropdownItem onClick={() => setIsShowDeleteDialog(true)}>{gettext('Delete')}</DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
       </div>
       {isShowRenameDialog && (
         <Modal isOpen={true} toggle={() => setIsShowRenameDialog(false)} autoFocus={false}>
@@ -97,7 +94,6 @@ const Session = ({ session, permission, isSelected, isTeamTab = false }) => {
 
 Session.propTypes = {
   session: PropTypes.object,
-  permission: PropTypes.string,
   isSelected: PropTypes.bool,
   isTeamTab: PropTypes.bool,
 };

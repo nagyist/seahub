@@ -26,6 +26,18 @@
   padding: 8px 180px 16px;
 }
 
+.sea-ai-ask-shared-readonly-footer {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.sea-ai-ask-shared-readonly-button {
+  display: inline-flex;
+  align-items: center;
+}
+
 .sea-ai-ask-chats-body::-webkit-scrollbar {
   display: none;
 }

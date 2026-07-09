@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { gettext } from '../../../../utils/constants';
+import { gettext, username } from '../../../../utils/constants';
 import { Utils } from '../../../../utils/utils';
 import CenteredLoading from '../../../centered-loading';
 import Icon from '../../../icon';
@@ -9,7 +9,7 @@ import toaster from '../../../toast';
 import { eventBus } from '../../../common/event-bus';
 import { EVENT_BUS_TYPE } from '../../../common/event-bus-type';
 import { chatAPI } from '../../../../utils/chat-api';
-import { ChatMessage } from '../models';
+import { ChatMessage, ChatSession } from '../models';
 import { ASK_PAGE_SLUG_ID, CHAT_MESSAGE_TYPE } from '../constants';
 import ChatInput from '../chat-input';
 import ChatHistory from '../chat-history';
@@ -22,6 +22,8 @@ const Chat = ({ repoID, settings }) => {
   const [isReply, setReply] = useState(false);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
+  const [fetchedSession, setFetchedSession] = useState(null);
+  const [isStartingChatFromConversation, setIsStartingChatFromConversation] = useState(false);
 
   const timer = useRef(null);
   const chatHistoryContentRef = useRef(null);
@@ -35,11 +37,29 @@ const Chat = ({ repoID, settings }) => {
     modifyLocalSession,
     getSession,
     getChatMessage,
+    startChatFromConversation,
   } = useSessions();
   const { isShowDocuments, documents } = useDocuments();
   const { pageSlugId, togglePageSlugId } = useAskPage();
 
-  const session = useMemo(() => getSession(pageSlugId), [getSession, pageSlugId]);
+  const session = useMemo(() => {
+    const currentSession = getSession(pageSlugId);
+    if (currentSession) {
+      return currentSession;
+    }
+    if (fetchedSession?._id === pageSlugId) {
+      return fetchedSession;
+    }
+    return null;
+  }, [fetchedSession, getSession, pageSlugId]);
+
+  const isSharedByOther = useMemo(() => {
+    return Boolean(session?.is_shared && session.username && session.username !== username);
+  }, [session]);
+
+  const readOnly = useMemo(() => {
+    return Boolean(session?.running_task || isSharedByOther);
+  }, [session?.running_task, isSharedByOther]);
 
   const isSmall = useMemo(() => {
     if (isShowDocuments && Array.isArray(documents) && documents.length > 0) {
@@ -112,6 +132,16 @@ const Chat = ({ repoID, settings }) => {
     });
   }, [chatHistories, createSession, pageSlugId, togglePageSlugId, updateChatHistories]);
 
+  const handleStartChatFromConversation = useCallback(() => {
+    if (!session?._id || !startChatFromConversation || isStartingChatFromConversation) {
+      return;
+    }
+    setIsStartingChatFromConversation(true);
+    startChatFromConversation(session._id).finally(() => {
+      setIsStartingChatFromConversation(false);
+    });
+  }, [isStartingChatFromConversation, session, startChatFromConversation]);
+
   useEffect(() => {
     if (currentSessionId.current === pageSlugId) {
       return;
@@ -125,6 +155,7 @@ const Chat = ({ repoID, settings }) => {
     }
 
     currentSessionId.current = pageSlugId;
+    setFetchedSession(null);
     updateChatHistories([]);
     setLoading(true);
 
@@ -135,10 +166,16 @@ const Chat = ({ repoID, settings }) => {
 
     chatAPI.getChatMessages(pageSlugId).then((res) => {
       const {
+        session: sessionData,
         messages: historyMessages,
         running_task,
         user_input,
       } = res.data;
+
+      if (sessionData) {
+        setFetchedSession(new ChatSession({ ...sessionData, running_task: Boolean(running_task) }));
+        modifyLocalSession(pageSlugId, { running_task: Boolean(running_task) });
+      }
 
       const messages = Array.isArray(historyMessages) ? historyMessages.map((item) => {
         if (item.role === 'user') {
@@ -517,14 +554,28 @@ const Chat = ({ repoID, settings }) => {
         </div>
       </div>
       <div className="sea-ai-ask-chats-footer">
-        <ChatInput
-          ref={messageInputRef}
-          isReply={effectiveIsReply}
-          readOnly={Boolean(session?.running_task)}
-          repoID={repoID}
-          sendMessage={sendMessage}
-          isEmpty={isEmpty}
-        />
+        {isSharedByOther && !session?.running_task && startChatFromConversation ? (
+          <div className="sea-ai-ask-shared-readonly-footer">
+            <button
+              type="button"
+              className="btn btn-secondary sea-ai-ask-shared-readonly-button"
+              onClick={handleStartChatFromConversation}
+              disabled={isStartingChatFromConversation}
+            >
+              <Icon symbol="copy" className="mr-2" />
+              {gettext('Start a new chat from this conversation')}
+            </button>
+          </div>
+        ) : (
+          <ChatInput
+            ref={messageInputRef}
+            isReply={effectiveIsReply}
+            readOnly={readOnly}
+            repoID={repoID}
+            sendMessage={sendMessage}
+            isEmpty={isEmpty}
+          />
+        )}
       </div>
     </div>
   );

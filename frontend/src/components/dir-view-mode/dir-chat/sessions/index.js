@@ -10,7 +10,7 @@ import { SESSION_TAB_TYPE } from '../constants';
 
 import './index.css';
 
-const Sessions = ({ sessionId, permission }) => {
+const Sessions = ({ sessionId }) => {
   const {
     sessions,
     teamSessions,
@@ -65,7 +65,6 @@ const Sessions = ({ sessionId, permission }) => {
           <Session
             key={session._id}
             session={session}
-            permission={permission}
             isSelected={sessionId === session._id}
             isTeamTab={isTeamTab}
           />
@@ -77,7 +76,6 @@ const Sessions = ({ sessionId, permission }) => {
 
 Sessions.propTypes = {
   sessionId: PropTypes.string,
-  permission: PropTypes.string,
 };
 
 export default Sessions;

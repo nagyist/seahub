@@ -1,6 +1,6 @@
 from django.urls import re_path
 from .apis import ImageCaption, GenerateSummary, GenerateFileTags, OCR, Translate, WritingAssistant, \
-    ChatMessagesView, ChatSessionCopyView, ChatSessionView, ChatSessionsView, ChatView
+    ChatMessagesView, ChatMarkdownArtifactView, ChatSessionCopyView, ChatSessionView, ChatSessionsView, ChatView
 
 urlpatterns = [
     re_path(r'^image-caption/$', ImageCaption.as_view(), name='api-v2.1-image-caption'),

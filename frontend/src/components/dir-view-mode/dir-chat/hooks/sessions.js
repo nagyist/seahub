@@ -73,6 +73,20 @@ export const SessionsProvider = ({ repoID, api, children }) => {
     });
   }, [api, prependSession, repoID]);
 
+  const startChatFromConversation = useCallback((sessionId) => {
+    return api.copyChatSession(sessionId).then((res) => {
+      const session = new ChatSession(res.data.session);
+      prependSession(session);
+      setActiveTab(SESSION_TAB_TYPE.MINE);
+      togglePageSlugId(session._id);
+      toaster.success(gettext('Started a new chat from this conversation'));
+      return session;
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+      throw error;
+    });
+  }, [api, prependSession, togglePageSlugId]);
+
   const modifySession = useCallback((sessionId, { name }) => {
     return api.modifyChatSession(sessionId, { session_name: name }).then((res) => {
       const updatedSession = new ChatSession(res.data.session);
@@ -272,6 +286,7 @@ export const SessionsProvider = ({ repoID, api, children }) => {
     loadSessions,
     loadTeamSessions,
     createSession,
+    startChatFromConversation,
     modifySession,
     deleteSession,
     shareSession,
@@ -302,6 +317,7 @@ export const SessionsProvider = ({ repoID, api, children }) => {
     sessions,
     shareSession,
     solveProblem,
+    startChatFromConversation,
     teamSessions,
     toggleIsShowSessions,
     unshareSession,

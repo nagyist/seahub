@@ -526,12 +526,17 @@ class InteractionMasks extends React.Component {
       const { left: selectionMaskLeft, top: selectionMaskTop } = this.selectionMask.getBoundingClientRect();
       if (editorPortalTarget === document.body) {
         const { scrollLeft, scrollTop } = document.scrollingElement || document.documentElement;
-        return { left: selectionMaskLeft + scrollLeft, top: selectionMaskTop + scrollTop };
+        return { left: selectionMaskLeft + scrollLeft, top: selectionMaskTop + scrollTop, clientLeft: selectionMaskLeft, clientTop: selectionMaskTop };
       }
 
       const { left: portalTargetLeft, top: portalTargetTop } = editorPortalTarget.getBoundingClientRect();
       const { scrollLeft, scrollTop } = editorPortalTarget;
-      return { left: selectionMaskLeft - portalTargetLeft + scrollLeft, top: selectionMaskTop - portalTargetTop + scrollTop };
+      return {
+        left: selectionMaskLeft - portalTargetLeft + scrollLeft - 1,
+        top: selectionMaskTop - portalTargetTop + scrollTop,
+        clientLeft: selectionMaskLeft,
+        clientTop: selectionMaskTop,
+      };
     }
   };
 
@@ -1147,7 +1152,13 @@ class InteractionMasks extends React.Component {
     const isDragEnabled = this.checkIsSelectedCellEditable();
     const column = getSelectedColumn({ selectedPosition, columns });
     const { type } = column || {};
-    if (isEditorEnabled && type !== CellType.RATE && type !== CellType.CHECKBOX && type === CellType.FILE_NAME) {
+    const shouldHideSelectionMaskWhenEditing = isEditorEnabled && [
+      CellType.FILE_NAME,
+      CellType.TEXT,
+      CellType.NUMBER,
+    ].includes(type);
+
+    if (shouldHideSelectionMaskWhenEditing) {
       return null;
     }
     if (!this.isGridSelected()) return null;
@@ -1197,7 +1208,7 @@ class InteractionMasks extends React.Component {
     const isSelectedSingleCell = selectedRangeIsSingleCell(selectedRange);
     return (
       <div
-        className='interaction-mask'
+        className="sf-interaction-mask"
         ref={this.setContainerRef}
         onKeyDown={this.onKeyDown}
         onFocus={this.onFocus}

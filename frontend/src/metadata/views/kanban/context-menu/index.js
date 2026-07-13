@@ -13,6 +13,11 @@ import TextTranslation from '../../../../utils/text-translation';
 import { getColumnByKey } from '../../../utils/column';
 import { buildKanbanMenuOptions } from '../../../utils/menu-builder';
 import { useMetadataStatus } from '../../../../hooks';
+import EventBus, { eventBus as globalEventBus } from '../../../../components/common/event-bus';
+import { EVENT_BUS_TYPE as DIR_EVENT_BUS_TYPE } from '../../../../components/common/event-bus-type';
+import { setPendingAttachments } from '../../../../components/dir-view-mode/dir-chat/hooks/ai-chat-tools';
+import { AttachmentObject } from '../../../../components/dir-view-mode/dir-chat/models';
+import { Utils } from '../../../../utils/utils';
 
 const KanbanContextMenu = ({ selectedCard, onDelete, onRename }) => {
   const [isRenameDialogShow, setIsRenameDialogShow] = useState(false);
@@ -92,6 +97,23 @@ const KanbanContextMenu = ({ selectedCard, onDelete, onRename }) => {
         handleDownload();
         break;
       }
+      case TextTranslation.CHAT_WITH_AI.key: {
+        const attachments = record ? [new AttachmentObject({
+          repo_id: repoID,
+          path: Utils.joinPath(parentDir, oldName),
+          name: oldName,
+        })] : [];
+
+        setPendingAttachments(attachments, true);
+        globalEventBus.dispatch(DIR_EVENT_BUS_TYPE.SWITCH_TO_CHAT_VIEW);
+        if (attachments.length > 0) {
+          EventBus.getInstance().dispatch(DIR_EVENT_BUS_TYPE.CHAT_ATTACH_FILES, {
+            attachments,
+            reset: true,
+          });
+        }
+        break;
+      }
       case TextTranslation.DELETE.key: {
         onDelete([selectedCard]);
         break;
@@ -119,7 +141,7 @@ const KanbanContextMenu = ({ selectedCard, onDelete, onRename }) => {
         break;
       }
     }
-  }, [record, updateFaceRecognition, repoID, openRenameDialog, handleDownload, onDelete, selectedCard, updateRecordDetails, updateRecordDescription, generateFileTags, onOCR]);
+  }, [record, updateFaceRecognition, repoID, openRenameDialog, handleDownload, parentDir, oldName, onDelete, selectedCard, updateRecordDetails, updateRecordDescription, generateFileTags, onOCR]);
 
   useEffect(() => {
     const unsubscribeToggleKanbanRenameDialog = window.sfMetadataContext.eventBus.subscribe(EVENT_BUS_TYPE.TOGGLE_KANBAN_RENAME_DIALOG, openRenameDialog);

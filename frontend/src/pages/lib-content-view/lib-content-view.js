@@ -11,6 +11,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import {
+  enableAIChat,
   enableSeafileAI,
   enableThumbnailServer,
   gettext,
@@ -198,7 +199,7 @@ class LibContentView extends React.Component {
   };
 
   canUseAIChat = (repoInfo = this.state.currentRepoInfo) => {
-    return Boolean(enableSeafileAI && repoInfo && !repoInfo.is_virtual);
+    return Boolean(enableSeafileAI && enableAIChat && repoInfo && !repoInfo.is_virtual);
   };
 
   componentDidMount() {
@@ -312,7 +313,7 @@ class LibContentView extends React.Component {
       currentMode = TRASH_MODE;
     } else if (isHistory) {
       currentMode = HISTORY_MODE;
-    } else if (isChat && enableSeafileAI) {
+    } else if (isChat && enableSeafileAI && enableAIChat) {
       currentMode = CHAT_MODE;
     } else if (tagId) {
       currentMode = TAGS_MODE;

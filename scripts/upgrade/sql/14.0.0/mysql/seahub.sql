@@ -126,3 +126,10 @@ DROP INDEX `ix_FileTrash_repo_id` ON `FileTrash`;
 DROP INDEX `ix_FileAudit_user` ON `FileAudit`;
 DROP INDEX `ix_FileAudit_repo_id` ON `FileAudit`;
 DROP INDEX `idx_file_ops_time_org` ON `FileOpsStat`;
+
+ALTER TABLE social_auth_usersocialauth
+MODIFY COLUMN provider varchar(32)
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+MODIFY COLUMN uid varchar(255)
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL;
+

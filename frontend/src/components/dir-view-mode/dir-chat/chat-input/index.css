@@ -168,7 +168,22 @@
 
 .sea-ai-model-selector .selected-option-show {
   display: flex;
+  flex: 1;
+  height: 100%;
   align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.sea-ai-model-selector .selected-option {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .sea-ai-model-selector .selected-option-show .sea-ai-model-logo,
@@ -185,6 +200,17 @@
   flex-shrink: 0;
 }
 
+.sea-ai-model-selector .sea-ai-model-name {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  min-width: 0;
+}
+
+.sea-ai-model-selector .selected-option .sea-ai-icon-svg {
+  flex-shrink: 0;
+}
+
 .sea-ai-ask-chat-records-selector {
   width: 36px !important;
   padding: 0 10px !important;
@@ -197,6 +223,11 @@
 .sea-ai-model-selector-editor .popover,
 .sea-ai-model-selector-editor .option-editor-container {
   min-height: fit-content;
+}
+
+.sea-ai-model-selector-editor .popover {
+  min-width: fit-content;
+  width: fit-content;
 }
 
 .sea-ai-model-selector-editor .option-editor-container .option-editor-content {

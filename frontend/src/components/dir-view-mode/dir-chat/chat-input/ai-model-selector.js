@@ -1,8 +1,10 @@
 import React, { useMemo, useEffect } from 'react';
 import { mediaUrl } from '../../../../utils/constants';
 import { Selector } from '../components';
+import { SINGLE_LLM_MODEL } from '../constants';
 
 const LLM_MODELS = window.app?.pageOptions?.llmModels || [];
+const AVAILABLE_LLM_MODELS = LLM_MODELS.length > 0 ? LLM_MODELS : [SINGLE_LLM_MODEL];
 const LLM_MODEL_ICON = {
   'openai': `${mediaUrl}img/llm-providers/openai.png`,
   'dashscope': `${mediaUrl}img/llm-providers/dashscope.png`,
@@ -34,7 +36,7 @@ const getModelType = (model) => {
 
 const AIModelSelector = ({ isSimple, selectedModel, updateModel }) => {
   const options = useMemo(() => {
-    return LLM_MODELS.map((model) => {
+    return AVAILABLE_LLM_MODELS.map((model) => {
       const type = getModelType(model);
       return {
         value: model.model,
@@ -47,14 +49,13 @@ const AIModelSelector = ({ isSimple, selectedModel, updateModel }) => {
   }, []);
 
   useEffect(() => {
-    if (!selectedModel && LLM_MODELS.length > 0) {
-      const defaultModel = LLM_MODELS.find((model) => model.default === true);
-      const modelToUse = defaultModel ? defaultModel.model : LLM_MODELS[0].model;
+    if (!selectedModel && AVAILABLE_LLM_MODELS.length > 0) {
+      const defaultModel = AVAILABLE_LLM_MODELS.find((model) => model.default === true);
+      const modelToUse = defaultModel ? defaultModel.model : AVAILABLE_LLM_MODELS[0].model;
       updateModel(modelToUse);
     }
-  }, []);
+  }, [selectedModel, updateModel]);
 
-  if (LLM_MODELS.length === 0) return null;
   const option = options.find((model) => model.value === selectedModel) || options.find((model) => model.default === true) || options[0];
 
   return (

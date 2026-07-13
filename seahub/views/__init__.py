@@ -1204,7 +1204,7 @@ def _format_metrics(metric_name: str, metric_value: int, metric_type="gauge", he
 
 def get_metrics(request):
     if not ENABLE_METRIC:
-        return Http404
+        raise Http404
     auth_header = request.META.get('HTTP_AUTHORIZATION')
     if not auth_header or not check_metric_auth(auth_header):
         return HttpResponseForbidden('Invalid Authentication')

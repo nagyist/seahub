@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -82,6 +83,9 @@ class DeletedRepos(APIView):
             return:
                 return True if success, otherwise api_error
         """
+        if not settings.ENABLE_USER_CLEAN_TRASH:
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
         username = request.user.username
 
         try:
@@ -105,6 +109,9 @@ class DeletedRepo(APIView):
             return:
                 return True if success, otherwise api_error
         """
+        if not settings.ENABLE_USER_CLEAN_TRASH:
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
         owner = seafile_api.get_trash_repo_owner(repo_id)
         username = request.user.username
         if owner is None:

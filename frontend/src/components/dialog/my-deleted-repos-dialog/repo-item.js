@@ -13,7 +13,7 @@ import CommonOperationConfirmationDialog from '../common-operation-confirmation-
 dayjs.locale(lang);
 dayjs.extend(relativeTime);
 
-const RepoItem = ({ repo, filterRestoredRepo }) => {
+const RepoItem = ({ repo, filterRestoredRepo, enableUserCleanTrash }) => {
   const repoID = useMemo(() => repo.repo_id, [repo]);
   const repoName = useMemo(() => repo.repo_name, [repo]);
   const localTime = useMemo(() => {
@@ -89,18 +89,20 @@ const RepoItem = ({ repo, filterRestoredRepo }) => {
           >
             <Icon symbol="reply" />
           </span>
-          <span
-            role="button"
-            onClick={toggleDeleteRepoDialog}
-            title={gettext('Delete')}
-            aria-label={gettext('Delete')}
-            className={`op-icon ml-2 ${highlight ? '' : 'vh'}`}
-          >
-            <Icon symbol="delete" />
-          </span>
+          {enableUserCleanTrash && (
+            <span
+              role="button"
+              onClick={toggleDeleteRepoDialog}
+              title={gettext('Delete')}
+              aria-label={gettext('Delete')}
+              className={`op-icon ml-2 ${highlight ? '' : 'vh'}`}
+            >
+              <Icon symbol="delete" />
+            </span>
+          )}
         </td>
       </tr>
-      {isDeleteRepoDialogOpen && (
+      {enableUserCleanTrash && isDeleteRepoDialogOpen && (
         <ModalPortal>
           <CommonOperationConfirmationDialog
             title={gettext('Delete library')}
@@ -119,6 +121,7 @@ const RepoItem = ({ repo, filterRestoredRepo }) => {
 RepoItem.propTypes = {
   repo: PropTypes.object.isRequired,
   filterRestoredRepo: PropTypes.func.isRequired,
+  enableUserCleanTrash: PropTypes.bool,
 };
 
 export default RepoItem;

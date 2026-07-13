@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
-import { gettext, trashReposExpireDays } from '../../../utils/constants';
+import { gettext, trashReposExpireDays, enableUserCleanTrash } from '../../../utils/constants';
 import SeahubModalHeader from '@/components/common/seahub-modal-header';
 import { seafileAPI } from '../../../utils/seafile-api';
 import { Utils } from '../../../utils/utils';
@@ -63,6 +63,7 @@ const MyDeletedReposDialog = ({ toggleDialog }) => {
                 repos={deletedRepoList}
                 filterRestoredRepo={filterRestoredRepo}
                 cleanDeletedRepos={cleanDeletedRepos}
+                enableUserCleanTrash={enableUserCleanTrash}
               />
             )}
           </>

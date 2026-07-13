@@ -117,6 +117,10 @@ class SocialAuthUserManager(models.Manager):
     def get_by_provider_and_uid(self, provider, uid):
         try:
             social_auth_user = self.get(provider=provider, uid=uid)
+            if social_auth_user and (
+                social_auth_user.provider != provider or social_auth_user.uid != uid
+            ):
+                return None
             return social_auth_user
         except self.model.DoesNotExist:
             return None

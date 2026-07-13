@@ -123,38 +123,6 @@ GroupItem.propTypes = {
   onChangeUserPermission: PropTypes.func.isRequired,
 };
 
-class GroupList extends React.Component {
-
-  render() {
-    let items = this.props.items;
-    return (
-      <tbody>
-        {items.map((item, index) => {
-          return (
-            <GroupItem
-              key={index}
-              index={index}
-              item={item}
-              repoID={this.props.repoID}
-              permissions={this.props.permissions}
-              deleteShareItem={this.props.deleteShareItem}
-              onChangeUserPermission={this.props.onChangeUserPermission}
-            />
-          );
-        })}
-      </tbody>
-    );
-  }
-}
-
-GroupList.propTypes = {
-  repoID: PropTypes.string.isRequired,
-  items: PropTypes.array.isRequired,
-  permissions: PropTypes.array.isRequired,
-  deleteShareItem: PropTypes.func.isRequired,
-  onChangeUserPermission: PropTypes.func.isRequired,
-};
-
 const propTypes = {
   isGroupOwnedRepo: PropTypes.bool,
   itemPath: PropTypes.string.isRequired,
@@ -403,26 +371,17 @@ class ShareToGroup extends React.Component {
 
   render() {
     const enableAddCustomPermission = isPro && !isSeafilePlus;
-    let thead = (
+    const isDesktop = Utils.isDesktop();
+    const columnWidths = isDesktop ? ['47%', '35%', '18%'] : ['40%', '35%', '25%'];
+    const thead = (
       <thead>
         <tr>
-          <th width="47%">{gettext('Group')}</th>
-          <th width="35%">{gettext('Permission')}</th>
-          <th width="18%"></th>
+          <th width={columnWidths[0]}>{gettext('Group')}</th>
+          <th width={columnWidths[1]}>{gettext('Permission')}</th>
+          <th width={columnWidths[2]}></th>
         </tr>
       </thead>
     );
-    if (isMobile) {
-      thead = (
-        <thead>
-          <tr>
-            <th width="43%">{gettext('Group')}</th>
-            <th width="35%">{gettext('Permission')}</th>
-            <th width="22%"></th>
-          </tr>
-        </thead>
-      );
-    }
     return (
       <div className='h-100 d-flex flex-column'>
         <table>
@@ -454,7 +413,7 @@ class ShareToGroup extends React.Component {
                 />
               </td>
               <td>
-                <Button color="primary" onClick={this.shareToGroup} size={isMobile ? 'sm' : 'md'}>{gettext('Submit')}</Button>
+                <Button color="primary" onClick={this.shareToGroup}>{gettext('Submit')}</Button>
               </td>
             </tr>
             {this.state.errorMsg.length > 0 &&
@@ -479,13 +438,22 @@ class ShareToGroup extends React.Component {
               ) : (
                 <table className="table-thead-hidden">
                   {thead}
-                  <GroupList
-                    repoID={this.props.repoID}
-                    items={this.state.sharedItems}
-                    permissions={this.permissions}
-                    deleteShareItem={this.deleteShareItem}
-                    onChangeUserPermission={this.onChangeUserPermission}
-                  />
+
+                  <tbody>
+                    {this.state.sharedItems.map((item, index) => {
+                      return (
+                        <GroupItem
+                          key={index}
+                          index={index}
+                          item={item}
+                          repoID={this.props.repoID}
+                          permissions={this.permissions}
+                          deleteShareItem={this.deleteShareItem}
+                          onChangeUserPermission={this.onChangeUserPermission}
+                        />
+                      );
+                    })}
+                  </tbody>
                 </table>
               )}
             </>

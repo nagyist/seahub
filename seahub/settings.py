@@ -1243,8 +1243,7 @@ for module in LOGGING_IGNORE_MODULES:
 JWT_PRIVATE_KEY = os.environ.get('JWT_PRIVATE_KEY', '') or JWT_PRIVATE_KEY
 
 # config in yaml & env
-ai_conf_dir = os.getenv('CONF_PATH', '/opt/seafile/conf/')
-ai_yaml_file_path = os.path.join(ai_conf_dir, os.environ.get('SEAFILE_AI_CONFIG_NAME', 'seafile_ai_config.yaml'))
+ai_yaml_file_path = os.path.join(central_conf_dir, os.environ.get('SEAFILE_AI_CONFIG_NAME', 'seafile_ai_config.yaml'))
 ai_configs = ConfigParser(ai_yaml_file_path, 'seahub')
 
 LLM_MODELS = [

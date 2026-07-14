@@ -5,6 +5,8 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from seahub.organizations.models import DISABLE_ORG_USER_CLEAN_TRASH, OrgAdminSettings
+from seahub.utils import is_org_context
 from seaserv import seafile_api
 
 from seahub.signals import repo_restored
@@ -18,6 +20,22 @@ from seahub.utils.timeutils import timestamp_to_isoformat_timestr
 from constance import config
 
 logger = logging.getLogger(__name__)
+
+
+def can_user_clean_deleted_repos(request):
+    if not config.ENABLE_USER_CLEAN_TRASH:
+        return False
+
+    if is_org_context(request):
+        org_id = request.user.org.org_id
+        if org_id and org_id > 0:
+            disable_clean_trash = OrgAdminSettings.objects.filter(
+                org_id=org_id, key=DISABLE_ORG_USER_CLEAN_TRASH
+            ).first()
+            if disable_clean_trash is not None and int(disable_clean_trash.value):
+                return False
+
+    return True
 
 
 class DeletedRepos(APIView):
@@ -84,7 +102,7 @@ class DeletedRepos(APIView):
             return:
                 return True if success, otherwise api_error
         """
-        if not config.ENABLE_USER_CLEAN_TRASH:
+        if not can_user_clean_deleted_repos(request):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         username = request.user.username
@@ -110,7 +128,7 @@ class DeletedRepo(APIView):
             return:
                 return True if success, otherwise api_error
         """
-        if not config.ENABLE_USER_CLEAN_TRASH:
+        if not can_user_clean_deleted_repos(request):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         owner = seafile_api.get_trash_repo_owner(repo_id)

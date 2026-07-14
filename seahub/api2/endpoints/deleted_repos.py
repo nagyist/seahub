@@ -15,6 +15,7 @@ from seahub.api2.utils import api_error
 from seahub.base.templatetags.seahub_tags import email2nickname, \
         email2contact_email
 from seahub.utils.timeutils import timestamp_to_isoformat_timestr
+from constance import config
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +84,7 @@ class DeletedRepos(APIView):
             return:
                 return True if success, otherwise api_error
         """
-        if not settings.ENABLE_USER_CLEAN_TRASH:
+        if not config.ENABLE_USER_CLEAN_TRASH:
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         username = request.user.username
@@ -109,7 +110,7 @@ class DeletedRepo(APIView):
             return:
                 return True if success, otherwise api_error
         """
-        if not settings.ENABLE_USER_CLEAN_TRASH:
+        if not config.ENABLE_USER_CLEAN_TRASH:
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         owner = seafile_api.get_trash_repo_owner(repo_id)

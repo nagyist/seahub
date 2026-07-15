@@ -117,6 +117,15 @@ def extract_file_details(params):
     return json.loads(resp.content)['details']
 
 
+def generate_ai_summary(params):
+    payload = {'exp': int(time.time()) + 300, }
+    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+    headers = {"Authorization": "Token %s" % token}
+    url = urljoin(SEAFEVENTS_SERVER_URL, '/generate-ai-summary')
+    resp = requests.post(url, json=params, headers=headers, timeout=30)
+    return json.loads(resp.content)['success']
+
+
 def recognize_faces(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
@@ -195,6 +204,33 @@ def init_metadata(metadata_server_api):
     # init sys column
     sys_columns = METADATA_TABLE_SYS_COLUMNS
     metadata_server_api.add_columns(METADATA_TABLE.id, sys_columns)
+
+
+def init_ai_summary(metadata_server_api):
+    from seafevents.repo_metadata.constants import METADATA_TABLE
+
+    columns = metadata_server_api.list_columns(METADATA_TABLE.id).get('columns', [])
+    column_keys = {column.get('key') for column in columns}
+    ai_summary_columns = []
+
+    for column in [METADATA_TABLE.columns.ai_summary, METADATA_TABLE.columns.ai_summary_mtime]:
+        if column.key not in column_keys:
+            ai_summary_columns.append(column.to_dict())
+
+    if ai_summary_columns:
+        metadata_server_api.add_columns(METADATA_TABLE.id, ai_summary_columns)
+
+
+def remove_ai_summary(metadata_server_api):
+    from seafevents.repo_metadata.constants import METADATA_TABLE
+
+    columns = metadata_server_api.list_columns(METADATA_TABLE.id).get('columns', [])
+    for column in columns:
+        if column.get('key') in [
+            METADATA_TABLE.columns.ai_summary.key,
+            METADATA_TABLE.columns.ai_summary_mtime.key,
+        ]:
+            metadata_server_api.delete_column(METADATA_TABLE.id, column['key'], True)
 
 
 def init_faces(metadata_server_api):
@@ -330,6 +366,45 @@ def init_tags(metadata_server_api):
     # init link columns
     init_tag_file_links_column(metadata_server_api, table_id)
     init_tag_self_link_columns(metadata_server_api, table_id)
+
+
+def batch_generate_ai_summary(repo_id, metadata_server_api, batch_size=50, page_size=1000):
+    from seafevents.repo_metadata.constants import METADATA_TABLE, SUMMARY_SUPPORTED_FILE_EXTENSIONS
+
+    start = 0
+    obj_ids = []
+    supported_suffixes = set(SUMMARY_SUPPORTED_FILE_EXTENSIONS)
+    select_columns = ', '.join([
+        f'`{METADATA_TABLE.columns.obj_id.name}`',
+        f'`{METADATA_TABLE.columns.suffix.name}`',
+    ])
+
+    while True:
+        sql = (
+            f'SELECT {select_columns} FROM `{METADATA_TABLE.name}` '
+            f'WHERE `{METADATA_TABLE.columns.is_dir.name}` = False '
+            f'AND `{METADATA_TABLE.columns.file_type.name}` = "_document" '
+            f'LIMIT {start}, {page_size}'
+        )
+        rows = metadata_server_api.query_rows(sql).get('results', [])
+        if not rows:
+            break
+
+        for row in rows:
+            suffix = (row.get(METADATA_TABLE.columns.suffix.name) or '').lower()
+            obj_id = row.get(METADATA_TABLE.columns.obj_id.name)
+            if obj_id and suffix in supported_suffixes:
+                obj_ids.append(obj_id)
+                if len(obj_ids) >= batch_size:
+                    generate_ai_summary({'repo_id': repo_id, 'obj_ids': obj_ids})
+                    obj_ids = []
+
+        if len(rows) < page_size:
+            break
+        start += page_size
+
+    if obj_ids:
+        generate_ai_summary({'repo_id': repo_id, 'obj_ids': obj_ids})
 
 
 def remove_tags_table(metadata_server_api):

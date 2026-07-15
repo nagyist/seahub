@@ -607,6 +607,7 @@ class DirentListItem extends React.Component {
     const showModified = visibleColumnKeys.includes(DIR_COLUMN_KEYS.MTIME);
     const showCreator = visibleColumnKeys.includes(PRIVATE_COLUMN_KEY.FILE_CREATOR);
     const showLastModifier = visibleColumnKeys.includes(PRIVATE_COLUMN_KEY.FILE_MODIFIER);
+    const showAISummary = visibleColumnKeys.includes(PRIVATE_COLUMN_KEY.AI_SUMMARY);
     const showStatus = visibleColumnKeys.includes(PRIVATE_COLUMN_KEY.FILE_STATUS);
     const statusCol = columns.find(col => col.key === PRIVATE_COLUMN_KEY.FILE_STATUS);
     const showTags = visibleColumnKeys.includes(PRIVATE_COLUMN_KEY.TAGS);
@@ -821,6 +822,15 @@ class DirentListItem extends React.Component {
               queryUserAPI={this.props.queryUser}
               collaboratorsCache={this.props.collaboratorsCache}
             />
+          </div>
+        )}
+
+        {showAISummary && (
+          <div
+            className="dirent-property dirent-property-ai-summary text-truncate"
+            title={showMetadata ? dirent.metadata[PRIVATE_COLUMN_KEY.AI_SUMMARY] || '' : ''}
+          >
+            {showMetadata ? dirent.metadata[PRIVATE_COLUMN_KEY.AI_SUMMARY] || '' : ''}
           </div>
         )}
 

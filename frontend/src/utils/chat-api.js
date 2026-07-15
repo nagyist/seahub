@@ -64,10 +64,24 @@ class ChatAPI {
     return this.req.get(this.server + '/api/v2.1/ai/chat/sessions/?repo_id=' + repoID);
   }
 
+  listTeamSharedSessions(repoID) {
+    return this.req.get(this.server + '/api/v2.1/ai/chat/sessions/?repo_id=' + repoID + '&type=shared');
+  }
+
   createChatSession(repoID, sessionName) {
     return this.req.post(this.server + '/api/v2.1/ai/chat/sessions/', {
       repo_id: repoID,
       session_name: sessionName,
+    });
+  }
+
+  copyChatSession(sessionUUID) {
+    return this.req.post(this.server + '/api/v2.1/ai/chat/sessions/' + sessionUUID + '/copy/');
+  }
+
+  shareChatSession(sessionUUID, isShared) {
+    return this.req.put(this.server + '/api/v2.1/ai/chat/sessions/' + sessionUUID + '/', {
+      is_shared: isShared,
     });
   }
 

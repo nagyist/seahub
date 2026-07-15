@@ -1,20 +1,23 @@
 import React, { useContext, useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { gettext } from '../../../../utils/constants';
 import { Utils } from '../../../../utils/utils';
 import toaster from '../../../../components/toast';
 import { eventBus } from '../../../../components/common/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../components/common/event-bus-type';
 import { ChatSession } from '../models';
 import { useAskPage } from './page-type';
-import { ASK_PAGE_SLUG_ID } from '../constants';
+import { ASK_PAGE_SLUG_ID, SESSION_TAB_TYPE } from '../constants';
 
 const SessionsContext = React.createContext(null);
 
 export const SessionsProvider = ({ repoID, api, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [sessions, setSessions] = useState([]);
+  const [teamSessions, setTeamSessions] = useState([]);
+  const [isTeamSessionsLoading, setIsTeamSessionsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState(SESSION_TAB_TYPE.MINE);
   const [isShowSessions, setIsShowSessions] = useState(false);
   const sendMessageRequestController = useRef({});
-
   const { pageSlugId, togglePageSlugId } = useAskPage();
 
   const normalizeSessions = useCallback((rawSessions) => {
@@ -53,6 +56,11 @@ export const SessionsProvider = ({ repoID, api, children }) => {
     });
   }, []);
 
+  const updateSessionState = useCallback((sessionId, updater) => {
+    updateSessionCollection(setSessions, sessionId, updater);
+    updateSessionCollection(setTeamSessions, sessionId, updater);
+  }, [updateSessionCollection]);
+
   const prependSession = useCallback((session) => {
     setSessions((currentSessions) => [session, ...currentSessions.filter((item) => item._id !== session._id)]);
   }, []);
@@ -65,26 +73,72 @@ export const SessionsProvider = ({ repoID, api, children }) => {
     });
   }, [api, prependSession, repoID]);
 
-  const modifySession = useCallback((sessionId, update) => {
-    const payload = {};
-    if (Object.prototype.hasOwnProperty.call(update, 'name')) {
-      payload.session_name = update.name;
-    }
-    return api.modifyChatSession(sessionId, payload).then((res) => {
+  const startChatFromConversation = useCallback((sessionId) => {
+    return api.copyChatSession(sessionId).then((res) => {
+      const session = new ChatSession(res.data.session);
+      prependSession(session);
+      setActiveTab(SESSION_TAB_TYPE.MINE);
+      togglePageSlugId(session._id);
+      toaster.success(gettext('Started a new chat from this conversation'));
+      return session;
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+      throw error;
+    });
+  }, [api, prependSession, togglePageSlugId]);
+
+  const modifySession = useCallback((sessionId, { name }) => {
+    return api.modifyChatSession(sessionId, { session_name: name }).then((res) => {
       const updatedSession = new ChatSession(res.data.session);
-      updateSessionCollection(setSessions, sessionId, () => updatedSession);
+      updateSessionState(sessionId, () => updatedSession);
       return updatedSession;
     });
-  }, [api, updateSessionCollection]);
+  }, [api, updateSessionState]);
 
   const deleteSession = useCallback((sessionId) => {
     return api.deleteChatSession(sessionId).then(() => {
-      updateSessionCollection(setSessions, sessionId, () => null);
+      updateSessionState(sessionId, () => null);
       if (pageSlugId === sessionId) {
         togglePageSlugId(ASK_PAGE_SLUG_ID.NEW);
       }
     });
-  }, [api, pageSlugId, togglePageSlugId, updateSessionCollection]);
+  }, [api, pageSlugId, togglePageSlugId, updateSessionState]);
+
+  const loadTeamSessions = useCallback(() => {
+    setIsTeamSessionsLoading(true);
+    return api.listTeamSharedSessions(repoID).then((res) => {
+      setTeamSessions(normalizeSessions(res.data.sessions));
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+      setTeamSessions([]);
+    }).finally(() => {
+      setIsTeamSessionsLoading(false);
+    });
+  }, [api, normalizeSessions, repoID]);
+
+  const shareSession = useCallback((sessionId) => {
+    return api.shareChatSession(sessionId, true).then((res) => {
+      const updatedSession = new ChatSession(res.data.session);
+      updateSessionState(sessionId, () => updatedSession);
+      setTeamSessions((currentSessions) => [updatedSession, ...currentSessions.filter((item) => item._id !== sessionId)]);
+      toaster.success(gettext('Chat shared within library'));
+      return updatedSession;
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+    });
+  }, [api, updateSessionState]);
+
+  const unshareSession = useCallback((sessionId) => {
+    return api.shareChatSession(sessionId, false).then((res) => {
+      const updatedSession = new ChatSession(res.data.session);
+      updateSessionCollection(setSessions, sessionId, () => updatedSession);
+      updateSessionCollection(setTeamSessions, sessionId, () => null);
+      toaster.success(gettext('Chat unshared from library'));
+      return updatedSession;
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+    });
+  }, [api, updateSessionCollection]);
 
   const modifyLocalSession = useCallback((sessionId, update) => {
     const updater = (session) => {
@@ -94,8 +148,8 @@ export const SessionsProvider = ({ repoID, api, children }) => {
       });
       return nextSession;
     };
-    updateSessionCollection(setSessions, sessionId, updater);
-  }, [updateSessionCollection]);
+    updateSessionState(sessionId, updater);
+  }, [updateSessionState]);
 
   const markSessionRunningTask = useCallback((sessionId, runningTask) => {
     modifyLocalSession(sessionId, { running_task: runningTask });
@@ -171,13 +225,6 @@ export const SessionsProvider = ({ repoID, api, children }) => {
     });
   }, [api, markSessionRunningTask, repoID]);
 
-  const getSession = useCallback((sessionId) => {
-    if (!sessionId || sessionId === ASK_PAGE_SLUG_ID.NEW) {
-      return null;
-    }
-    return sessions.find((session) => session._id === sessionId) || null;
-  }, [sessions]);
-
   const openShowSessions = useCallback(() => {
     setIsShowSessions(true);
   }, []);
@@ -189,6 +236,15 @@ export const SessionsProvider = ({ repoID, api, children }) => {
   const toggleIsShowSessions = useCallback(() => {
     setIsShowSessions((currentValue) => !currentValue);
   }, []);
+
+  const getSession = useCallback((sessionId) => {
+    if (!sessionId || sessionId === ASK_PAGE_SLUG_ID.NEW) {
+      return null;
+    }
+    return sessions.find((session) => session._id === sessionId) ||
+      teamSessions.find((session) => session._id === sessionId) ||
+      null;
+  }, [sessions, teamSessions]);
 
   useEffect(() => {
     loadSessions();
@@ -219,14 +275,22 @@ export const SessionsProvider = ({ repoID, api, children }) => {
   const value = useMemo(() => ({
     isLoading,
     sessions,
+    teamSessions,
+    isTeamSessionsLoading,
+    activeTab,
+    setActiveTab,
     isShowSessions,
     openShowSessions,
     closeShowSessions,
     toggleIsShowSessions,
     loadSessions,
+    loadTeamSessions,
     createSession,
+    startChatFromConversation,
     modifySession,
     deleteSession,
+    shareSession,
+    unshareSession,
     modifyLocalSession,
     solveProblem,
     getChatMessage,
@@ -234,12 +298,15 @@ export const SessionsProvider = ({ repoID, api, children }) => {
     prependSession,
     getSession,
   }), [
+    activeTab,
     createSession,
     deleteSession,
     getSession,
     isLoading,
     isShowSessions,
+    isTeamSessionsLoading,
     loadSessions,
+    loadTeamSessions,
     getChatMessage,
     modifyLocalSession,
     modifySession,
@@ -248,8 +315,12 @@ export const SessionsProvider = ({ repoID, api, children }) => {
     closeShowSessions,
     prependSession,
     sessions,
+    shareSession,
     solveProblem,
+    startChatFromConversation,
+    teamSessions,
     toggleIsShowSessions,
+    unshareSession,
   ]);
 
   return (

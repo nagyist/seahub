@@ -427,7 +427,7 @@ def get_repo_prompt(repo_id):
 
 
 def check_session_access(session, username):
-    return session.username == username
+    return session.username == username or session.is_shared
 
 
 class ChatSessionsView(APIView):
@@ -445,10 +445,11 @@ class ChatSessionsView(APIView):
         if not check_folder_permission(request, repo_id, '/'): 
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
-        repo_permission = check_folder_permission(request, repo_id, '/')
-        can_upload = parse_repo_perm(repo_permission).can_upload if repo_permission else False
-
-        sessions = ChatSessions.objects.get_sessions_by_repo(repo_id, request.user.username)
+        session_type = request.GET.get('type', 'mine')
+        if session_type == 'shared':
+            sessions = ChatSessions.objects.get_shared_sessions_by_repo(repo_id)
+        else:
+            sessions = ChatSessions.objects.get_sessions_by_repo(repo_id, request.user.username)
         return Response({'sessions': [session.to_dict() for session in sessions]})
 
     def post(self, request):
@@ -485,9 +486,14 @@ class ChatSessionView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied. Only the session owner can modify this session.')
 
         session_name = request.data.get('session_name')
-        if session_name is None:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'session_name parameter is required.')
-        session.session_name = session_name
+        is_shared = request.data.get('is_shared')
+        if session_name is None and is_shared is None:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'At least one of session_name or is_shared parameter is required.')
+
+        if session_name is not None:
+            session.session_name = session_name
+        if is_shared is not None:
+            session.is_shared = is_shared
         session.save()
         return Response({'success': True, 'session': session.to_dict()})
 
@@ -504,6 +510,33 @@ class ChatSessionView(APIView):
         ChatMessageThoughtProcess.objects.filter(session_uuid=session_uuid).delete()
         session.delete()
         return Response({'success': True})
+
+
+class ChatSessionCopyView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def post(self, request, session_uuid):
+        session = ChatSessions.objects.get_session_by_uuid(session_uuid)
+        if not session:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Session not found.')
+        if not check_folder_permission(request, session.repo_id, '/'):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+        if session.username != request.user.username and not session.is_shared:
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        chat_task_id = gen_chat_task_id(session_uuid)
+        if cache.get(chat_task_id) is not None:
+            return api_error(status.HTTP_409_CONFLICT, 'There are unfinished tasks in the current session, please try again later.')
+
+        try:
+            new_session = ChatSessions.objects.copy_session(session, request.user.username)
+        except Exception as error:
+            logger.exception('Failure to copy session: %s', error)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal server error')
+
+        return Response({'session': new_session.to_dict()}, status=status.HTTP_201_CREATED)
 
 
 class ChatMessagesView(APIView):
@@ -537,6 +570,7 @@ class ChatMessagesView(APIView):
 
         chat_task_info = cache.get(gen_chat_task_id(session_uuid))
         results = {
+            'session': session.to_dict(),
             'messages': messages_data,
             'running_task': chat_task_info is not None,
         }
@@ -667,8 +701,12 @@ class ChatView(APIView):
             session = ChatSessions.objects.get_session_by_uuid(session_uuid)
             if not session or session.repo_id != repo_id:
                 return api_error(status.HTTP_404_NOT_FOUND, 'Session not found.')
-            if not check_session_access(session, request.user.username):
-                return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+            if session.username != request.user.username:
+                if session.is_shared:
+                    error_msg = 'Permission denied. Only the session owner can continue this chat. Start a new chat from this conversation to continue.'
+                else:
+                    error_msg = 'Permission denied.'
+                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         chat_task_id = gen_chat_task_id(session_uuid)
         if cache.get(chat_task_id) is not None:

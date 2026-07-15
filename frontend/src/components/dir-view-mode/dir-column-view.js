@@ -227,6 +227,7 @@ class DirColumnView extends React.Component {
             <DirChat
               repoID={this.props.repoID}
               repoName={this.props.currentRepoInfo?.repo_name || ''}
+              userPerm={this.props.userPerm}
             />
           )}
           {currentMode === TAGS_MODE && (

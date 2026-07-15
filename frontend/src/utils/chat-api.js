@@ -65,7 +65,7 @@ class ChatAPI {
   }
 
   listTeamSharedSessions(repoID) {
-    return this.req.get(this.server + '/api/v2.1/ai/chat/sessions/?repo_id=' + repoID + '&type=team');
+    return this.req.get(this.server + '/api/v2.1/ai/chat/sessions/?repo_id=' + repoID + '&type=shared');
   }
 
   createChatSession(repoID, sessionName) {

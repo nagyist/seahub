@@ -446,7 +446,7 @@ class ChatSessionsView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         session_type = request.GET.get('type', 'mine')
-        if session_type == 'team':
+        if session_type == 'shared':
             sessions = ChatSessions.objects.get_shared_sessions_by_repo(repo_id)
         else:
             sessions = ChatSessions.objects.get_sessions_by_repo(repo_id, request.user.username)

@@ -418,7 +418,7 @@ class UnhandledVirusFiles extends Component {
     const message = isDelete
       ? gettext('Are you sure you want to delete all unhandled infected files across all pages?')
       : gettext('Are you sure you want to ignore all unhandled infected files across all pages?');
-    const confirmBtnText = isDelete ? gettext('Delete All') : gettext('Ignore All');
+    const confirmBtnText = isDelete ? gettext('Delete all') : gettext('Ignore all');
     this.setState({
       confirmDialog: { op, title, message, confirmBtnText }
     });

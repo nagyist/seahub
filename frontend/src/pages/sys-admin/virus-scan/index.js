@@ -47,8 +47,8 @@ const VirusScan = ({ children, ...commonProps }) => {
           <>
             <Button onClick={deleteSelectedItems} className="operation-item">{gettext('Delete')}</Button>
             <Button onClick={ignoreSelectedItems} className="operation-item">{gettext('Ignore')}</Button>
-            <Button onClick={deleteAllUnhandledItems} className="operation-item">{gettext('Delete All')}</Button>
-            <Button onClick={ignoreAllUnhandledItems} className="operation-item">{gettext('Ignore All')}</Button>
+            <Button onClick={deleteAllUnhandledItems} className="operation-item">{gettext('Delete all')}</Button>
+            <Button onClick={ignoreAllUnhandledItems} className="operation-item">{gettext('Ignore all')}</Button>
           </>
         </MainPanelTopbar>
       ) : (

@@ -227,13 +227,21 @@ def wiki_publish_view(request, publish_url, page_id=None):
         if not pages:
             return render(request, template_name, render_context)
 
+        navigation = wiki_config.get('navigation', [])
+        first_navigation_id = navigation[0].get('id') if navigation else None
+
         if not page_id:
-            page_id = pages[0]['id']
+            page_id = first_navigation_id or pages[0]['id']
 
         page_info = next(filter(lambda t: t['id'] == page_id, pages), {})
         if not page_info:
-            page_id = pages[0]['id']
-            page_info = pages[0]
+            if first_navigation_id:
+                page_id = first_navigation_id
+                page_info = next(filter(lambda t: t['id'] == page_id, pages), {})
+
+            if not page_info:
+                page_id = pages[0]['id']
+                page_info = pages[0]
 
         file_path = page_info.get('path', '')
         wiki_title = page_info.get('name', '')
@@ -260,7 +268,6 @@ def wiki_publish_view(request, publish_url, page_id=None):
 
             return []
 
-        navigation = wiki_config.get('navigation', [])
         current_path = find_navigation_path(navigation, page_id)
         current_path_ids = {item.get('id') for item in current_path}
 

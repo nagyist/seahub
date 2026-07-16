@@ -605,8 +605,12 @@ function getElement(id) {
     }
   }
 
-  function buildPageUrl(pageId) {
-    if (!pageId) return window.location.pathname + window.location.search + window.location.hash;
+  function buildPageUrl(pageId, options) {
+    options = options || {};
+
+    if (!pageId) {
+      return window.location.pathname + window.location.search + (options.includeHash === false ? '' : window.location.hash);
+    }
 
     var pathname = window.location.pathname;
     if (/\/[-0-9a-zA-Z]{4}\/$/.test(pathname)) {
@@ -615,7 +619,7 @@ function getElement(id) {
       pathname += pageId + '/';
     }
 
-    return pathname + window.location.search + window.location.hash;
+    return pathname + window.location.search + (options.includeHash === false ? '' : window.location.hash);
   }
 
   function getNavPageTitle(pageId) {
@@ -762,6 +766,11 @@ function getElement(id) {
   function getCurrentNavPageId() {
     var currentLink = document.querySelector('#wiki-nav-tree .wiki-page-item-main[aria-current="true"]');
     return currentLink ? currentLink.getAttribute('data-page-id') : '';
+  }
+
+  function getFirstNavPageId() {
+    var firstLink = document.querySelector('#wiki-nav-tree .wiki-page-item-main[data-page-id]');
+    return firstLink ? firstLink.getAttribute('data-page-id') : '';
   }
 
   function getNavLinkByPageId(pageId) {
@@ -919,8 +928,12 @@ function getElement(id) {
 
     var nextUrl = targetUrl || buildPageUrl(pageId);
     var currentUrl = window.location.pathname + window.location.search + window.location.hash;
-    if (!options.skipHistory && nextUrl !== currentUrl) {
-      window.history.pushState({ pageid: pageId }, '', nextUrl);
+    if (nextUrl !== currentUrl) {
+      if (options.replaceHistory) {
+        window.history.replaceState({ pageid: pageId }, '', nextUrl);
+      } else if (!options.skipHistory) {
+        window.history.pushState({ pageid: pageId }, '', nextUrl);
+      }
     }
 
     syncActiveNavState(pageId);
@@ -1051,6 +1064,7 @@ function getElement(id) {
 
     if (targetInfo.publishUrl !== currentInfo.publishUrl) return;
     if (!targetInfo.pageId || targetInfo.pageId === currentInfo.pageId) return;
+    if (!getNavLinkByPageId(targetInfo.pageId)) return;
 
     if (navigateToWikiPage(targetInfo.pageId, targetInfo.fullPath)) {
       e.preventDefault();
@@ -1197,7 +1211,10 @@ function getElement(id) {
       var pageId = navLink.getAttribute('data-page-id');
       if (!pageId) return;
 
-      navigateToWikiPage(pageId, buildPageUrl(pageId));
+      var targetUrl = buildPageUrl(pageId, { includeHash: false });
+      if (targetUrl === window.location.pathname + window.location.search) return;
+
+      navigateToWikiPage(pageId, targetUrl);
     });
   }
 
@@ -1257,10 +1274,14 @@ function getElement(id) {
       pageId = getPageIdFromPath(window.location.pathname) || getCurrentNavPageId();
     }
 
-    navigateToWikiPage(pageId, buildPageUrl(pageId), { skipHistory: true });
+    if (!navigateToWikiPage(pageId, buildPageUrl(pageId), { skipHistory: true })) {
+      // The browser URL already points at the target history entry.
+      // Reload so the server can render pages outside the navigation tree.
+      window.location.reload();
+    }
   });
 
-  var initialPageId = getPageIdFromPath(window.location.pathname) || getCurrentNavPageId();
+  var initialPageId = getPageIdFromPath(window.location.pathname) || getCurrentNavPageId() || getFirstNavPageId();
   updateWikiPageIcon(initialPageId);
   updateWikiPageCover(initialPageId);
   updateWikiPageFavicon(initialPageId);

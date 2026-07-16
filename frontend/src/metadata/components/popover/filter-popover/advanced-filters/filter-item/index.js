@@ -40,6 +40,7 @@ const propTypes = {
 };
 
 const EMPTY_PREDICATE = [FILTER_PREDICATE_TYPE.EMPTY, FILTER_PREDICATE_TYPE.NOT_EMPTY];
+const CLEAR_SELECTED_OPTIONS = 'clear-selected-options';
 
 class FilterItem extends React.Component {
 
@@ -178,6 +179,12 @@ class FilterItem extends React.Component {
 
   onSelectMultiple = (value) => {
     const { index, filter } = this.props;
+    if (value.action === CLEAR_SELECTED_OPTIONS) {
+      const newFilter = { ...filter, filter_term: [] };
+      this.resetState(newFilter);
+      this.props.updateFilter(index, newFilter);
+      return;
+    }
     const { columnOption: option } = value;
 
     let newFilter = getUpdatedFilterBySelectMultiple(filter, option);
@@ -319,7 +326,7 @@ class FilterItem extends React.Component {
     if (Array.isArray(options) && Array.isArray(filterTerm)) {
       filterTerm.forEach((item) => {
         let inOption = options.find(option => option.id === item);
-        let optionStyle = { margin: '0 10px 0 0' };
+        let optionStyle = { margin: '0 4px 0 0' };
         let optionName = null;
         if (inOption) {
           optionName = inOption.name;
@@ -341,6 +348,12 @@ class FilterItem extends React.Component {
     const dataOptions = options.map(option => {
       return FilterItemUtils.generateMultipleSelectOption(option, filterTerm);
     });
+    if (Array.isArray(filterTerm) && filterTerm.length > 0) {
+      dataOptions.unshift({
+        value: { action: CLEAR_SELECTED_OPTIONS },
+        label: <span className="select-option-name">--</span>
+      });
+    }
     return (
       <CustomizeSelect
         className="sf-metadata-selector-multiple-select"
@@ -443,9 +456,11 @@ class FilterItem extends React.Component {
             { background: selectedOption.color, color: selectedOption.textColor || null } :
             { background: DELETED_OPTION_BACKGROUND_COLOR };
           const selectedOptionName = selectedOption ? selectedOption.name : gettext('deleted option');
-          selectedOptionDom = { label: (
-            <span className={className} style={style} title={selectedOptionName} aria-label={selectedOptionName}>{selectedOptionName}</span>
-          ) };
+          selectedOptionDom = {
+            label: (
+              <span className={className} style={style} title={selectedOptionName} aria-label={selectedOptionName}>{selectedOptionName}</span>
+            )
+          };
         }
 
         let dataOptions = options.map(option => {
@@ -546,7 +561,7 @@ class FilterItem extends React.Component {
     return (
       <div className="ml-2">
         <div ref={this.invalidFilterTip}>
-          <IconBtn symbol="exclamation-triangle" iconStyle={{ fill: '#cd201f' }}/>
+          <IconBtn symbol="exclamation-triangle" iconStyle={{ fill: '#cd201f' }} />
         </div>
         <UncontrolledTooltip
           target={this.invalidFilterTip}

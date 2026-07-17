@@ -17,7 +17,7 @@ import MobileItemMenu from '../../components/mobile-item-menu';
 import ViewModes from '../../components/view-modes';
 import ReposSortMenu from '../../components/sort-menu';
 import SortOptionsDialog from '../../components/dialog/sort-options';
-import { LIST_MODE } from '../../components/dir-view-mode/constants';
+import { LIST_MODE, GRID_MODE } from '../../components/dir-view-mode/constants';
 import OpIcon from '../../components/op-icon';
 import Icon from '../../components/icon';
 import RepoListCard from '../../components/repo-list-card/repo-list-card';
@@ -56,6 +56,7 @@ class Content extends Component {
 
   render() {
     const { loading, errorMsg, items, currentViewMode, inAllLibs } = this.props;
+    const isDesktop = Utils.isDesktop();
 
     if (loading) {
       return <Loading />;
@@ -65,7 +66,7 @@ class Content extends Component {
       if (items.length == 0) {
         const emptyTipTitle = gettext('No libraries have been shared with you');
         const emptyTip = inAllLibs
-          ? <span className={`libraries-empty-tip-in-${currentViewMode}-mode`}>{emptyTipTitle}</span>
+          ? <span className={`libraries-empty-tip-in-${isDesktop ? currentViewMode : LIST_MODE}-mode`}>{emptyTipTitle}</span>
           : (
             <EmptyTip
               title={emptyTipTitle}
@@ -76,7 +77,6 @@ class Content extends Component {
         return emptyTip;
       }
 
-      const isDesktop = Utils.isDesktop();
       if (isDesktop) {
         return currentViewMode == LIST_MODE
           ? (
@@ -94,12 +94,14 @@ class Content extends Component {
 
       } else { // mobile
         return (
-          <table className="table-thead-hidden">
-            <LibsMobileThead inAllLibs={inAllLibs} />
-            <tbody>
-              {this.renderItems()}
-            </tbody>
-          </table>
+          <div className="library-list-mobile-container">
+            <table className="table-thead-hidden">
+              <LibsMobileThead />
+              <tbody>
+                {this.renderItems()}
+              </tbody>
+            </table>
+          </div>
         );
       }
     }
@@ -236,7 +238,7 @@ class Item extends Component {
           onMouseOut={this.handleMouseOut}
         >
           <td onClick={this.visitRepo}>
-            <img src={item.icon_url} title={item.icon_title} alt={item.icon_title} width="24" />
+            <img src={item.icon_url} title={item.icon_title} alt={item.icon_title} width="20" />
           </td>
           <td onClick={this.visitRepo}>
             {item.repo_name && (
@@ -395,6 +397,7 @@ class SharedWithOCM extends Component {
     const { inAllLibs = false, currentViewMode: propCurrentViewMode } = this.props;
     const { sortBy, sortOrder, currentViewMode: stateCurrentViewMode } = this.state;
     const currentViewMode = inAllLibs ? propCurrentViewMode : stateCurrentViewMode;
+    const isDesktop = Utils.isDesktop();
 
     return (
       <Fragment>
@@ -416,7 +419,7 @@ class SharedWithOCM extends Component {
                     <span className="d-flex align-items-center"><Icon symbol="share-with-me" className="role-icon" /></span>
                     <span className="library-list-title">{gettext('Shared from other servers')}</span>
                   </div>
-                  {Utils.isDesktop() && (
+                  {isDesktop && (
                     <div className="d-flex align-items-center">
                       <ViewModes
                         currentViewMode={currentViewMode}
@@ -433,7 +436,7 @@ class SharedWithOCM extends Component {
                   )}
                   {this.renderSortIconInMobile()}
                 </div>
-                <div className={classnames('cur-view-content', 'repos-container', { 'pt-3': currentViewMode != LIST_MODE })}>
+                <div className={classnames('cur-view-content', 'repos-container', { 'pt-3': isDesktop && currentViewMode == GRID_MODE })}>
                   {this.renderContent(currentViewMode)}
                 </div>
               </div>

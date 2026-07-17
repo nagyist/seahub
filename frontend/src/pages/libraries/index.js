@@ -544,7 +544,7 @@ class Libraries extends Component {
                       {this.state.errorMsg
                         ? <p className="error text-center mt-8">{this.state.errorMsg}</p>
                         : this.state.repoList.length == 0
-                          ? <p className={`libraries-empty-tip-in-${currentViewMode}-mode`}>{gettext('No libraries')}</p>
+                          ? <p className={`libraries-empty-tip-in-${isDesktop ? currentViewMode : LIST_MODE}-mode`}>{gettext('No libraries')}</p>
                           : (
                             <MylibRepoListView
                               sortBy={this.state.sortBy}
@@ -556,7 +556,6 @@ class Libraries extends Component {
                               onToggleStarRepo={this.onToggleStarRepo}
                               onRepoClick={this.onRepoClick}
                               sortRepoList={this.sortRepoList}
-                              inAllLibs={true}
                               currentViewMode={currentViewMode}
                               updateRepoStatus={this.updateRepoStatus}
                               isItemFreezed={this.state.isItemFreezed}

@@ -26,6 +26,7 @@ const MSG_TYPE_SAML_SSO_FAILED = 'saml_sso_failed';
 const MSG_TYPE_REPO_SHARE_PERM_CHANGE = 'repo_share_perm_change';
 const MSG_TYPE_REPO_SHARE_PERM_DELETE = 'repo_share_perm_delete';
 const MSG_TYPE_FACE_CLUSTER = 'face_cluster';
+const MSG_TYPE_AI_SUMMARY = 'ai_summary';
 const MSG_TYPE_SEADOC_REPLY = 'reply';
 const MSG_TYPE_SEADOC_COMMENT = 'comment';
 const MSG_TYPE_REPO_ARCHIVED = 'repo_archived';
@@ -338,6 +339,14 @@ class NoticeItem extends React.Component {
       const repoURL = `${siteRoot}library/${repo_id}/${encodeURIComponent(repo_name)}/`;
       const repoLink = `<a href=${repoURL} target="_blank">${Utils.HTMLescape(repo_name)}</a>`;
       let notice = gettext('Face recognition is done for library {libraryName}.');
+      notice = notice.replace('{libraryName}', repoLink);
+      return { avatar_url: `${mediaUrl}/avatars/default.png`, notice };
+    }
+
+    if (noticeType === MSG_TYPE_AI_SUMMARY) {
+      const repoURL = `${siteRoot}library/${repo_id}/${encodeURIComponent(repo_name)}/`;
+      const repoLink = `<a href=${repoURL} target="_blank">${Utils.HTMLescape(repo_name)}</a>`;
+      let notice = gettext('AI summary generation is done for library {libraryName}.');
       notice = notice.replace('{libraryName}', repoLink);
       return { avatar_url: `${mediaUrl}/avatars/default.png`, notice };
     }

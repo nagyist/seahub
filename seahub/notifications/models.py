@@ -140,6 +140,7 @@ MSG_TYPE_REPO_MINOTOR = 'repo_monitor'
 MSG_TYPE_DELETED_FILES = 'deleted_files'
 MSG_TYPE_SAML_SSO_FAILED = 'saml_sso_failed'
 MSG_TYPE_FACE_CLUSTER = 'face_cluster'
+MSG_TYPE_AI_SUMMARY = 'ai_summary'
 MSG_TYPE_REPO_ARCHIVED = 'repo_archived'
 MSG_TYPE_REPO_UNARCHIVED = 'repo_unarchived'
 MSG_TYPE_REPO_ARCHIVE_FAILED = 'repo_archive_failed'
@@ -533,6 +534,9 @@ class UserNotification(models.Model):
     def is_face_cluster_msg(self):
         return self.msg_type == MSG_TYPE_FACE_CLUSTER
 
+    def is_ai_summary_msg(self):
+        return self.msg_type == MSG_TYPE_AI_SUMMARY
+
     def is_repo_archived_msg(self):
         return self.msg_type == MSG_TYPE_REPO_ARCHIVED
 
@@ -594,6 +598,8 @@ class UserNotification(models.Model):
             return self.format_repo_monitor_msg()
         elif self.is_face_cluster_msg():
             return self.format_face_cluster_msg()
+        elif self.is_ai_summary_msg():
+            return self.format_ai_summary_msg()
         elif self.is_repo_archived_msg():
             return self.format_repo_archived_msg()
         elif self.is_repo_unarchived_msg():
@@ -1156,6 +1162,16 @@ class UserNotification(models.Model):
             return ""
         repo_name = d.get('repo_name')
         message = _(f'Face recognition is done for library {repo_name}.')
+        return message
+
+    def format_ai_summary_msg(self):
+        try:
+            d = json.loads(self.detail)
+        except Exception as e:
+            logger.error(e)
+            return ""
+        repo_name = d.get('repo_name')
+        message = _(f'AI summary generation is done for library {repo_name}.')
         return message
 
 

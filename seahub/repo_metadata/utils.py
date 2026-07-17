@@ -108,6 +108,15 @@ def add_init_face_recognition_task(params):
     return json.loads(resp.content)['task_id']
 
 
+def add_init_ai_summary_task(params):
+    payload = {'exp': int(time.time()) + 300, }
+    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+    headers = {"Authorization": "Token %s" % token}
+    url = urljoin(SEAFEVENTS_SERVER_URL, '/add-init-ai-summary-task')
+    resp = requests.get(url, params=params, headers=headers)
+    return json.loads(resp.content).get('task_id')
+
+
 def extract_file_details(params):
     payload = {'exp': int(time.time()) + 300, }
     token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
@@ -115,15 +124,6 @@ def extract_file_details(params):
     url = urljoin(SEAFEVENTS_SERVER_URL, '/extract-file-details')
     resp = requests.post(url, json=params, headers=headers, timeout=30)
     return json.loads(resp.content)['details']
-
-
-def generate_ai_summary(params):
-    payload = {'exp': int(time.time()) + 300, }
-    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
-    headers = {"Authorization": "Token %s" % token}
-    url = urljoin(SEAFEVENTS_SERVER_URL, '/generate-ai-summary')
-    resp = requests.post(url, json=params, headers=headers, timeout=30)
-    return json.loads(resp.content)['success']
 
 
 def recognize_faces(params):
@@ -366,45 +366,6 @@ def init_tags(metadata_server_api):
     # init link columns
     init_tag_file_links_column(metadata_server_api, table_id)
     init_tag_self_link_columns(metadata_server_api, table_id)
-
-
-def batch_generate_ai_summary(repo_id, metadata_server_api, batch_size=50, page_size=1000):
-    from seafevents.repo_metadata.constants import METADATA_TABLE, SUMMARY_SUPPORTED_FILE_EXTENSIONS
-
-    start = 0
-    obj_ids = []
-    supported_suffixes = set(SUMMARY_SUPPORTED_FILE_EXTENSIONS)
-    select_columns = ', '.join([
-        f'`{METADATA_TABLE.columns.obj_id.name}`',
-        f'`{METADATA_TABLE.columns.suffix.name}`',
-    ])
-
-    while True:
-        sql = (
-            f'SELECT {select_columns} FROM `{METADATA_TABLE.name}` '
-            f'WHERE `{METADATA_TABLE.columns.is_dir.name}` = False '
-            f'AND `{METADATA_TABLE.columns.file_type.name}` = "_document" '
-            f'LIMIT {start}, {page_size}'
-        )
-        rows = metadata_server_api.query_rows(sql).get('results', [])
-        if not rows:
-            break
-
-        for row in rows:
-            suffix = (row.get(METADATA_TABLE.columns.suffix.name) or '').lower()
-            obj_id = row.get(METADATA_TABLE.columns.obj_id.name)
-            if obj_id and suffix in supported_suffixes:
-                obj_ids.append(obj_id)
-                if len(obj_ids) >= batch_size:
-                    generate_ai_summary({'repo_id': repo_id, 'obj_ids': obj_ids})
-                    obj_ids = []
-
-        if len(rows) < page_size:
-            break
-        start += page_size
-
-    if obj_ids:
-        generate_ai_summary({'repo_id': repo_id, 'obj_ids': obj_ids})
 
 
 def remove_tags_table(metadata_server_api):

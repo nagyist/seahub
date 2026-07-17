@@ -21,7 +21,7 @@ from seahub.repo_metadata.utils import add_init_metadata_task, recognize_faces, 
     get_unmodifiable_columns, can_read_metadata, init_faces, \
     extract_file_details, get_table_by_name, remove_faces_table, FACES_SAVE_PATH, \
     init_tags, init_tag_self_link_columns, remove_tags_table, add_init_face_recognition_task, \
-    get_update_record, update_people_cover_photo, init_ai_summary, remove_ai_summary, batch_generate_ai_summary
+    add_init_ai_summary_task, get_update_record, update_people_cover_photo, init_ai_summary, remove_ai_summary
 from seahub.repo_metadata.metadata_server_api import MetadataServerAPI, list_metadata_view_records
 from seahub.utils.repo import is_repo_admin, is_repo_owner
 from seahub.share.utils import check_invisible_folder
@@ -217,89 +217,6 @@ class MetadataManage(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        return Response({'success': True})
-
-
-class MetadataAISummaryStatusManage(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
-    throttle_classes = (UserRateThrottle,)
-
-    def get(self, request, repo_id):
-        repo = seafile_api.get_repo(repo_id)
-        if not repo:
-            error_msg = 'Library %s not found.' % repo_id
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        metadata = RepoMetadata.objects.filter(repo_id=repo_id).first()
-        if not metadata or not metadata.enabled:
-            error_msg = f'The metadata module is not enabled for repo {repo_id}.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if not can_read_metadata(request, repo_id):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        return Response({'enabled': bool(metadata.summary_enabled)})
-
-    def post(self, request, repo_id):
-        if not verify_ai_config():
-            return api_error(status.HTTP_400_BAD_REQUEST, 'AI server not configured')
-
-        metadata = RepoMetadata.objects.filter(repo_id=repo_id).first()
-        if not metadata or not metadata.enabled:
-            error_msg = f'The metadata module is not enabled for repo {repo_id}.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if metadata.summary_enabled:
-            error_msg = 'The AI summary feature is already enabled.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
-        repo = seafile_api.get_repo(repo_id)
-        if not repo:
-            error_msg = 'Library %s not found.' % repo_id
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if not is_repo_admin(request.user.username, repo_id):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        metadata_server_api = MetadataServerAPI(repo_id, request.user.username)
-        try:
-            init_ai_summary(metadata_server_api)
-            metadata.summary_enabled = True
-            metadata.save()
-            batch_generate_ai_summary(repo_id, metadata_server_api)
-        except Exception as e:
-            logger.exception(e)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
-        return Response({'success': True})
-
-    def delete(self, request, repo_id):
-        repo = seafile_api.get_repo(repo_id)
-        if not repo:
-            error_msg = 'Library %s not found.' % repo_id
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        if not is_repo_admin(request.user.username, repo_id):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        metadata = RepoMetadata.objects.filter(repo_id=repo_id).first()
-        if not metadata or not metadata.enabled or not metadata.summary_enabled:
-            error_msg = f'The repo {repo_id} has disabled the AI summary feature.'
-            return api_error(status.HTTP_409_CONFLICT, error_msg)
-
-        metadata_server_api = MetadataServerAPI(repo_id, request.user.username)
-        try:
-            remove_ai_summary(metadata_server_api)
-            metadata.summary_enabled = False
-            metadata.save()
-        except Exception as e:
-            logger.exception(e)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         return Response({'success': True})
 
@@ -2049,6 +1966,92 @@ class FaceRecognitionManage(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True})
+
+
+class MetadataAISummaryStatusManage(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, repo_id):
+        repo = seafile_api.get_repo(repo_id)
+        if not repo:
+            error_msg = 'Library %s not found.' % repo_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        metadata = RepoMetadata.objects.filter(repo_id=repo_id).first()
+        if not metadata or not metadata.enabled:
+            error_msg = f'The metadata module is not enabled for repo {repo_id}.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not can_read_metadata(request, repo_id):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        return Response({'enabled': bool(metadata.summary_enabled)})
+
+    def post(self, request, repo_id):
+        if not verify_ai_config():
+            return api_error(status.HTTP_400_BAD_REQUEST, 'AI server not configured')
+
+        metadata = RepoMetadata.objects.filter(repo_id=repo_id).first()
+        if not metadata or not metadata.enabled:
+            error_msg = f'The metadata module is not enabled for repo {repo_id}.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if metadata.summary_enabled:
+            error_msg = 'The AI summary feature is already enabled.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        repo = seafile_api.get_repo(repo_id)
+        if not repo:
+            error_msg = 'Library %s not found.' % repo_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not is_repo_admin(request.user.username, repo_id):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        metadata_server_api = MetadataServerAPI(repo_id, request.user.username)
+        try:
+            init_ai_summary(metadata_server_api)
+            metadata.summary_enabled = True
+            metadata.save()
+            add_init_ai_summary_task({
+                'repo_id': repo_id,
+                'username': request.user.username,
+            })
+        except Exception as e:
+            logger.exception(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        return Response({'success': True})
+
+    def delete(self, request, repo_id):
+        repo = seafile_api.get_repo(repo_id)
+        if not repo:
+            error_msg = 'Library %s not found.' % repo_id
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not is_repo_admin(request.user.username, repo_id):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        metadata = RepoMetadata.objects.filter(repo_id=repo_id).first()
+        if not metadata or not metadata.enabled or not metadata.summary_enabled:
+            error_msg = f'The repo {repo_id} has disabled the AI summary feature.'
+            return api_error(status.HTTP_409_CONFLICT, error_msg)
+
+        metadata_server_api = MetadataServerAPI(repo_id, request.user.username)
+        try:
+            remove_ai_summary(metadata_server_api)
+            metadata.summary_enabled = False
+            metadata.save()
+        except Exception as e:
+            logger.exception(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         return Response({'success': True})
 

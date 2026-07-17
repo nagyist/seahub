@@ -1286,6 +1286,15 @@ class SystemAdminAPI {
     return this.req.post(url, formData);
   }
 
+  sysAdminBatchProcessAllVirusFiles(operation, hasHandled) {
+    const url = this.server + '/api/v2.1/admin/virus-files/batch/';
+    let formData = new FormData();
+    formData.append('operation', operation);
+    formData.append('apply_to_all', true);
+    formData.append('has_handled', hasHandled);
+    return this.req.post(url, formData);
+  }
+
   sysAdminStatisticMetrics() {
     const url = this.server + '/api/v2.1/admin/statistics/system-metrics/';
     return this.req.get(url);

@@ -822,6 +822,7 @@ def repo_download_info(request, repo_id, gen_sync_token=True):
         'repo_size': repo_size,
         'repo_size_formatted': repo_size_formatted,
         'mtime': repo.latest_modify,
+        'last_modified': timestamp_to_isoformat_timestr(repo.latest_modify),
         'mtime_relative': translate_seahub_time(repo.latest_modify),
         'encrypted': enc,
         'enc_version': enc_version,

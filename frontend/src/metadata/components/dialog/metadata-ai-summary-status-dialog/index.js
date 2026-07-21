@@ -7,6 +7,7 @@ import metadataAPI from '../../../api';
 import toaster from '../../../../components/toast';
 import { Utils } from '../../../../utils/utils';
 import TurnOffConfirmDialog from '../turn-off-confirm-dialog';
+import { EVENT_BUS_TYPE } from '../../../constants';
 
 import '../metadata-face-recognition-dialog/index.css';
 
@@ -26,7 +27,9 @@ const MetadataAISummaryStatusDialog = ({ value: oldValue, repoID, toggleDialog: 
     }
     setSubmitting(true);
     metadataAPI.openAISummary(repoID).then(() => {
+      toaster.success(gettext('AI summary is being generated. You will be notified when it is finished.'));
       submit(true);
+      window.sfMetadataContext?.eventBus?.dispatch(EVENT_BUS_TYPE.RELOAD_DATA);
       toggle();
     }).catch(error => {
       const errorMsg = Utils.getErrorMsg(error);
@@ -44,6 +47,7 @@ const MetadataAISummaryStatusDialog = ({ value: oldValue, repoID, toggleDialog: 
     setSubmitting(true);
     metadataAPI.closeAISummary(repoID).then(() => {
       submit(false);
+      window.sfMetadataContext?.eventBus?.dispatch(EVENT_BUS_TYPE.RELOAD_DATA);
       toggle();
     }).catch(error => {
       const errorMsg = Utils.getErrorMsg(error);

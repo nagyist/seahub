@@ -5,7 +5,7 @@ import toaster from '../components/toast';
 import Loading from '../components/loading';
 import { PRIVATE_FILE_TYPE } from '../constants';
 import { EVENT_BUS_TYPE } from '../metadata/constants';
-import { enableSeafileAI, gettext } from '../utils/constants';
+import { enableSeafileAI, enableAIChat, gettext } from '../utils/constants';
 
 
 // This hook provides content related to seahub interaction, such as whether to enable extended attributes
@@ -73,7 +73,7 @@ export const MetadataStatusProvider = ({ repoID, repoInfo, currentPath, hideMeta
         cancelMetadataURL();
       }
       setEnableTags(enableTags);
-      setEnableAISummary(enableSeafileAI && !!enableAISummary);
+      setEnableAISummary(enableSeafileAI && enableAIChat && !!enableAISummary);
       setShowView(showView);
       setTagsLang(tagsLang || 'en');
       setDetailsSettings(JSON.parse(detailsSettings));

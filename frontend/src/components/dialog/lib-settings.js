@@ -1,7 +1,7 @@
 import React, { Fragment, useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody, TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
-import { gettext, enableRepoAutoDel, enableFaceRecognitionFeature, enableSeafileAI } from '../../utils/constants';
+import { gettext, enableRepoAutoDel, enableFaceRecognitionFeature, enableSeafileAI, enableAIChat } from '../../utils/constants';
 import { TAB } from '../../constants/repo-setting-tabs';
 import LibHistorySettingPanel from './lib-settings/lib-history-setting-panel';
 import LibAutoDelSettingPanel from './lib-settings/lib-old-files-auto-del-setting-panel';
@@ -132,7 +132,7 @@ const LibSettingsDialog = ({ repoID, currentRepoInfo, toggleDialog, tab, showMig
                         {gettext('Extended properties')}
                       </NavLink>
                     </NavItem>
-                    {enableSeafileAI &&
+                    {enableSeafileAI && enableAIChat &&
                       <NavItem
                         role="tab"
                         aria-selected={activeTab === TAB.AI_SUMMARY_SETTING}
@@ -211,7 +211,7 @@ const LibSettingsDialog = ({ repoID, currentRepoInfo, toggleDialog, tab, showMig
                   />
                 </TabPane>
               )}
-              {(enableExtendedPropertiesSetting && enableSeafileAI && activeTab === TAB.AI_SUMMARY_SETTING) && (
+              {(enableExtendedPropertiesSetting && enableSeafileAI && enableAIChat && activeTab === TAB.AI_SUMMARY_SETTING) && (
                 <TabPane tabId={TAB.AI_SUMMARY_SETTING} role="tabpanel" id="ai-summary-setting-panel">
                   <LibAISummarySettingPanel
                     repoID={repoID}

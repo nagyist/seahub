@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
 import dayjs from 'dayjs';
-import { gettext } from '../../utils/constants';
+import { gettext, siteRoot } from '../../utils/constants';
 import { seafileAPI } from '../../utils/seafile-api';
 import { Utils } from '../../utils/utils';
 import Loading from '../loading';
@@ -44,16 +44,26 @@ class CommitDetails extends React.Component {
     });
   }
 
+  viewSnapshot = () => {
+    const { repoID, commitID } = this.props;
+    window.open(`${siteRoot}repo/${repoID}/snapshot/?commit_id=${commitID}`, '_blank', 'noopener,noreferrer');
+  };
+
   render() {
     const { toggleDialog, commitTime } = this.props;
     return (
-      <Modal isOpen={true} toggle={toggleDialog}>
+      <Modal isOpen={true} toggle={toggleDialog} centered={true} modalClassName="commit-details-dialog">
         <SeahubModalHeader toggle={toggleDialog}>{gettext('Modification Details')}</SeahubModalHeader>
         <ModalBody>
-          <p className="repo-commit-time mb-6 d-flex align-items-center">
-            <Icon symbol="time" className="mr-1" />
-            {dayjs(commitTime).format('YYYY-MM-DD HH:mm:ss')}
-          </p>
+          <div className="repo-commit-time-row">
+            <p className="repo-commit-time mb-0 d-flex align-items-center">
+              <Icon symbol="time" className="repo-commit-time-icon" />
+              {dayjs(commitTime).format('YYYY-MM-DD HH:mm:ss')}
+            </p>
+            <button type="button" className="repo-commit-view-snapshot-btn" onClick={this.viewSnapshot}>
+              {gettext('View snapshot')}
+            </button>
+          </div>
           <Content data={this.state} />
         </ModalBody>
       </Modal>
@@ -81,7 +91,7 @@ class Content extends React.Component {
       }
     }
     if (showDesc) {
-      return <p>{data.cmt_desc}</p>;
+      return <p className="repo-commit-details-description mb-0">{data.cmt_desc}</p>;
     }
 
     return (
@@ -91,16 +101,16 @@ class Content extends React.Component {
             return null;
           }
           return (
-            <React.Fragment key={index}>
-              <h6 className="mt-4">{item.title}</h6>
-              <ul className="list-unstyled">
+            <section className="repo-commit-details-section" key={index}>
+              <h6 className="repo-commit-details-title mb-0">{item.title}</h6>
+              <ul className="repo-commit-details-list list-unstyled mb-0">
                 {
                   data[item.type].map((item, index) => {
-                    return <li key={index} dangerouslySetInnerHTML={{ __html: item }} className="text-truncate"></li>;
+                    return <li key={index} dangerouslySetInnerHTML={{ __html: item }} className="repo-commit-details-item"></li>;
                   })
                 }
               </ul>
-            </React.Fragment>
+            </section>
           );
         })}
       </React.Fragment>

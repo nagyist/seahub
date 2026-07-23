@@ -30,7 +30,7 @@ const Session = ({ session, isSelected, isTeamTab = false, embedded = false, onS
     onSelect && onSelect(session);
   }, [onSelect, session, togglePageSlugId]);
 
-  const icon = session.is_shared ? 'group' : 'new-chat';
+  const icon = session.is_shared ? 'chat-team' : 'new-chat';
 
   if (isTeamTab) {
     return (
@@ -38,7 +38,7 @@ const Session = ({ session, isSelected, isTeamTab = false, embedded = false, onS
         className={classNames('sea-ai-ask-session-item', { active: isSelected, embedded })}
         onClick={onSelectSession}
       >
-        <Icon symbol="group" className="mr-2" />
+        <Icon symbol="chat-team" className="mr-2" />
         <div className="sea-ai-ask-session-content">
           <div className="sea-ai-ask-session-name text-truncate" title={displayName}>{displayName}</div>
         </div>
@@ -56,18 +56,26 @@ const Session = ({ session, isSelected, isTeamTab = false, embedded = false, onS
         <div className="sea-ai-ask-session-content">
           <div className="sea-ai-ask-session-name text-truncate" title={displayName}>{displayName}</div>
         </div>
-        <Dropdown isOpen={isOpen} toggle={toggleDropdown} className="sea-ai-ask-session-more-op-btn">
+        <Dropdown isOpen={isOpen} toggle={toggleDropdown}>
           <DropdownToggle color="link" className="sea-ai-ask-session-more-op-btn p-0 border-0 text-secondary">
             <Icon symbol="more-level" />
           </DropdownToggle>
           <DropdownMenu end>
-            <DropdownItem onClick={() => setIsShowRenameDialog(true)}>{gettext('Rename')}</DropdownItem>
+            <DropdownItem onClick={() => setIsShowRenameDialog(true)}>
+              <span className="dropdown-item-main-slot">{gettext('Rename')}</span>
+            </DropdownItem>
             {session.is_shared ? (
-              <DropdownItem onClick={() => unshareSession(session._id)}>{gettext('Unshare within library')}</DropdownItem>
+              <DropdownItem onClick={() => unshareSession(session._id)}>
+                <span className="dropdown-item-main-slot">{gettext('Unshare')}</span>
+              </DropdownItem>
             ) : (
-              <DropdownItem onClick={() => shareSession(session._id)}>{gettext('Share within library')}</DropdownItem>
+              <DropdownItem onClick={() => shareSession(session._id)}>
+                <span className="dropdown-item-main-slot">{gettext('Share')}</span>
+              </DropdownItem>
             )}
-            <DropdownItem onClick={() => setIsShowDeleteDialog(true)}>{gettext('Delete')}</DropdownItem>
+            <DropdownItem onClick={() => setIsShowDeleteDialog(true)}>
+              <span className="dropdown-item-main-slot">{gettext('Delete')}</span>
+            </DropdownItem>
           </DropdownMenu>
         </Dropdown>
       </div>

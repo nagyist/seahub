@@ -343,14 +343,6 @@ class NoticeItem extends React.Component {
       return { avatar_url: `${mediaUrl}/avatars/default.png`, notice };
     }
 
-    if (noticeType === MSG_TYPE_AI_SUMMARY) {
-      const repoURL = `${siteRoot}library/${repo_id}/${encodeURIComponent(repo_name)}/`;
-      const repoLink = `<a href=${repoURL} target="_blank">${Utils.HTMLescape(repo_name)}</a>`;
-      let notice = gettext('AI summary generation is done for library {libraryName}.');
-      notice = notice.replace('{libraryName}', repoLink);
-      return { avatar_url: `${mediaUrl}/avatars/default.png`, notice };
-    }
-
     if (noticeType === MSG_TYPE_SAML_SSO_FAILED) {
       const { error_msg } = detail;
       let notice = gettext(error_msg);

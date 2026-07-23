@@ -27,7 +27,6 @@ const MetadataAISummaryStatusDialog = ({ value: oldValue, repoID, toggleDialog: 
     }
     setSubmitting(true);
     metadataAPI.openAISummary(repoID).then(() => {
-      toaster.success(gettext('AI summary is being generated. You will be notified when it is finished.'));
       submit(true);
       window.sfMetadataContext?.eventBus?.dispatch(EVENT_BUS_TYPE.RELOAD_DATA);
       toggle();

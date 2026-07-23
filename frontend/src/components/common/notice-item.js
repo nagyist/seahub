@@ -26,7 +26,6 @@ const MSG_TYPE_SAML_SSO_FAILED = 'saml_sso_failed';
 const MSG_TYPE_REPO_SHARE_PERM_CHANGE = 'repo_share_perm_change';
 const MSG_TYPE_REPO_SHARE_PERM_DELETE = 'repo_share_perm_delete';
 const MSG_TYPE_FACE_CLUSTER = 'face_cluster';
-const MSG_TYPE_AI_SUMMARY = 'ai_summary';
 const MSG_TYPE_SEADOC_REPLY = 'reply';
 const MSG_TYPE_SEADOC_COMMENT = 'comment';
 const MSG_TYPE_REPO_ARCHIVED = 'repo_archived';
